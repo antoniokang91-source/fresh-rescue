@@ -2,7 +2,7 @@ name: Fruit-Rescue Auto Deploy
 
 on:
   push:
-    branches: [ main ]  # main 브랜치에 코드가 올라오면 실행
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -15,8 +15,24 @@ jobs:
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/fruit-rescue  # 프로젝트 폴더로 이동 (폴더명이 다르면 수정!)
-            git pull origin main  # 최신 코드 가져오기
-            npm install           # 혹시 모를 새 패키지 설치
-            npm run build         # Next.js 빌드
-            pm2 restart all || npm run dev & # 서버 재시작 (PM2 권장)
+            # 1. 폴더 이동 (실패하면 여기서 멈추게 설정)
+            cd ~/fruit-rescue || cd ~/$(ls -d */ | head -n 1) || exit 1
+            
+            # 2. 최신 코드 가져오기
+            git pull origin main
+            
+            # 3. 패키지 설치 및 빌드 (에러 로그 확인용)
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" # nvm 로드
+            
+            npm install
+            npm run build
+            
+            # 4. 서버 재시작 (PM2가 없다면 백그라운드 실행)
+            if command -v pm2 &> /dev/null
+            then
+                pm2 restart all || pm2 start npm --name "fruit-rescue" -- start
+            else
+                fuser -k 3000/tcp || true
+                nohup npm run dev > /dev/null 2>&1 &
+            fi
