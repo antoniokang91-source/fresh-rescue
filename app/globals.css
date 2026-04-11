@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── 기본 설정 ─────────────────────────────────────────────── */
+:root {
+  --rescue-orange: #ff6b35;
+  --siren-red: #ff3b30;
+  --safe-green: #34c759;
+  --dark-base: #1c1c1e;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* dvh fallback */
+.h-dvh {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ── 카카오 맵 오버레이 애니메이션 ──────────────────────────── */
+@keyframes rescuePulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.45);
+  }
+  50% {
+    box-shadow: 0 0 0 14px rgba(255, 59, 48, 0);
+  }
+}
+
+/* ── 마퀴 (LED 전광판) ──────────────────────────────────────── */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── 바텀 시트 슬라이드 ─────────────────────────────────────── */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ── 검색 결과 마커 바운스 ──────────────────────────────────── */
+@keyframes bounceMarker {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes bounceMarkerSelected {
+  0%,
+  100% {
+    transform: scale(1.2) translateY(0);
+  }
+  50% {
+    transform: scale(1.2) translateY(-12px);
+  }
+}
+
+/* ── 숫자 카운트인 ──────────────────────────────────────────── */
+@keyframes countIn {
+  from {
+    transform: scale(0.6) translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ── 카카오 지도 컨트롤 스타일 조정 ────────────────────────── */
+.kakao-map-wrap {
+  width: 100%;
+  height: 100%;
+}
+
+/* 스크롤바 숨기기 (모바일 느낌) */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
