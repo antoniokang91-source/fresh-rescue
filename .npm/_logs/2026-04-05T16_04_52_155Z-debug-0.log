@@ -1,0 +1,13 @@
+0 verbose cli /usr/bin/node /usr/bin/npm
+1 info using npm@10.9.7
+2 info using node@v22.22.2
+3 silly config load:file:/usr/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/ubuntu/fruit-rescue/.npmrc
+5 silly config load:file:/home/ubuntu/.npmrc
+6 silly config load:file:/usr/etc/npmrc
+7 verbose title npm run dev
+8 verbose argv "run" "dev"
+9 verbose logfile logs-max:10 dir:/home/ubuntu/.npm/_logs/2026-04-05T16_04_52_155Z-
+10 verbose logfile /home/ubuntu/.npm/_logs/2026-04-05T16_04_52_155Z-debug-0.log
+11 silly logfile start cleaning logs, removing 1 files
+12 silly logfile done cleaning log files
