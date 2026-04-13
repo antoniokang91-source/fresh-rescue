@@ -15,12 +15,15 @@ import type { DbShop, ShopCategory } from '@/types'
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ProductForm {
-  product_name: string
-  original_price: string
-  rescue_price: string
-  stock_quantity: string
-  expire_hours: string
+  product_name: string;
+  category: string;
+  original_price: string;
+  rescue_price: string;
+  stock_quantity: string;
+  expire_hours: string;
+  image_url: string;
 }
+
 
 interface ShopForm {
   shop_name: string
@@ -38,10 +41,12 @@ interface ShopForm {
 
 const INITIAL_PRODUCT_FORM: ProductForm = {
   product_name: '',
+  category: '',
   original_price: '',
   rescue_price: '',
   stock_quantity: '',
-  expire_hours: '2',
+  expire_hours: '',
+  image_url: '',
 }
 
 const INITIAL_SHOP_FORM: ShopForm = {
@@ -333,13 +338,14 @@ export default function SellerDashboardPage() {
       // 수정 모드
       setEditingProductId(product.id)
       setProductForm({
-        product_name: product.product_name,
-        original_price: String(product.original_price),
-        rescue_price: String(product.rescue_price),
-        stock_quantity: String(product.stock_quantity),
-        expire_hours: '2',
-        image_url: product.image_url ?? '',
-      })
+  product_name: product.product_name,
+  category: product.category ?? '',
+  original_price: String(product.original_price),
+  rescue_price: String(product.rescue_price),
+  stock_quantity: String(product.stock_quantity),
+  expire_hours: '2',
+  image_url: product.image_url ?? '',
+})
     } else {
       // 신규 등록 모드
       setEditingProductId(null)
