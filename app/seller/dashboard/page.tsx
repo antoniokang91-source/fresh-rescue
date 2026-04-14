@@ -412,7 +412,7 @@ export default function SellerDashboardPage() {
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
-          🚑 마감구조대
+          🚑 신선구조대
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">🏪 사장님</span>

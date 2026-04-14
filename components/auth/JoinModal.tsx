@@ -34,7 +34,7 @@ export default function JoinModal({ onClose }: JoinModalProps) {
             alert("비밀번호가 올바르지 않습니다.")
             return
           }
-          alert("🚨 마감구조대 복귀 완료! 작전을 재개합니다.")
+          alert("🚨 신선구조대 복귀 완료! 작전을 재개합니다.")
           onClose()
           window.location.reload()
           return
@@ -57,7 +57,7 @@ export default function JoinModal({ onClose }: JoinModalProps) {
       })
       if (upsertError) throw upsertError
 
-      alert("🚨 마감구조대 합류 성공! 작전을 시작합니다.")
+      alert("🚨 신선구조대 합류 성공! 작전을 시작합니다.")
       onClose()
       window.location.reload()
     } catch (err: any) {
@@ -72,7 +72,7 @@ export default function JoinModal({ onClose }: JoinModalProps) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
         <div className="bg-siren-red p-6 text-white text-center">
-          <h2 className="text-2xl font-black">🚨 마감구조대 합류</h2>
+          <h2 className="text-2xl font-black">🚨 신선구조대 합류</h2>
           <p className="text-sm opacity-90 mt-1">번호만 입력하고 득템 알람 받으세요!</p>
         </div>
         

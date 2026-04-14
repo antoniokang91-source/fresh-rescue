@@ -36,7 +36,7 @@ export default function Header() {
           <span className="text-2xl">🚑</span>
           <div>
             <div className="font-black text-rescue-orange text-lg leading-none tracking-tight">
-              마감구조대
+              신선구조대
             </div>
           
           </div>

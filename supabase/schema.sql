@@ -1,7 +1,7 @@
 -- 1. 예전 profiles와 관련된 정책이나 뷰가 있다면 정리
 DROP VIEW IF EXISTS public.marketing_stats;
 
--- 2. 마감구조대원 (rescuers) 테이블 생성/수정
+-- 2. 신선구조대원 (rescuers) 테이블 생성/수정
 -- 기존에 rescuers 테이블이 있어도 컬럼을 일치시킵니다.
 CREATE TABLE IF NOT EXISTS public.rescuers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -24,7 +24,7 @@ ALTER TABLE public.rescuers ADD COLUMN IF NOT EXISTS seller_status VARCHAR(20);
 ALTER TABLE public.rescuers ADD COLUMN IF NOT EXISTS marketing_agree BOOLEAN DEFAULT false;
 ALTER TABLE public.rescuers ADD COLUMN IF NOT EXISTS marketing_agreed_at TIMESTAMP WITH TIME ZONE;
 
--- 3. 가게 (shops) 테이블 - 마감구조대 규격
+-- 3. 가게 (shops) 테이블 - 신선구조대 규격
 CREATE TABLE IF NOT EXISTS public.shops (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id UUID, -- 나중에 users 테이블과 연결
@@ -36,6 +36,19 @@ CREATE TABLE IF NOT EXISTS public.shops (
   phone VARCHAR(20),
   is_active BOOLEAN DEFAULT true,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.banners (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title VARCHAR(120) NOT NULL,
+  image_url TEXT NOT NULL,
+  link_url TEXT NOT NULL,
+  active BOOLEAN DEFAULT true,
+  type VARCHAR(50) DEFAULT 'banner',
+  shop_name VARCHAR(100),
+  end_date DATE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 -- 4. 마감 임박 구조 상품 (rescue_products)

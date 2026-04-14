@@ -9,7 +9,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── 브랜드 컬러 (마감구조대 — 강렬 오렌지레드) ─────────
+        // ── 브랜드 컬러 (신선구조대 — 강렬 오렌지레드) ─────────
         'primary':        '#FF4500',   // 메인 CTA, 버튼, 강조
         'primary-dark':   '#CC3700',   // hover/active
         'rescue-orange':  '#FF4500',   // 기존 클래스 호환

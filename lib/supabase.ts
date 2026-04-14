@@ -18,7 +18,7 @@ export const supabase =
 
 if (process.env.NODE_ENV !== 'production') globalForSupabase.supabase = supabase
 
-// ── 마감구조대 실시간 DB 타입 정의 (실제 테이블명과 1:1 매치) ─────────────────────────
+// ── 신선구조대 실시간 DB 타입 정의 (실제 테이블명과 1:1 매치) ─────────────────────────
 export type Database = {
   public: {
     Tables: {
@@ -82,6 +82,22 @@ export type Database = {
         }
         Insert: Omit<Database['public']['Tables']['shops']['Row'], 'id' | 'created_at' | 'updated_at'>
         Update: Partial<Database['public']['Tables']['shops']['Insert']>
+      }
+      banners: {
+        Row: {
+          id: string
+          title: string
+          image_url: string
+          link_url: string
+          active: boolean
+          type: string | null
+          shop_name: string | null
+          end_date: string | null
+          created_at: string
+          updated_at: string | null
+        }
+        Insert: Omit<Database['public']['Tables']['banners']['Row'], 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Database['public']['Tables']['banners']['Insert']>
       }
       // 4. 실시간 구조 통계
       daily_stats: {

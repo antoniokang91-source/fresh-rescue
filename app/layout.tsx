@@ -4,12 +4,12 @@ import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '마감구조대',
+  title: '신선구조대',
   description:
     '버려질 위기의 상품을 구출하라! 우리 동네 오프라인 소상공인 실시간 재고 구조 작전 서비스',
-  keywords: ['마감구조대', '재고 할인', '소상공인', '지역 상권', '음식물 낭비'],
+  keywords: ['신선구조대', '재고 할인', '소상공인', '지역 상권', '음식물 낭비'],
   openGraph: {
-    title: '마감구조대',
+    title: '신선구조대',
     description: '버려질 위기의 상품을 구출하라!',
     type: 'website',
   },
