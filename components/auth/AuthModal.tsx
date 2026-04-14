@@ -44,7 +44,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   const [termsAgree, setTermsAgree] = useState(false)
   const [privacyAgree, setPrivacyAgree] = useState(false)
   const [marketingAgree, setMarketingAgree] = useState(false)
-  const [showWelcome, setShowWelcome] = useState(false)
+  const [postSignupState, setPostSignupState] = useState<'none' | 'user' | 'seller'>('none')
 
   const allRequired = termsAgree && privacyAgree
   const allChecked = allRequired && marketingAgree
@@ -97,20 +97,21 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         return
       }
 
-      // DB에서 실제 role 조회 후 리다이렉트 결정
+      // DB에서 실제 role/승인 상태 조회
       const userId = signInData.user?.id
       let actualRole: string = loginRole
+      let sellerStatus: string | null = null
       if (userId) {
         const { data: profileData } = await supabase
           .from('rescuers')
-          .select('role')
+          .select('role, seller_status, nickname')
           .eq('id', userId)
           .single()
 
         if (profileData) {
           actualRole = profileData.role ?? loginRole
+          sellerStatus = profileData.seller_status ?? null
         } else {
-          // rescuers 레코드가 없으면 자동 생성 (재발 방지)
           await supabase.from('rescuers').insert({
             id: userId,
             phone: rawPhone,
@@ -121,6 +122,16 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           })
           actualRole = loginRole
         }
+      }
+
+      if (actualRole === 'seller' && sellerStatus !== 'approved') {
+        await supabase.auth.signOut()
+        setError(
+          sellerStatus === 'rejected'
+            ? '가입 승인 요청이 거부되었습니다. 문의 후 다시 신청해주세요.'
+            : '사장님 가입 승인이 필요합니다. 관리자의 승인이 완료되면 다시 로그인해주세요.'
+        )
+        return
       }
 
       await refreshProfile()
@@ -176,25 +187,28 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
       const { error: upsertError } = await supabase.from('rescuers').upsert({
         id: userId,
         phone: rawPhone,
-        nickname: `대원_${rawPhone.slice(-4)}`,
+        nickname: joinRole === 'seller' ? `판매자_${rawPhone.slice(-4)}` : `대원_${rawPhone.slice(-4)}`,
         role: joinRole,
+        seller_status: joinRole === 'seller' ? 'pending' : null,
         is_registered: true,
         marketing_agree: marketingAgree,
         marketing_agreed_at: marketingAgree ? now : null,
       })
       if (upsertError) throw upsertError
 
-      if (authData.session) {
-        await refreshProfile()
-        if (joinRole === 'seller') {
-          handleClose()
-          router.push('/seller/dashboard')
-        } else {
-          // 고객 가입 완료 → 환영 화면 표시
-          setShowWelcome(true)
-        }
+      if (joinRole === 'seller') {
+        // 사장님은 관리자의 승인 후 dashboard 접근 가능
+        setPostSignupState('seller')
+        await supabase.auth.signOut()
+        setPhone('')
+        setPassword('')
+        setJoinStep('form')
       } else {
-        setError('가입이 완료되었습니다. Supabase 대시보드 → Authentication → Email Confirm 을 비활성화하면 즉시 로그인됩니다.')
+        setPostSignupState('user')
+      }
+
+      if (authData.session && joinRole === 'user') {
+        await refreshProfile()
       }
     } catch (e: any) {
       setError(e.message || '회원가입에 실패했습니다.')
@@ -224,8 +238,8 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           <div className="w-10 h-1 bg-gray-200 rounded-full" />
         </div>
 
-        {/* ── 환영 화면 ─────────────────────────────────────────────────── */}
-        {showWelcome ? (
+        {/* ── 환영 / 승인 대기 화면 ─────────────────────────────────────────── */}
+        {postSignupState !== 'none' ? (
           <div className="px-6 pb-10 pt-2 flex flex-col items-center text-center gap-4">
             <div className="relative mt-2">
               <div className="text-7xl animate-bounce">🚑</div>
@@ -233,26 +247,31 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
             </div>
             <div>
               <h2 className="font-black text-2xl text-gray-900 leading-tight">
-                대원님, 가입을<br />축하합니다!
+                {postSignupState === 'user' ? '신선 구조대원이 되신 것을 환영합니다!' : '사장님 가입이 접수되었습니다'}
               </h2>
               <p className="text-gray-500 text-sm mt-3 leading-relaxed">
-                동네의 재고들을 구조해주세요!<br />
-                당신의 출동이 소상공인을 살립니다.
+                {postSignupState === 'user'
+                  ? '위기에 처한 제품들을 구조해주세요. 고객님께서 찾는 만큼 지역 상권이 살아납니다.'
+                  : '긴급 구조 요청을 위해 본사 승인이 필요합니다. 관리자가 승인하면 dashboard 접근 권한이 부여됩니다.'}
               </p>
             </div>
-            <div className="w-full bg-orange-50 rounded-2xl px-5 py-4 mt-1">
-              <p className="text-xs text-rescue-orange font-bold">🎖️ 구조대원 임무</p>
+            <div className={`w-full rounded-2xl px-5 py-4 mt-1 ${postSignupState === 'user' ? 'bg-orange-50' : 'bg-emerald-50'}`}>
+              <p className={`text-xs font-bold ${postSignupState === 'user' ? 'text-rescue-orange' : 'text-emerald-700'}`}>
+                {postSignupState === 'user' ? '🎖️ 구조대원 임무' : '🔒 승인 대기 중'}
+              </p>
               <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
-                지도에서 마감 임박 상품을 찾아 직접 방문 후 구매하면 구조 완료!<br />
-                많이 구조할수록 명예의 전당에 이름이 올라갑니다.
+                {postSignupState === 'user'
+                  ? '지도에서 마감 임박 상품을 찾아 직접 방문 후 구매하면 구조 완료!'
+                  : '관리자 승인 후 사장님 대시보드에서 상품 등록, 홍보, 사진 업로드가 가능합니다.'}
               </p>
             </div>
             <button
               onClick={handleClose}
-              className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl
-                shadow-lg shadow-orange-200 active:scale-95 transition-all mt-1"
+              className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mt-1 ${
+                postSignupState === 'user' ? 'bg-rescue-orange shadow-orange-200' : 'bg-emerald-600 shadow-emerald-200'
+              }`}
             >
-              🚨 지금 바로 출동하기!
+              {postSignupState === 'user' ? '🚨 지금 바로 출동하기!' : '확인했어요'}
             </button>
           </div>
         ) : (
@@ -267,7 +286,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
             <span className="text-3xl">{lockedRole === 'seller' ? '🏪' : '🚑'}</span>
             <div>
               <h2 className="font-black text-xl text-gray-900">
-                {lockedRole === 'seller' ? '사장님 전용' : '마감구조대'}
+                {lockedRole === 'seller' ? '사장님 전용' : '신선구조대'}
               </h2>
               <p className="text-xs text-gray-400">
                 {lockedRole === 'seller' ? '가게 등록 & 관리' : '구조대원 입장'}

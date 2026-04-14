@@ -5,8 +5,6 @@ import Link from 'next/link'
 import { CheckCircle2, XCircle, Users, Megaphone, Store, BarChart3, Eye, EyeOff, LogOut } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
-import type { DbShop } from '@/types'
-
 type Tab = 'approval' | 'ads' | 'stats'
 
 interface MarketingStats {
@@ -16,11 +14,23 @@ interface MarketingStats {
   agree_rate_pct: number
 }
 
-const MOCK_ADS = [
-  { id: 'a1', shopName: '행복과일마트', type: 'top', isActive: true, endDate: '2026-04-20' },
-  { id: 'a2', shopName: '바다향 수산', type: 'banner', isActive: true, endDate: '2026-04-15' },
-  { id: 'a3', shopName: '싱싱축산', type: 'top', isActive: false, endDate: '2026-04-10' },
-]
+interface BannerAd {
+  id: string
+  shop_name: string
+  type: string
+  is_active: boolean
+  end_date: string
+  title?: string
+}
+
+interface PendingSeller {
+  id: string
+  nickname: string
+  phone: string | null
+  seller_status: string
+  created_at: string
+}
+
 
 // ── 관리자 전용 로그인 폼 ─────────────────────────────────────────────────────
 function AdminLoginForm() {
@@ -72,7 +82,7 @@ function AdminLoginForm() {
         <div className="text-center mb-10">
           <div className="text-5xl mb-3">🚑</div>
           <h1 className="text-white font-black text-2xl tracking-tight">
-            마감구조대 <span className="text-rescue-orange">HQ</span>
+            신선구조대 <span className="text-rescue-orange">HQ</span>
           </h1>
           <p className="text-gray-500 text-sm mt-1">관리자 전용 페이지</p>
         </div>
@@ -140,25 +150,48 @@ function AdminLoginForm() {
 export default function AdminPage() {
   const { user, profile, isLoading, signOut } = useAuth()
   const [tab, setTab] = useState<Tab>('approval')
-  const [pendingShops, setPendingShops] = useState<DbShop[]>([])
+  const [pendingShops, setPendingShops] = useState<PendingSeller[]>([])
   const [approvalLoading, setApprovalLoading] = useState(false)
+  const [bannerAds, setBannerAds] = useState<BannerAd[]>([])
+  const [adsLoading, setAdsLoading] = useState(false)
   const [stats, setStats] = useState<MarketingStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
 
-  // 승인 대기 가게 목록 fetch
+  // 승인 대기 사장님 목록 fetch (rescuers 테이블 기반)
   const fetchPendingShops = async () => {
     setApprovalLoading(true)
     const { data } = await supabase
-      .from('shops')
-      .select('*')
-      .eq('status', 'pending')
+      .from('rescuers')
+      .select('id, nickname, phone, seller_status, created_at')
+      .eq('role', 'seller')
+      .eq('seller_status', 'pending')
       .order('created_at', { ascending: true })
-    setPendingShops((data ?? []) as DbShop[])
+    setPendingShops((data ?? []) as PendingSeller[])
     setApprovalLoading(false)
   }
 
   useEffect(() => {
     if (tab === 'approval' && user) fetchPendingShops()
+  }, [tab, user])
+
+  const fetchBannerAds = async () => {
+    setAdsLoading(true)
+    const { data, error } = await supabase
+      .from('banners')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (error) {
+      console.error('배너 로드 실패:', error)
+    } else if (data) {
+      setBannerAds(data as BannerAd[])
+    }
+    setAdsLoading(false)
+  }
+
+  useEffect(() => {
+    if (tab === 'ads' && user) fetchBannerAds()
   }, [tab, user])
 
   // 마케팅 동의 통계 fetch
@@ -189,20 +222,20 @@ export default function AdminPage() {
     return <AdminLoginForm />
   }
 
-  const handleApprove = async (shopId: string) => {
+  const handleApprove = async (sellerId: string) => {
     await supabase
-      .from('shops')
-      .update({ status: 'approved', is_active: true })
-      .eq('id', shopId)
-    setPendingShops((prev) => prev.filter((s) => s.id !== shopId))
+      .from('rescuers')
+      .update({ seller_status: 'approved' })
+      .eq('id', sellerId)
+    setPendingShops((prev) => prev.filter((s) => s.id !== sellerId))
   }
 
-  const handleReject = async (shopId: string) => {
+  const handleReject = async (sellerId: string) => {
     await supabase
-      .from('shops')
-      .update({ status: 'rejected', is_active: false })
-      .eq('id', shopId)
-    setPendingShops((prev) => prev.filter((s) => s.id !== shopId))
+      .from('rescuers')
+      .update({ seller_status: 'rejected' })
+      .eq('id', sellerId)
+    setPendingShops((prev) => prev.filter((s) => s.id !== sellerId))
   }
 
   const TABS: { id: Tab; icon: React.ReactNode; label: string; count?: number }[] = [
@@ -216,7 +249,7 @@ export default function AdminPage() {
       {/* 헤더 */}
       <header className="bg-dark-base text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 font-black text-lg">
-          🚑 <span className="text-rescue-orange">마감구조대</span>
+          🚑 <span className="text-rescue-orange">신선구조대</span>
           <span className="text-xs text-gray-400 font-normal ml-1">HQ</span>
         </Link>
         <div className="flex items-center gap-2">
@@ -280,57 +313,39 @@ export default function AdminPage() {
             )}
 
             <div className="space-y-3">
-              {pendingShops.map((shop) => (
-                <div key={shop.id} className="bg-white rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    {shop.shop_image_url ? (
-                      <img
-                        src={shop.shop_image_url}
-                        alt={shop.shop_name}
-                        className="w-14 h-14 rounded-xl object-cover shrink-0 bg-gray-100"
-                      />
-                    ) : (
-                      <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-2xl">
-                        🏪
-                      </div>
-                    )}
+              {pendingShops.map((seller) => (
+                <div key={seller.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 text-2xl">
+                      🏪
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-black text-gray-900">{shop.shop_name}</p>
+                        <p className="font-black text-gray-900">{seller.nickname}</p>
                         <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">
                           심사 중
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-0.5">{shop.category}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">📍 {shop.address}</p>
-                      {shop.phone && <p className="text-xs text-gray-400">📞 {shop.phone}</p>}
-                      {shop.owner_name && <p className="text-xs text-gray-400">👤 {shop.owner_name}</p>}
-                      {shop.business_number && <p className="text-xs text-gray-400">🏢 {shop.business_number}</p>}
-                      {shop.business_registration_url && (
-                        <a
-                          href={shop.business_registration_url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-blue-500 font-bold underline"
-                        >
-                          📄 사업자등록증 보기
-                        </a>
+                      {seller.phone && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          📞 {seller.phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
+                        </p>
                       )}
                       <p className="text-[10px] text-gray-300 mt-1">
-                        신청일: {new Date(shop.created_at).toLocaleDateString('ko-KR')}
+                        신청일: {new Date(seller.created_at).toLocaleDateString('ko-KR')}
                       </p>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3">
                     <button
-                      onClick={() => handleApprove(shop.id)}
+                      onClick={() => handleApprove(seller.id)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5
                         bg-safe-green text-white rounded-xl font-black text-sm"
                     >
                       <CheckCircle2 size={15} /> 승인
                     </button>
                     <button
-                      onClick={() => handleReject(shop.id)}
+                      onClick={() => handleReject(seller.id)}
                       className="flex-1 flex items-center justify-center gap-1.5 py-2.5
                         bg-gray-200 text-gray-600 rounded-xl font-bold text-sm"
                     >
@@ -347,27 +362,38 @@ export default function AdminPage() {
         {tab === 'ads' && (
           <div>
             <p className="text-xs text-gray-400 mb-4">전체 광고 현황 관제</p>
-            <div className="space-y-3">
-              {MOCK_ADS.map((ad) => (
-                <div key={ad.id} className="bg-white rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-bold text-gray-900">{ad.shopName}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[11px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">
-                          {ad.type === 'top' ? '검색 상단' : '배너'}
-                        </span>
-                        <span className="text-xs text-gray-400">~ {ad.endDate}</span>
+            {adsLoading ? (
+              <div className="flex justify-center py-12">
+                <div className="w-6 h-6 border-2 border-rescue-orange border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : bannerAds.length === 0 ? (
+              <div className="text-center py-16 text-gray-400">
+                <Megaphone size={36} className="mx-auto mb-2 opacity-30" />
+                <p className="text-sm">등록된 광고가 없습니다</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {bannerAds.map((ad) => (
+                  <div key={ad.id} className="bg-white rounded-2xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-gray-900">{ad.title ?? ad.shop_name}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[11px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">
+                            {ad.type === 'top' ? '검색 상단' : '배너'}
+                          </span>
+                          <span className="text-xs text-gray-400">~ {ad.end_date}</span>
+                        </div>
                       </div>
+                      <div className={`w-3 h-3 rounded-full ${ad.is_active ? 'bg-safe-green' : 'bg-gray-300'}`} />
                     </div>
-                    <div className={`w-3 h-3 rounded-full ${ad.isActive ? 'bg-safe-green' : 'bg-gray-300'}`} />
+                    <div className={`mt-2 text-xs font-bold ${ad.is_active ? 'text-safe-green' : 'text-gray-400'}`}>
+                      {ad.is_active ? '● 노출 중' : '● 만료됨'}
+                    </div>
                   </div>
-                  <div className={`mt-2 text-xs font-bold ${ad.isActive ? 'text-safe-green' : 'text-gray-400'}`}>
-                    {ad.isActive ? '● 노출 중' : '● 만료됨'}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
