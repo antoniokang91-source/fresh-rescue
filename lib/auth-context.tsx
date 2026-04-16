@@ -53,13 +53,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     })
 
-    // 인증 상태 변경 구독
+    // 인증 상태 변경 구독 — async/await 금지 (Supabase v2 auth lock 방지)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
       if (session?.user) {
-        await fetchProfile(session.user.id)
+        fetchProfile(session.user.id) // 의도적으로 await 하지 않음
       } else {
         setProfile(null)
       }
