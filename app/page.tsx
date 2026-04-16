@@ -84,6 +84,16 @@ const DUMMY_PRODUCTS: Product[] = [
   },
 ]
 
+const CATEGORY_EMOJI_MAP: Record<string, string> = {
+  과일: '🍎',
+  야채: '🥕',
+  축산: '🥩',
+  수산: '🐟',
+  공산품: '📦',
+  베이커리: '🥐',
+  기타: '🛍️',
+};
+
 export default function MapPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
   const [products, setProducts] = useState<Product[]>([]);
@@ -318,17 +328,8 @@ export default function MapPage() {
     shops.forEach((shop) => {
       if (shop.latitude && shop.longitude) {
         try {
-          const categoryEmojiMap: Record<string, string> = {
-            과일: '🍎',
-            야채: '🥕',
-            축산: '🥩',
-            수산: '🐟',
-            공산품: '📦',
-            베이커리: '🥐',
-            기타: '🛍️',
-          };
           const categoryLabel = shop.category || '기타';
-          const iconEmoji = categoryEmojiMap[categoryLabel] ?? '🛍️';
+          const iconEmoji = CATEGORY_EMOJI_MAP[categoryLabel] ?? '🛍️';
           const svg = `
             <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
               <circle cx="20" cy="20" r="18" fill="#FF6B35" stroke="white" stroke-width="3" />
@@ -404,9 +405,7 @@ export default function MapPage() {
       newMap.setDraggable(true);
       newMap.setZoomable(true);
 
-      // 지도 컨트롤 추가
-      const mapTypeControl = new window.kakao.maps.MapTypeControl();
-      newMap.addControl(mapTypeControl, window.kakao.maps.ControlPosition.TOPRIGHT);
+
 
       // 지도 이벤트 리스너 추가 (디버깅용)
       console.log("Adding event listeners...");
@@ -470,9 +469,9 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-orange-50 to-white overflow-hidden">
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden">
       {/* 위 바 (헤더) */}
-      <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
+      <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
         <div className="flex items-center gap-2">
           <div className="text-2xl animate-pulse">🚨</div>
           <div>
@@ -584,7 +583,7 @@ export default function MapPage() {
       </div>
 
       {/* 하단 배너 광고 */}
-      <div className="bg-white border-t border-gray-200 px-3 py-3 sm:px-4 sm:py-4 flex flex-row gap-3">
+      <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2">
         {banners.length > 0 ? (
           banners.map((banner) => (
             <a
@@ -592,20 +591,20 @@ export default function MapPage() {
               href={banner.link_url}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 min-w-0 rounded-2xl overflow-hidden bg-gray-100 hover:shadow-lg transition-shadow"
+              className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-shadow"
             >
-              <img src={banner.image_url} alt={banner.title} className="w-full h-24 sm:h-32 object-cover" />
-              <div className="px-2.5 py-2 sm:p-3">
-                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate">{banner.title}</p>
+              <img src={banner.image_url} alt={banner.title} className="w-full h-12 sm:h-16 object-cover" />
+              <div className="px-2 py-1">
+                <p className="text-[10px] sm:text-xs font-bold text-gray-900 truncate">{banner.title}</p>
               </div>
             </a>
           ))
         ) : (
           <>
-            <div className="flex-1 min-w-0 h-28 sm:h-32 rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-400">
+            <div className="flex-1 min-w-0 h-14 sm:h-16 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
               배너 광고 1
             </div>
-            <div className="flex-1 min-w-0 h-28 sm:h-32 rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-400">
+            <div className="flex-1 min-w-0 h-14 sm:h-16 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
               배너 광고 2
             </div>
           </>
@@ -616,14 +615,13 @@ export default function MapPage() {
       {selectedProduct && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl">
-            {/* 팝업 헤더 */}
-            <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white p-6 rounded-t-3xl">
+            {/* 팝업 헤더: 1. 가게명 */}
+            <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white p-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="text-2xl">🛒</div>
+                  <div className="text-2xl">{CATEGORY_EMOJI_MAP[selectedProduct.category] ?? '🛍️'}</div>
                   <div>
                     <h2 className="text-xl font-black">{selectedProduct.shop}</h2>
-                    <p className="text-sm opacity-90">{selectedProduct.name}</p>
                   </div>
                 </div>
                 <button
@@ -639,43 +637,51 @@ export default function MapPage() {
             </div>
 
             {/* 팝업 내용 */}
-            <div className="p-6 space-y-4">
-              {/* 1. 상단: 전화, 홍보글 */}
-              <div className="space-y-3">
-                {selectedProduct.shopPhone && (
-                  <a href={`tel:${selectedProduct.shopPhone}`} className="block text-sm text-gray-700 underline">
-                    {selectedProduct.shopPhone}
-                  </a>
-                )}
-                {selectedProduct.shopDescription && (
-                  <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">
-                    {selectedProduct.shopDescription}
-                  </p>
-                )}
-              </div>
+            <div className="p-5 space-y-4">
+              {/* 2. 가게 홍보문구 */}
+              {selectedProduct.shopDescription && (
+                <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">
+                  {selectedProduct.shopDescription}
+                </p>
+              )}
 
-              {/* 2. 중간 상단: 가게 사진 */}
+              {/* 3. 가게 사진 */}
               {selectedProduct.shopImage && (
-                <div className="overflow-hidden rounded-3xl bg-gray-100">
-                  <img src={selectedProduct.shopImage} alt={selectedProduct.shop} className="w-full h-48 object-cover" />
+                <div className="overflow-hidden rounded-2xl bg-gray-100">
+                  <img src={selectedProduct.shopImage} alt={selectedProduct.shop} className="w-full h-44 object-cover" />
                 </div>
               )}
 
-              {/* 3. 중간 하단: 제품 정보 1줄 */}
-              <div className="rounded-3xl border border-gray-200 bg-white p-4">
-                <p className="text-sm text-gray-700 font-semibold truncate">
-                  {selectedProduct.name} · {selectedProduct.price.toLocaleString()}원 · 재고 {selectedProduct.stock ?? 0}
-                </p>
-              </div>
+              {/* 4. 제품 정보 목록: 최대 3개 노출, 세로 스크롤 / 상품명 가로 스크롤 */}
+              {(() => {
+                const shopProducts = products.filter(p => p.shopId === selectedProduct.shopId);
+                const displayProducts = shopProducts.length > 0 ? shopProducts : [selectedProduct];
+                return (
+                  <div
+                    className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100 overflow-y-auto"
+                    style={{ maxHeight: `${3 * 52}px` }}
+                  >
+                    {displayProducts.map((product) => (
+                      <div key={product.id} className="flex items-center gap-3 px-4 py-3 min-h-[52px]">
+                        <div className="flex-1 overflow-x-auto scrollbar-none">
+                          <span className="text-sm text-gray-900 font-semibold whitespace-nowrap">{product.name}</span>
+                        </div>
+                        <span className="text-sm text-rescue-orange font-black shrink-0">{product.price.toLocaleString()}원</span>
+                        <span className="text-xs text-gray-400 shrink-0">재고 {product.stock ?? 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
-              {/* 4. 하단 액션 */}
-              <div className="space-y-3 pt-4">
+              {/* 5. 구출하러 가기 */}
+              <div className="pt-1">
                 <button
                   onClick={() => {
                     const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`;
                     window.open(kakaoLink, '_blank');
                   }}
-                  className="w-full bg-rescue-orange hover:bg-orange-600 text-white text-lg font-bold py-4 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+                  className="w-full bg-rescue-orange hover:bg-green-600 text-white text-lg font-bold py-4 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Phone className="w-5 h-5" />
                   구출하러 가기
