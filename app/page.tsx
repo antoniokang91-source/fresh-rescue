@@ -472,59 +472,63 @@ export default function MapPage() {
   return (
     <div className="flex min-h-screen flex-col bg-gradient-to-br from-orange-50 to-white overflow-hidden">
       {/* 위 바 (헤더) */}
-      <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4 flex-shrink-0 shadow-lg relative z-10">
-        <div className="flex items-center gap-3">
-          <div className="text-3xl animate-pulse">🚨</div>
+      <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
+        <div className="flex items-center gap-2">
+          <div className="text-2xl animate-pulse">🚨</div>
           <div>
-            <h1 className="text-xl font-black tracking-tight">신선구조대</h1>
-            <p className="text-xs opacity-90">지역 상권을 살리는 신선 식품 할인 마켓</p>
+            <h1 className="text-base sm:text-xl font-black tracking-tight leading-tight">신선구조대</h1>
+            <p className="text-[10px] sm:text-xs opacity-90 leading-tight hidden sm:block">지역 상권을 살리는 신선 식품 할인 마켓</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
           {profile ? (
             <>
-              <div className="flex flex-col items-end text-right text-sm text-white/90">
-                <span className="font-black text-base">
+              <div className="flex flex-col items-end text-right text-white/90 leading-tight">
+                <span className="font-black text-sm">
                   {profile.nickname ? `${profile.nickname}님` : '대원님'}
                 </span>
-                <span className="text-xs opacity-90">
+                <span className="text-[10px] opacity-90">
                   {profile.role === 'seller'
                     ? profile.seller_status === 'approved'
-                      ? '사장님 승인 완료'
-                      : '승인 대기 중'
+                      ? '사장님'
+                      : '승인대기'
                     : '구조중'}
                 </span>
               </div>
               {profile.role === 'seller' && profile.seller_status === 'approved' && (
                 <Link
                   href="/seller/dashboard"
-                  className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-sm font-semibold"
+                  className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
                 >
-                  대시보드 이동
+                  <Settings className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">대시보드</span>
                 </Link>
               )}
               <button
                 onClick={signOut}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-sm font-semibold"
+                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
               >
-                로그아웃
+                <LogIn className="w-3.5 h-3.5 rotate-180" />
+                <span className="hidden sm:inline">로그아웃</span>
               </button>
             </>
           ) : (
             <>
               <button
                 onClick={() => handleLogin('user')}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-sm font-semibold"
+                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
               >
-                <LogIn className="w-4 h-4" />
-                고객 로그인
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">고객 로그인</span>
+                <span className="sm:hidden text-[11px]">고객</span>
               </button>
               <button
                 onClick={() => handleLogin('seller')}
-                className="flex items-center gap-2 bg-white/20 hover:bg-white/30 px-4 py-2 rounded-xl transition-colors text-sm font-semibold"
+                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
               >
-                <LogIn className="w-4 h-4" />
-                사장님 로그인
+                <Settings className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">사장님 로그인</span>
+                <span className="sm:hidden text-[11px]">사장님</span>
               </button>
             </>
           )}
@@ -550,23 +554,23 @@ export default function MapPage() {
                 alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
               }
             }}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-xl transition-colors text-sm font-semibold text-white"
+            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
           >
-            <Navigation className="w-4 h-4" />
-            내 위치
+            <Navigation className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">내 위치</span>
           </button>
           <button
             onClick={loadData}
             disabled={isLoading}
-            className="p-2 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
+            className="p-1.5 sm:p-2 hover:bg-white/20 rounded-xl transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
 
       {/* 지도 (전체 화면) */}
-      <div id="map" className="flex-1 relative bg-gray-100 min-h-[280px]">
+      <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]">
         {/* 로딩 오버레이 */}
         {!mapLoaded && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 z-50">
@@ -580,7 +584,7 @@ export default function MapPage() {
       </div>
 
       {/* 하단 배너 광고 */}
-      <div className="bg-white border-t border-gray-200 px-4 py-4 flex flex-col gap-3 sm:flex-row sm:gap-4">
+      <div className="bg-white border-t border-gray-200 px-3 py-3 sm:px-4 sm:py-4 flex flex-row gap-3">
         {banners.length > 0 ? (
           banners.map((banner) => (
             <a
@@ -588,23 +592,23 @@ export default function MapPage() {
               href={banner.link_url}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 rounded-3xl overflow-hidden bg-gray-100 hover:shadow-lg transition-shadow"
+              className="flex-1 min-w-0 rounded-2xl overflow-hidden bg-gray-100 hover:shadow-lg transition-shadow"
             >
-              <img src={banner.image_url} alt={banner.title} className="w-full h-32 object-cover" />
-              <div className="p-3">
-                <p className="text-sm font-bold text-gray-900">{banner.title}</p>
+              <img src={banner.image_url} alt={banner.title} className="w-full h-24 sm:h-32 object-cover" />
+              <div className="px-2.5 py-2 sm:p-3">
+                <p className="text-xs sm:text-sm font-bold text-gray-900 truncate">{banner.title}</p>
               </div>
             </a>
           ))
         ) : (
-          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="h-32 rounded-3xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-sm text-gray-400">
-              배너 광고 1 노출 영역
+          <>
+            <div className="flex-1 min-w-0 h-28 sm:h-32 rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-400">
+              배너 광고 1
             </div>
-            <div className="h-32 rounded-3xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-sm text-gray-400">
-              배너 광고 2 노출 영역
+            <div className="flex-1 min-w-0 h-28 sm:h-32 rounded-2xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs sm:text-sm text-gray-400">
+              배너 광고 2
             </div>
-          </div>
+          </>
         )}
       </div>
 
