@@ -113,27 +113,35 @@ const compressImage = (file: File, maxWidth = 1280, quality = 0.82): Promise<Fil
     if (!file.type.startsWith('image/')) { resolve(file); return }
     const reader = new FileReader()
     reader.readAsDataURL(file)
+    reader.onerror = () => resolve(file)
     reader.onload = (e) => {
       const img = new Image()
+      img.onerror = () => resolve(file)
       img.src = e.target?.result as string
       img.onload = () => {
-        let { width, height } = img
-        if (width > maxWidth) {
-          height = Math.round((height * maxWidth) / width)
-          width = maxWidth
+        try {
+          let { width, height } = img
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width)
+            width = maxWidth
+          }
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          const ctx = canvas.getContext('2d')
+          if (!ctx) { resolve(file); return }
+          ctx.drawImage(img, 0, 0, width, height)
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) { resolve(file); return }
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
+            },
+            'image/jpeg',
+            quality
+          )
+        } catch {
+          resolve(file)
         }
-        const canvas = document.createElement('canvas')
-        canvas.width = width
-        canvas.height = height
-        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height)
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) { resolve(file); return }
-            resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-          },
-          'image/jpeg',
-          quality
-        )
       }
     }
   })
@@ -326,7 +334,8 @@ export default function SellerDashboardPage() {
       setShopImageFile(null)
       setBizDocFile(null)
     } catch (e: any) {
-      setShopError(e.message || '저장에 실패했습니다.')
+      console.error('saveShop error:', e)
+      setShopError(e?.message || e?.error_description || '저장에 실패했습니다. 다시 시도해주세요.')
     } finally {
       setShopSaving(false)
     }
