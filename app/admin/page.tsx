@@ -25,9 +25,10 @@ interface BannerAd {
 
 interface PendingSeller {
   id: string
-  nickname: string
+  shop_name: string
   phone: string | null
-  seller_status: string
+  address: string
+  category: string
   created_at: string
 }
 
@@ -161,10 +162,9 @@ export default function AdminPage() {
   const fetchPendingShops = async () => {
     setApprovalLoading(true)
     const { data } = await supabase
-      .from('rescuers')
-      .select('id, nickname, phone, seller_status, created_at')
-      .eq('role', 'seller')
-      .eq('seller_status', 'pending')
+      .from('shops')
+      .select('id, shop_name, phone, address, category, created_at')
+      .eq('is_active', false)
       .order('created_at', { ascending: true })
     setPendingShops((data ?? []) as PendingSeller[])
     setApprovalLoading(false)
@@ -222,20 +222,20 @@ export default function AdminPage() {
     return <AdminLoginForm />
   }
 
-  const handleApprove = async (sellerId: string) => {
+  const handleApprove = async (shopId: string) => {
     await supabase
-      .from('rescuers')
-      .update({ seller_status: 'approved' })
-      .eq('id', sellerId)
-    setPendingShops((prev) => prev.filter((s) => s.id !== sellerId))
+      .from('shops')
+      .update({ is_active: true })
+      .eq('id', shopId)
+    setPendingShops((prev) => prev.filter((s) => s.id !== shopId))
   }
 
-  const handleReject = async (sellerId: string) => {
+  const handleReject = async (shopId: string) => {
     await supabase
-      .from('rescuers')
-      .update({ seller_status: 'rejected' })
-      .eq('id', sellerId)
-    setPendingShops((prev) => prev.filter((s) => s.id !== sellerId))
+      .from('shops')
+      .delete()
+      .eq('id', shopId)
+    setPendingShops((prev) => prev.filter((s) => s.id !== shopId))
   }
 
   const TABS: { id: Tab; icon: React.ReactNode; label: string; count?: number }[] = [
@@ -321,7 +321,7 @@ export default function AdminPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="font-black text-gray-900">{seller.nickname}</p>
+                        <p className="font-black text-gray-900">{seller.shop_name}</p>
                         <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full font-bold">
                           심사 중
                         </span>
@@ -331,6 +331,9 @@ export default function AdminPage() {
                           📞 {seller.phone.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3')}
                         </p>
                       )}
+                      <p className="text-xs text-gray-400 mt-1">
+                        {seller.category} · {seller.address}
+                      </p>
                       <p className="text-[10px] text-gray-300 mt-1">
                         신청일: {new Date(seller.created_at).toLocaleDateString('ko-KR')}
                       </p>

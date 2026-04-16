@@ -184,31 +184,47 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
       const userId = authData.user?.id
       if (!userId) throw new Error('계정 생성에 실패했습니다. 다시 시도해주세요.')
 
-      const { error: upsertError } = await supabase.from('rescuers').upsert({
-        id: userId,
-        phone: rawPhone,
-        nickname: joinRole === 'seller' ? `판매자_${rawPhone.slice(-4)}` : `대원_${rawPhone.slice(-4)}`,
-        role: joinRole,
-        seller_status: joinRole === 'seller' ? 'pending' : null,
-        is_registered: true,
-        marketing_agree: marketingAgree,
-        marketing_agreed_at: marketingAgree ? now : null,
-      })
-      if (upsertError) throw upsertError
-
       if (joinRole === 'seller') {
-        // 사장님은 관리자의 승인 후 dashboard 접근 가능
+        // 사장님: shops 테이블에만 저장
+        const { error: shopError } = await supabase.from('shops').insert({
+          owner_id: userId,
+          shop_name: '가게명 미등록',
+          category: '기타',
+          latitude: 37.5665,
+          longitude: 126.978,
+          address: '주소 미등록',
+          phone: rawPhone,
+          is_active: false, // 승인 전까지 비활성화
+        })
+        if (shopError) throw shopError
+
         setPostSignupState('seller')
         await supabase.auth.signOut()
         setPhone('')
         setPassword('')
         setJoinStep('form')
       } else {
-        setPostSignupState('user')
-      }
+        // 고객: rescuers 테이블에만 저장
+        const { error: rescuerError } = await supabase.from('rescuers').upsert({
+          id: userId,
+          phone: rawPhone,
+          nickname: `대원_${rawPhone.slice(-4)}`,
+          role: 'user',
+          is_registered: true,
+          marketing_agree: marketingAgree,
+          marketing_agreed_at: marketingAgree ? now : null,
+        })
+        if (rescuerError) throw rescuerError
 
-      if (authData.session && joinRole === 'user') {
-        await refreshProfile()
+        // 고객은 바로 로그인
+        setPostSignupState('user')
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) {
+          console.error('Auto sign in failed:', signInError)
+          // 실패해도 진행
+        } else {
+          await refreshProfile()
+        }
       }
     } catch (e: any) {
       setError(e.message || '회원가입에 실패했습니다.')
@@ -266,7 +282,13 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
               </p>
             </div>
             <button
-              onClick={handleClose}
+              onClick={async () => {
+                if (postSignupState === 'user') {
+                  // 고객은 프로필 재로드 후 모달 닫기
+                  await refreshProfile()
+                }
+                handleClose()
+              }}
               className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mt-1 ${
                 postSignupState === 'user' ? 'bg-rescue-orange shadow-green-200' : 'bg-emerald-600 shadow-emerald-200'
               }`}
