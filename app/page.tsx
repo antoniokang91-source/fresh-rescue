@@ -622,8 +622,8 @@ export default function MapPage() {
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">🛒</div>
                   <div>
-                    <h2 className="text-xl font-black">{selectedProduct.name}</h2>
-                    <p className="text-sm opacity-90">{selectedProduct.shop}</p>
+                    <h2 className="text-xl font-black">{selectedProduct.shop}</h2>
+                    <p className="text-sm opacity-90">{selectedProduct.name}</p>
                   </div>
                 </div>
                 <button
@@ -640,18 +640,13 @@ export default function MapPage() {
 
             {/* 팝업 내용 */}
             <div className="p-6 space-y-4">
-              {/* 1. 상단: 가게 이름, 전화, 홍보글 */}
+              {/* 1. 상단: 전화, 홍보글 */}
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <h2 className="text-xl font-black text-gray-900">{selectedProduct.shop}</h2>
-                    {selectedProduct.shopPhone && (
-                      <a href={`tel:${selectedProduct.shopPhone}`} className="text-sm text-gray-700 underline">
-                        {selectedProduct.shopPhone}
-                      </a>
-                    )}
-                  </div>
-                </div>
+                {selectedProduct.shopPhone && (
+                  <a href={`tel:${selectedProduct.shopPhone}`} className="block text-sm text-gray-700 underline">
+                    {selectedProduct.shopPhone}
+                  </a>
+                )}
                 {selectedProduct.shopDescription && (
                   <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">
                     {selectedProduct.shopDescription}
