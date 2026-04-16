@@ -27,6 +27,10 @@ interface Product {
   shopId: string;
   category: string;
   description?: string;
+  shopPhone?: string;
+  shopImage?: string;
+  shopDescription?: string;
+  stock?: number;
 }
 
 interface Shop {
@@ -37,6 +41,8 @@ interface Shop {
   longitude: number;
   phone?: string;
   address?: string;
+  shop_image_url?: string;
+  description?: string;
 }
 
 interface Banner {
@@ -145,7 +151,11 @@ export default function MapPage() {
             shop: item.shop_name || shop?.shop_name || '알 수 없음',
             shopId: item.shop_id,
             category: item.category || shop?.category || '기타',
-            description: item.description || '',
+            description: item.description || shop?.description || '',
+            stock: item.stock_quantity ?? item.stock ?? 0,
+            shopPhone: shop?.phone ?? item.phone,
+            shopImage: shop?.shop_image_url,
+            shopDescription: shop?.description || item.description || '',
             distance: 1.0,
             lat: shop?.latitude ?? 37.5665,
             lng: shop?.longitude ?? 126.978,
@@ -304,28 +314,39 @@ export default function MapPage() {
       }
     });
 
-    // 상점 마커 추가 (다른 스타일로)
+    // 상점 마커 추가 (카테고리별 아이콘)
     shops.forEach((shop) => {
       if (shop.latitude && shop.longitude) {
         try {
+          const categoryEmojiMap: Record<string, string> = {
+            과일: '🍎',
+            야채: '🥕',
+            축산: '🥩',
+            수산: '🐟',
+            공산품: '📦',
+            베이커리: '🥐',
+            기타: '🛍️',
+          };
+          const categoryLabel = shop.category || '기타';
+          const iconEmoji = categoryEmojiMap[categoryLabel] ?? '🛍️';
+          const svg = `
+            <svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="20" r="18" fill="#FF6B35" stroke="white" stroke-width="3" />
+              <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="22">${iconEmoji}</text>
+            </svg>
+          `;
           const markerPosition = new window.kakao.maps.LatLng(shop.latitude, shop.longitude);
           const marker = new window.kakao.maps.Marker({
             position: markerPosition,
             map: currentMap,
             title: shop.shop_name,
             image: new window.kakao.maps.MarkerImage(
-              'data:image/svg+xml;base64,' + btoa(`
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="16" cy="16" r="14" fill="#FF6B35" stroke="white" stroke-width="2"/>
-                  <path d="M16 8C12.6863 8 10 10.6863 10 14C10 17.3137 12.6863 20 16 20C19.3137 20 22 17.3137 22 14C22 10.6863 19.3137 8 16 8ZM16 16C14.8954 16 14 15.1046 14 14C14 12.8954 14.8954 12 16 12C17.1046 12 18 12.8954 18 14C18 15.1046 17.1046 16 16 16Z" fill="white"/>
-                </svg>
-              `),
-              new window.kakao.maps.Size(32, 32)
+              'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg))),
+              new window.kakao.maps.Size(40, 40)
             )
           });
 
           window.kakao.maps.event.addListener(marker, 'click', () => {
-            // 상점 클릭시 해당 상점의 상품들 표시
             const shopProducts = products.filter(p => p.shopId === shop.id);
             if (shopProducts.length > 0) {
               console.log('Shop marker clicked:', shop.shop_name);
@@ -449,9 +470,9 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-orange-50 to-white" style={{ height: '100vh' }}>
+    <div className="flex min-h-screen flex-col bg-gradient-to-br from-orange-50 to-white overflow-hidden">
       {/* 위 바 (헤더) */}
-      <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white px-6 py-4 flex items-center justify-between flex-shrink-0 shadow-lg relative z-10">
+      <div className="bg-gradient-to-r from-rescue-orange to-orange-500 text-white px-4 py-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row flex-wrap items-start sm:items-center justify-between gap-4 flex-shrink-0 shadow-lg relative z-10">
         <div className="flex items-center gap-3">
           <div className="text-3xl animate-pulse">🚨</div>
           <div>
@@ -545,7 +566,7 @@ export default function MapPage() {
       </div>
 
       {/* 지도 (전체 화면) */}
-      <div id="map" className="flex-1 relative bg-gray-100" style={{ width: '100%', height: '100%' }}>
+      <div id="map" className="flex-1 relative bg-gray-100 min-h-[280px]">
         {/* 로딩 오버레이 */}
         {!mapLoaded && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 z-50">
@@ -615,45 +636,50 @@ export default function MapPage() {
 
             {/* 팝업 내용 */}
             <div className="p-6 space-y-4">
-              {/* 가격 정보 */}
-              <div className="bg-orange-50 rounded-2xl p-4">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-orange-700 font-semibold">구조가</span>
-                  <span className="bg-rescue-orange text-white text-xs font-black px-3 py-1 rounded-full">
-                    {selectedProduct.discount}% OFF
-                  </span>
-                </div>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-black text-rescue-orange">{selectedProduct.price.toLocaleString()}원</span>
-                  <span className="text-lg line-through text-gray-400">{selectedProduct.originalPrice.toLocaleString()}원</span>
-                </div>
-              </div>
-
-              {/* 상품 정보 */}
+              {/* 1. 상단: 가게 이름, 전화, 홍보글 */}
               <div className="space-y-3">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Clock className="w-4 h-4 text-orange-500" />
-                  <span>{selectedProduct.timeLeft}시간 내 판매</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <MapPin className="w-4 h-4 text-orange-500" />
-                  <span>{selectedProduct.distance}km 거리</span>
-                </div>
-                {selectedProduct.description && (
-                  <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-xl">
-                    {selectedProduct.description}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="text-xl font-black text-gray-900">{selectedProduct.shop}</h2>
+                    {selectedProduct.shopPhone && (
+                      <a href={`tel:${selectedProduct.shopPhone}`} className="text-sm text-gray-700 underline">
+                        {selectedProduct.shopPhone}
+                      </a>
+                    )}
                   </div>
+                </div>
+                {selectedProduct.shopDescription && (
+                  <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">
+                    {selectedProduct.shopDescription}
+                  </p>
                 )}
               </div>
 
-              {/* 액션 버튼 */}
+              {/* 2. 중간 상단: 가게 사진 */}
+              {selectedProduct.shopImage && (
+                <div className="overflow-hidden rounded-3xl bg-gray-100">
+                  <img src={selectedProduct.shopImage} alt={selectedProduct.shop} className="w-full h-48 object-cover" />
+                </div>
+              )}
+
+              {/* 3. 중간 하단: 제품 정보 1줄 */}
+              <div className="rounded-3xl border border-gray-200 bg-white p-4">
+                <p className="text-sm text-gray-700 font-semibold truncate">
+                  {selectedProduct.name} · {selectedProduct.price.toLocaleString()}원 · 재고 {selectedProduct.stock ?? 0}
+                </p>
+              </div>
+
+              {/* 4. 하단 액션 */}
               <div className="space-y-3 pt-4">
-                <button className="w-full bg-rescue-orange hover:bg-orange-600 text-white text-lg font-bold py-4 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg">
+                <button
+                  onClick={() => {
+                    const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`;
+                    window.open(kakaoLink, '_blank');
+                  }}
+                  className="w-full bg-rescue-orange hover:bg-orange-600 text-white text-lg font-bold py-4 rounded-2xl transition-all hover:scale-105 flex items-center justify-center gap-2 shadow-lg"
+                >
                   <Phone className="w-5 h-5" />
-                  가게에 전화하기
-                </button>
-                <button className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold py-3 rounded-2xl transition-all">
-                  상세 정보 보기
+                  구출하러 가기
                 </button>
               </div>
             </div>
