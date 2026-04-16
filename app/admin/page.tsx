@@ -131,7 +131,7 @@ function AdminLoginForm() {
             type="submit"
             disabled={loading}
             className="w-full py-3.5 bg-rescue-orange text-white font-black rounded-xl shadow-lg
-              shadow-orange-900/40 disabled:opacity-50 active:scale-95 transition-all text-sm"
+              shadow-green-900/40 disabled:opacity-50 active:scale-95 transition-all text-sm"
           >
             {loading ? '로그인 중...' : '관리자 로그인'}
           </button>
@@ -425,7 +425,7 @@ export default function AdminPage() {
                       icon: <Megaphone size={18} />,
                       label: '마케팅 동의',
                       value: stats?.marketing_agreed ?? 0,
-                      color: 'text-rescue-orange bg-orange-50',
+                      color: 'text-rescue-orange bg-green-50',
                     },
                     {
                       icon: <Store size={18} />,

@@ -255,7 +255,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
                   : '긴급 구조 요청을 위해 본사 승인이 필요합니다. 관리자가 승인하면 dashboard 접근 권한이 부여됩니다.'}
               </p>
             </div>
-            <div className={`w-full rounded-2xl px-5 py-4 mt-1 ${postSignupState === 'user' ? 'bg-orange-50' : 'bg-emerald-50'}`}>
+            <div className={`w-full rounded-2xl px-5 py-4 mt-1 ${postSignupState === 'user' ? 'bg-green-50' : 'bg-emerald-50'}`}>
               <p className={`text-xs font-bold ${postSignupState === 'user' ? 'text-rescue-orange' : 'text-emerald-700'}`}>
                 {postSignupState === 'user' ? '🎖️ 구조대원 임무' : '🔒 승인 대기 중'}
               </p>
@@ -268,7 +268,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
             <button
               onClick={handleClose}
               className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mt-1 ${
-                postSignupState === 'user' ? 'bg-rescue-orange shadow-orange-200' : 'bg-emerald-600 shadow-emerald-200'
+                postSignupState === 'user' ? 'bg-rescue-orange shadow-green-200' : 'bg-emerald-600 shadow-emerald-200'
               }`}
             >
               {postSignupState === 'user' ? '🚨 지금 바로 출동하기!' : '확인했어요'}
@@ -325,7 +325,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
                     onClick={() => setLoginRole(r.value)}
                     className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                       loginRole === r.value
-                        ? 'border-rescue-orange bg-orange-50'
+                        ? 'border-rescue-orange bg-green-50'
                         : 'border-gray-200 bg-gray-50'
                     }`}
                   >
@@ -368,7 +368,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
               className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mb-3 ${
                 loginRole === 'seller'
                   ? 'bg-emerald-500 shadow-emerald-100'
-                  : 'bg-rescue-orange shadow-orange-100'
+                  : 'bg-rescue-orange shadow-green-100'
               }`}
             >
               {loading
@@ -411,7 +411,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
                     onClick={() => setJoinRole(r.value)}
                     className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                       joinRole === r.value
-                        ? 'border-rescue-orange bg-orange-50'
+                        ? 'border-rescue-orange bg-green-50'
                         : 'border-gray-200 bg-gray-50'
                     }`}
                   >
@@ -475,7 +475,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
 
             <button
               onClick={toggleAll}
-              className={`w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl border-2 mb-3 transition-all ${allChecked ? 'border-rescue-orange bg-orange-50' : 'border-gray-200 bg-gray-50'}`}
+              className={`w-full flex items-center gap-3 py-3.5 px-4 rounded-2xl border-2 mb-3 transition-all ${allChecked ? 'border-rescue-orange bg-green-50' : 'border-gray-200 bg-gray-50'}`}
             >
               {allChecked ? <CheckCircle2 size={22} className="text-rescue-orange" /> : <Circle size={22} className="text-gray-300" />}
               <span className="font-black text-gray-800">전체 동의하기</span>

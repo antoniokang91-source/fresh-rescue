@@ -101,7 +101,7 @@ export default function JoinModal({ onClose }: JoinModalProps) {
             />
           </div>
 
-          <div className="bg-orange-50 p-4 rounded-2xl border border-orange-100">
+          <div className="bg-green-50 p-4 rounded-2xl border border-green-100">
             <label className="flex items-start gap-3 cursor-pointer">
               <input 
                 type="checkbox" 

@@ -213,7 +213,7 @@ export default function SellerDashboardPage() {
         <p className="text-sm text-gray-500 text-center">상품을 관리하려면 사장님 계정으로 로그인해주세요.</p>
         <button
           onClick={() => setShowAuth(true)}
-          className="flex items-center gap-2 bg-rescue-orange text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-orange-200"
+          className="flex items-center gap-2 bg-rescue-orange text-white px-6 py-3.5 rounded-2xl font-black shadow-lg shadow-green-200"
         >
           <LogIn size={18} /> 사장님 로그인
         </button>
@@ -422,13 +422,13 @@ export default function SellerDashboardPage() {
 
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Shop summary card */}
-        <div className={`rounded-3xl p-5 text-white mb-5 shadow-lg ${shop ? 'bg-gradient-to-br from-rescue-orange to-orange-600 shadow-orange-200' : 'bg-gradient-to-br from-gray-500 to-gray-700'}`}>
+        <div className={`rounded-3xl p-5 text-white mb-5 shadow-lg ${shop ? 'bg-gradient-to-br from-rescue-orange to-green-600 shadow-green-200' : 'bg-gradient-to-br from-gray-500 to-gray-700'}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{shop ? (CATEGORY_EMOJI[shop.category] ?? '🏪') : '🏪'}</span>
               <div>
                 <h1 className="font-black text-xl leading-none">{shop?.shop_name ?? '가게 미등록'}</h1>
-                <p className="text-orange-200 text-xs mt-0.5 truncate max-w-[200px]">{shop?.address ?? '가게를 등록해주세요'}</p>
+                <p className="text-green-200 text-xs mt-0.5 truncate max-w-[200px]">{shop?.address ?? '가게를 등록해주세요'}</p>
               </div>
             </div>
             <button
@@ -465,7 +465,7 @@ export default function SellerDashboardPage() {
                       <div className="font-black text-lg leading-none">
                         {stat.value}<span className="text-xs font-normal ml-0.5">{stat.unit}</span>
                       </div>
-                      <div className="text-[10px] text-orange-200 mt-0.5">{stat.label}</div>
+                      <div className="text-[10px] text-green-200 mt-0.5">{stat.label}</div>
                     </div>
                   ))}
                 </div>
@@ -494,15 +494,15 @@ export default function SellerDashboardPage() {
         {activeTab === 'shop' && (
           <div>
             {!shop ? (
-              <div className="bg-white rounded-3xl p-6 text-center shadow-sm border-2 border-dashed border-orange-200">
-                <Store size={40} className="mx-auto text-orange-300 mb-3" />
+              <div className="bg-white rounded-3xl p-6 text-center shadow-sm border-2 border-dashed border-green-200">
+                <Store size={40} className="mx-auto text-green-300 mb-3" />
                 <p className="font-black text-gray-800 text-lg mb-1">아직 가게가 없어요</p>
                 <p className="text-sm text-gray-400 mb-4">
                   가게를 등록하면 지도에 핀이 꽂히고<br />마감 상품을 올릴 수 있어요!
                 </p>
                 <button
                   onClick={openShopForm}
-                  className="bg-rescue-orange text-white px-6 py-3 rounded-2xl font-black shadow-md shadow-orange-200"
+                  className="bg-rescue-orange text-white px-6 py-3 rounded-2xl font-black shadow-md shadow-green-200"
                 >
                   🏪 가게 등록하기
                 </button>
@@ -571,7 +571,7 @@ export default function SellerDashboardPage() {
               </h2>
               <button
                 onClick={() => openProductSheet()}
-                className="flex items-center gap-1.5 bg-rescue-orange text-white px-4 py-2 rounded-xl font-black text-sm shadow-md shadow-orange-200"
+                className="flex items-center gap-1.5 bg-rescue-orange text-white px-4 py-2 rounded-xl font-black text-sm shadow-md shadow-green-200"
               >
                 <Plus size={15} /> 상품 추가
               </button>
@@ -707,7 +707,7 @@ export default function SellerDashboardPage() {
                         key={c}
                         type="button"
                         onClick={() => setShopForm(p => ({ ...p, category: c }))}
-                        className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${shopForm.category === c ? 'border-rescue-orange bg-orange-50 text-rescue-orange' : 'border-gray-200 text-gray-600'}`}
+                        className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${shopForm.category === c ? 'border-rescue-orange bg-green-50 text-rescue-orange' : 'border-gray-200 text-gray-600'}`}
                       >
                         {CATEGORY_EMOJI[c]} {c}
                       </button>
@@ -794,7 +794,7 @@ export default function SellerDashboardPage() {
                 <button
                   onClick={saveShop}
                   disabled={shopSaving}
-                  className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-orange-200 disabled:opacity-40 active:scale-95 transition-all"
+                  className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-green-200 disabled:opacity-40 active:scale-95 transition-all"
                 >
                   {shopSaving ? '저장 중...' : shop ? '가게 정보 저장하기' : '가게 등록 완료하기 🎉'}
                 </button>
@@ -835,7 +835,7 @@ export default function SellerDashboardPage() {
                 </div>
 
                 {productForm.original_price && productForm.rescue_price && (
-                  <div className="bg-orange-50 rounded-xl px-4 py-2 text-sm text-rescue-orange font-black">
+                  <div className="bg-green-50 rounded-xl px-4 py-2 text-sm text-rescue-orange font-black">
                     할인율: {Math.round(((parseInt(productForm.original_price) - parseInt(productForm.rescue_price)) / parseInt(productForm.original_price)) * 100)}%
                   </div>
                 )}
@@ -845,7 +845,7 @@ export default function SellerDashboardPage() {
                 <button
                   onClick={saveProduct}
                   disabled={productSaving || !productForm.product_name || !productForm.original_price || !productForm.rescue_price}
-                  className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-orange-200 disabled:opacity-40 active:scale-95 transition-all"
+                  className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-green-200 disabled:opacity-40 active:scale-95 transition-all"
                 >
                   {productSaving ? '저장 중...' : editingProductId ? '수정 완료' : '구조 요청 등록하기 🚨'}
                 </button>

@@ -130,7 +130,7 @@ export default function KakaoMap({ shops, products, onShopSelect, selectedShopId
   // ── API 키 없을 때 Fallback UI ────────────────────────────────────────────
   if (noKey) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-orange-50 to-red-50 gap-4 p-8">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-red-50 gap-4 p-8">
         <div className="text-6xl">🗺️</div>
         <div className="text-center">
           <p className="font-black text-gray-700 text-lg">지도를 불러올 수 없어요</p>

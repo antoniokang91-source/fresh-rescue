@@ -75,7 +75,7 @@ export default function ShopDrawer({ shop, products, onClose }: ShopDrawerProps)
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-black text-lg text-gray-900 leading-tight">{shop.name}</h2>
-                <span className="text-[11px] bg-orange-100 text-rescue-orange px-2 py-0.5 rounded-full font-bold shrink-0">
+                <span className="text-[11px] bg-green-100 text-rescue-orange px-2 py-0.5 rounded-full font-bold shrink-0">
                   {shop.category}
                 </span>
               </div>
@@ -121,7 +121,7 @@ export default function ShopDrawer({ shop, products, onClose }: ShopDrawerProps)
             href={kakaoNavUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-orange-200 active:scale-95 transition-transform"
+            className="flex items-center justify-center gap-2 w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg shadow-green-200 active:scale-95 transition-transform"
           >
             <Navigation size={18} />
             지금 바로 출동하기!
@@ -151,7 +151,7 @@ function ProductCard({ product }: { product: Product }) {
         critical
           ? 'border-siren-red bg-red-50 animate-blink-urgent'
           : urgent
-          ? 'border-orange-300 bg-orange-50'
+          ? 'border-green-300 bg-green-50'
           : 'border-gray-100 bg-gray-50'
       }`}
     >

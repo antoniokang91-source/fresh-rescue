@@ -48,13 +48,13 @@ export default function SellerJoinPage() {
       </header>
 
       {/* 히어로 */}
-      <section className="bg-gradient-to-br from-rescue-orange to-orange-600 text-white px-6 py-12">
+      <section className="bg-gradient-to-br from-rescue-orange to-green-600 text-white px-6 py-12">
         <div className="max-w-lg mx-auto text-center">
           <div className="text-5xl mb-4">🏪</div>
           <h1 className="text-2xl font-black leading-tight mb-3">
             사장님의 재고를<br />구조대원이 직접 구출합니다!
           </h1>
-          <p className="text-orange-100 text-sm leading-relaxed mb-6">
+          <p className="text-green-100 text-sm leading-relaxed mb-6">
             버려질 위기의 상품을 지역 주민에게 연결해<br />
             매출 손실을 최소화하세요.
           </p>
@@ -152,7 +152,7 @@ export default function SellerJoinPage() {
         <Link
           href="/seller/dashboard"
           className="flex items-center justify-center gap-2 w-full py-4 bg-rescue-orange
-            text-white font-black text-base rounded-2xl shadow-lg shadow-orange-200
+            text-white font-black text-base rounded-2xl shadow-lg shadow-green-200
             active:scale-95 transition-transform"
         >
           <Store size={18} />

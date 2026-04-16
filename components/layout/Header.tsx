@@ -83,7 +83,7 @@ export default function Header() {
           {isLoading ? null : user ? (
             <div className="flex items-center gap-1.5">
               {/* 유저 아바타 */}
-              <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-full">
                 {roleBadge && (
                   <span className={`text-[9px] text-white px-1.5 py-0.5 rounded-full font-black ${roleBadge.color}`}>
                     {roleBadge.label}
@@ -104,7 +104,7 @@ export default function Header() {
             <button
               onClick={() => openAuth('user')}
               className="flex items-center gap-1 text-xs text-white bg-rescue-orange
-                px-3 py-1.5 rounded-full font-black shadow-md shadow-orange-200"
+                px-3 py-1.5 rounded-full font-black shadow-md shadow-green-200"
             >
               <LogIn size={11} />
               로그인

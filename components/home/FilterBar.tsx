@@ -26,7 +26,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
               transition-all duration-200 active:scale-95
               ${
                 isActive
-                  ? 'bg-rescue-orange text-white shadow-lg shadow-orange-200'
+                  ? 'bg-rescue-orange text-white shadow-lg shadow-green-200'
                   : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
               }
             `}
@@ -35,7 +35,7 @@ export default function FilterBar({ activeFilter, onFilterChange }: FilterBarPro
             <span className="text-xs font-black">{f.label}</span>
             <span
               className={`text-[10px] font-normal mt-0.5 ${
-                isActive ? 'text-orange-100' : 'text-gray-400'
+                isActive ? 'text-green-100' : 'text-gray-400'
               }`}
             >
               {f.sub}

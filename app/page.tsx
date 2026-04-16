@@ -583,7 +583,7 @@ export default function MapPage() {
       </div>
 
       {/* 하단 배너 광고 */}
-      <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2">
+      <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2 flex-shrink-0">
         {banners.length > 0 ? (
           banners.map((banner) => (
             <a

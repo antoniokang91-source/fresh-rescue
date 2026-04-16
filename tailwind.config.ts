@@ -9,10 +9,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── 브랜드 컬러 (신선구조대 — 강렬 오렌지레드) ─────────
-        'primary':        '#FF4500',   // 메인 CTA, 버튼, 강조
-        'primary-dark':   '#CC3700',   // hover/active
-        'rescue-orange':  '#FF4500',   // 기존 클래스 호환
+        // ── 브랜드 컬러 (신선구조대 — 신선 연두) ─────────────────
+        'primary':        '#6AB04C',   // 메인 CTA, 버튼, 강조
+        'primary-dark':   '#4E8A35',   // hover/active
+        'rescue-orange':  '#6AB04C',   // 기존 클래스 호환 (연두)
         'siren-red':      '#CC0000',   // 위험·긴급 표시
         'safe-green':     '#00A854',   // 승인·완료
         'dark-base':      '#1A1A1A',   // 다크 배경
@@ -43,8 +43,8 @@ const config: Config = {
           '100%': { transform: 'translateX(-50%)' },
         },
         sirenPulse: {
-          '0%, 100%': { boxShadow: '0 0 0 0 rgba(255, 69, 0, 0.5)' },
-          '50%':      { boxShadow: '0 0 0 16px rgba(255, 69, 0, 0)' },
+          '0%, 100%': { boxShadow: '0 0 0 0 rgba(106, 176, 76, 0.5)' },
+          '50%':      { boxShadow: '0 0 0 16px rgba(106, 176, 76, 0)' },
         },
         blinkUrgent: {
           '0%, 100%': { opacity: '1' },
