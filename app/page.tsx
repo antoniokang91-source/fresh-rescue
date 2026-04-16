@@ -469,7 +469,7 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden">
+    <div className="flex flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden" style={{ height: '100dvh' }}>
       {/* 위 바 (헤더) */}
       <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
         <div className="flex items-center gap-2">
