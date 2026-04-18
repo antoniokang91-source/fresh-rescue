@@ -231,6 +231,30 @@ export default function SellerDashboardPage() {
     )
   }
 
+  // ── Guard: not a seller role ──────────────────────────────────────────────
+  if (!isLoading && profile && profile.role !== 'seller') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 gap-5">
+        <div className="text-5xl">🔒</div>
+        <h2 className="font-black text-xl text-gray-800 text-center">사장님 전용 페이지입니다</h2>
+        <p className="text-sm text-gray-500 text-center">사장님 계정으로 로그인해주세요.</p>
+        <Link href="/" className="text-sm text-gray-400 underline">메인으로 돌아가기</Link>
+      </div>
+    )
+  }
+
+  // ── Guard: pending approval (가게 등록은 했는데 아직 미승인) ──────────────
+  if (!isLoading && profile && profile.role === 'seller' && profile.seller_status === 'pending') {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 gap-5">
+        <div className="text-5xl">⏳</div>
+        <h2 className="font-black text-xl text-gray-800 text-center">입점 승인 대기 중</h2>
+        <p className="text-sm text-gray-500 text-center">관리자가 입점을 승인하면 대시보드를 사용할 수 있습니다.</p>
+        <Link href="/" className="text-sm text-gray-400 underline">메인으로 돌아가기</Link>
+      </div>
+    )
+  }
+
   if (shop === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -327,6 +351,11 @@ export default function SellerDashboardPage() {
       } else {
         const { error } = await supabase.from('shops').insert(payload)
         if (error) throw error
+        // 신규 등록 시 seller_status를 'pending'으로 설정
+        await supabase
+          .from('rescuers')
+          .update({ seller_status: 'pending' })
+          .eq('id', user!.id)
       }
 
       await fetchShop()

@@ -223,10 +223,27 @@ export default function AdminPage() {
   }
 
   const handleApprove = async (shopId: string) => {
+    // shops의 owner_id 가져오기
+    const { data: shopData } = await supabase
+      .from('shops')
+      .select('owner_id')
+      .eq('id', shopId)
+      .single()
+
+    if (shopData?.owner_id) {
+      // rescuers의 seller_status를 'approved'로 업데이트
+      await supabase
+        .from('rescuers')
+        .update({ seller_status: 'approved' })
+        .eq('id', shopData.owner_id)
+    }
+
+    // shops의 is_active를 true로 업데이트
     await supabase
       .from('shops')
       .update({ is_active: true })
       .eq('id', shopId)
+
     setPendingShops((prev) => prev.filter((s) => s.id !== shopId))
   }
 
