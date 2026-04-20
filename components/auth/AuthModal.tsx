@@ -124,17 +124,14 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         }
       }
 
-      // seller_status=null: 가게 미등록 → dashboard에서 가게 등록 가능 → 로그인 허용
-      // seller_status='pending': 가게 등록 완료, 승인 대기 → 로그인 차단
-      // seller_status='rejected': 거부됨 → 로그인 차단
-      if (actualRole === 'seller' && sellerStatus === 'pending') {
+      // seller_status='approved'만 로그인 허용, 나머지는 모두 차단
+      if (actualRole === 'seller' && sellerStatus !== 'approved') {
         await supabase.auth.signOut()
-        setError('사장님 가입 승인이 필요합니다. 관리자의 승인이 완료되면 다시 로그인해주세요.')
-        return
-      }
-      if (actualRole === 'seller' && sellerStatus === 'rejected') {
-        await supabase.auth.signOut()
-        setError('가입 승인 요청이 거부되었습니다. 문의 후 다시 신청해주세요.')
+        setError(
+          sellerStatus === 'rejected'
+            ? '가입 승인 요청이 거부되었습니다. 문의 후 다시 신청해주세요.'
+            : '사장님 가입 승인이 필요합니다. 관리자의 승인이 완료되면 다시 로그인해주세요.'
+        )
         return
       }
 
@@ -189,21 +186,21 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
       if (!userId) throw new Error('계정 생성에 실패했습니다. 다시 시도해주세요.')
 
       if (joinRole === 'seller') {
-        // 사장님: rescuers에 role='seller'로 등록 (가게 정보는 dashboard에서 입력)
+        // 사장님: rescuers에 role='seller', seller_status='pending'으로 등록
         const { error: rescuerError } = await supabase.from('rescuers').upsert({
           id: userId,
           phone: rawPhone,
           nickname: `대원_${rawPhone.slice(-4)}`,
           role: 'seller',
-          seller_status: null, // 가게 미등록 상태
+          seller_status: 'pending',
           is_registered: true,
           marketing_agree: marketingAgree,
           marketing_agreed_at: marketingAgree ? now : null,
         })
         if (rescuerError) throw rescuerError
 
-        setPostSignupState('seller')
         await supabase.auth.signOut()
+        setPostSignupState('seller')
         setPhone('')
         setPassword('')
         setJoinStep('form')

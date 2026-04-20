@@ -243,13 +243,19 @@ export default function SellerDashboardPage() {
     )
   }
 
-  // ── Guard: pending approval (가게 등록은 했는데 아직 미승인) ──────────────
-  if (!isLoading && profile && profile.role === 'seller' && profile.seller_status === 'pending') {
+  // ── Guard: not approved (pending / rejected / null) ─────────────────────
+  if (!isLoading && profile && profile.role === 'seller' && profile.seller_status !== 'approved') {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-6 gap-5">
-        <div className="text-5xl">⏳</div>
-        <h2 className="font-black text-xl text-gray-800 text-center">입점 승인 대기 중</h2>
-        <p className="text-sm text-gray-500 text-center">관리자가 입점을 승인하면 대시보드를 사용할 수 있습니다.</p>
+        <div className="text-5xl">{profile.seller_status === 'rejected' ? '❌' : '⏳'}</div>
+        <h2 className="font-black text-xl text-gray-800 text-center">
+          {profile.seller_status === 'rejected' ? '입점 신청이 반려되었습니다' : '입점 승인 대기 중'}
+        </h2>
+        <p className="text-sm text-gray-500 text-center">
+          {profile.seller_status === 'rejected'
+            ? '자세한 내용은 관리자에게 문의해주세요.'
+            : '관리자가 입점을 승인하면 대시보드를 사용할 수 있습니다.'}
+        </p>
         <Link href="/" className="text-sm text-gray-400 underline">메인으로 돌아가기</Link>
       </div>
     )
