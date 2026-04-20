@@ -346,8 +346,8 @@ export default function SellerDashboardPage() {
         longitude: shopForm.longitude,
         shop_image_url: shopImageUrl,
         business_registration_url: bizDocUrl,
-        // 수정 시에는 is_active·status 유지, 신규 등록은 pending 대기
-        ...(shop ? {} : { status: 'pending', is_active: false }),
+        // admin 승인 후 등록이므로 shops 자체 승인 불필요
+        ...(shop ? {} : { status: 'approved', is_active: true }),
         updated_at: new Date().toISOString(),
       }
 
@@ -357,11 +357,6 @@ export default function SellerDashboardPage() {
       } else {
         const { error } = await supabase.from('shops').insert(payload)
         if (error) throw error
-        // 신규 등록 시 seller_status를 'pending'으로 설정
-        await supabase
-          .from('members')
-          .update({ seller_status: 'pending' })
-          .eq('id', user!.id)
       }
 
       await fetchShop()
@@ -486,34 +481,20 @@ export default function SellerDashboardPage() {
           {shop && (
             <>
               {/* 승인 상태 배지 */}
-              {shop.status === 'pending' && (
-                <div className="mt-3 bg-yellow-400/20 border border-yellow-300/40 rounded-2xl px-4 py-2.5 text-center">
-                  <p className="text-yellow-200 font-black text-sm">⏳ 관리자 승인 대기 중</p>
-                  <p className="text-yellow-300/70 text-[11px] mt-0.5">승인 완료 후 상품을 등록할 수 있어요</p>
-                </div>
-              )}
-              {shop.status === 'rejected' && (
-                <div className="mt-3 bg-red-500/20 border border-red-400/40 rounded-2xl px-4 py-2.5 text-center">
-                  <p className="text-red-200 font-black text-sm">❌ 입점이 반려되었습니다</p>
-                  <p className="text-red-300/70 text-[11px] mt-0.5">가게 정보를 수정 후 재신청해주세요</p>
-                </div>
-              )}
-              {shop.status === 'approved' && (
-                <div className="grid grid-cols-3 gap-2 mt-3">
-                  {[
-                    { label: '구조 대기', value: products.filter(p => p.status === 'active').length, unit: '건' },
-                    { label: '등록 상품', value: products.length, unit: '개' },
-                    { label: '가게 상태', value: shop.is_active ? '운영중' : '휴무', unit: '' },
-                  ].map((stat) => (
-                    <div key={stat.label} className="bg-white/20 rounded-2xl p-2.5 text-center">
-                      <div className="font-black text-lg leading-none">
-                        {stat.value}<span className="text-xs font-normal ml-0.5">{stat.unit}</span>
-                      </div>
-                      <div className="text-[10px] text-green-200 mt-0.5">{stat.label}</div>
+              <div className="grid grid-cols-3 gap-2 mt-3">
+                {[
+                  { label: '구조 대기', value: products.filter(p => p.status === 'active').length, unit: '건' },
+                  { label: '등록 상품', value: products.length, unit: '개' },
+                  { label: '가게 상태', value: shop.is_active ? '운영중' : '휴무', unit: '' },
+                ].map((stat) => (
+                  <div key={stat.label} className="bg-white/20 rounded-2xl p-2.5 text-center">
+                    <div className="font-black text-lg leading-none">
+                      {stat.value}<span className="text-xs font-normal ml-0.5">{stat.unit}</span>
                     </div>
-                  ))}
-                </div>
-              )}
+                    <div className="text-[10px] text-green-200 mt-0.5">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
         </div>
@@ -607,7 +588,6 @@ export default function SellerDashboardPage() {
               </div>
             )}
 
-            {shop?.status === 'approved' && (
             <>
             <div className="flex items-center justify-between mb-3">
               <h2 className="font-black text-gray-900 flex items-center gap-2">
@@ -687,7 +667,6 @@ export default function SellerDashboardPage() {
               })}
             </div>
             </>
-            )}
           </div>
         )}
       </div>

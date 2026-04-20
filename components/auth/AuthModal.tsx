@@ -115,7 +115,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           await supabase.from('members').insert({
             id: userId,
             phone: rawPhone,
-            nickname: `대원_${rawPhone.slice(-4)}`,
+            nickname: loginRole === 'seller' ? `사장님_${rawPhone.slice(-4)}` : `대원_${rawPhone.slice(-4)}`,
             role: loginRole,
             is_registered: true,
             rescue_count: 0,
@@ -190,7 +190,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         const { error: rescuerError } = await supabase.from('members').upsert({
           id: userId,
           phone: rawPhone,
-          nickname: `대원_${rawPhone.slice(-4)}`,
+          nickname: `사장님_${rawPhone.slice(-4)}`,
           role: 'seller',
           seller_status: 'pending',
           is_registered: true,

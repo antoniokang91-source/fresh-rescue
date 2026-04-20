@@ -51,7 +51,7 @@ export interface DbShop {
 
 // ── 인증 / 사용자 ──────────────────────────────────────────────
 export type UserRole = 'user' | 'seller' | 'admin'
-export type SellerStatus = 'pending' | 'approved' | 'suspended'
+export type SellerStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
 
 export interface Profile {
   id: string
