@@ -545,12 +545,10 @@ export default function MapPage() {
                   map.setCenter(moveLatLng);
                   map.setLevel(4);
 
-                  // 이전 내 위치 마커 제거
                   if (userMarkerRef.current) {
                     userMarkerRef.current.setMap(null);
                   }
 
-                  // 로고 SVG를 내 위치 핀으로 사용
                   const logoUrl = window.location.origin + '/logo.svg';
                   const markerImage = new window.kakao.maps.MarkerImage(
                     logoUrl,
@@ -567,9 +565,19 @@ export default function MapPage() {
                   userMarkerRef.current = marker;
                 },
                 (error) => {
-                  console.error('위치 접근 실패:', error);
-                  alert('위치 접근이 거부되었거나 지원되지 않습니다.');
-                }
+                  console.error('위치 접근 실패:', error.code, error.message);
+                  if (error.code === 1) {
+                    // PERMISSION_DENIED
+                    alert('위치 권한이 차단되어 있습니다.\n\n해제 방법:\n브라우저 주소창 왼쪽 자물쇠(🔒) 또는 정보(ℹ️) 아이콘 클릭\n→ 위치 → 허용으로 변경 후 새로고침해주세요.');
+                  } else if (error.code === 2) {
+                    // POSITION_UNAVAILABLE
+                    alert('현재 위치를 확인할 수 없습니다.\nWi-Fi 또는 GPS를 활성화한 후 다시 시도해주세요.');
+                  } else {
+                    // TIMEOUT or other
+                    alert('위치 요청 시간이 초과되었습니다. 다시 시도해주세요.');
+                  }
+                },
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
               );
             }}
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
