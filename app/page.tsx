@@ -100,6 +100,7 @@ export default function MapPage() {
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialTab, setAuthInitialTab] = useState<'login' | 'join'>('login');
   const [authInitialRole, setAuthInitialRole] = useState<'user' | 'seller'>('user');
@@ -348,11 +349,7 @@ export default function MapPage() {
           });
 
           window.kakao.maps.event.addListener(marker, 'click', () => {
-            const shopProducts = products.filter(p => p.shopId === shop.id);
-            if (shopProducts.length > 0) {
-              console.log('Shop marker clicked:', shop.shop_name);
-              setSelectedProduct(shopProducts[0]);
-            }
+            setSelectedShop(shop);
           });
         } catch (error) {
           console.error("Error creating shop marker:", error);
@@ -687,6 +684,95 @@ export default function MapPage() {
                   구출하러 가기
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 가게 정보 팝업 (상품 유무와 무관하게 표시) */}
+      {selectedShop && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl">
+            {/* 헤더 */}
+            <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white p-6 rounded-t-3xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="text-2xl">{CATEGORY_EMOJI_MAP[selectedShop.category] ?? '🛍️'}</div>
+                  <div>
+                    <h2 className="text-xl font-black">{selectedShop.shop_name}</h2>
+                    <p className="text-sm text-white/80">{selectedShop.category}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setSelectedShop(null)}
+                  className="p-2 hover:bg-white/20 rounded-xl transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4">
+              {/* 가게 사진 */}
+              {selectedShop.shop_image_url && (
+                <div className="overflow-hidden rounded-2xl bg-gray-100">
+                  <img src={selectedShop.shop_image_url} alt={selectedShop.shop_name} className="w-full h-44 object-cover" />
+                </div>
+              )}
+
+              {/* 가게 소개 */}
+              {selectedShop.description && (
+                <p className="text-sm text-gray-600 bg-gray-50 p-4 rounded-2xl">{selectedShop.description}</p>
+              )}
+
+              {/* 주소 / 전화 */}
+              {selectedShop.address && (
+                <div className="flex items-start gap-2 text-sm text-gray-500">
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-rescue-orange" />
+                  <span>{selectedShop.address}</span>
+                </div>
+              )}
+              {selectedShop.phone && (
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <Phone className="w-4 h-4 shrink-0 text-rescue-orange" />
+                  <span>{selectedShop.phone}</span>
+                </div>
+              )}
+
+              {/* 상품 목록 or 빈 안내 */}
+              {(() => {
+                const shopProducts = products.filter(p => p.shopId === selectedShop.id);
+                return shopProducts.length > 0 ? (
+                  <div className="rounded-2xl border border-gray-200 bg-white divide-y divide-gray-100 overflow-y-auto" style={{ maxHeight: `${3 * 52}px` }}>
+                    {shopProducts.map((product) => (
+                      <div key={product.id} className="flex items-center gap-3 px-4 py-3 min-h-[52px]">
+                        <div className="flex-1 overflow-x-auto scrollbar-none">
+                          <span className="text-sm text-gray-900 font-semibold whitespace-nowrap">{product.name}</span>
+                        </div>
+                        <span className="text-sm text-rescue-orange font-black shrink-0">{product.price.toLocaleString()}원</span>
+                        <span className="text-xs text-gray-400 shrink-0">재고 {product.stock ?? 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-2xl">
+                    <p className="text-sm font-bold">현재 등록된 구조 상품이 없습니다</p>
+                    <p className="text-xs mt-1">곧 상품이 올라올 예정이에요!</p>
+                  </div>
+                );
+              })()}
+
+              {/* 구출하러 가기 */}
+              <button
+                onClick={() => {
+                  const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedShop.shop_name)},${selectedShop.latitude},${selectedShop.longitude}`;
+                  window.open(kakaoLink, '_blank');
+                }}
+                className="w-full bg-rescue-orange text-white text-lg font-bold py-4 rounded-2xl flex items-center justify-center gap-2 shadow-lg"
+              >
+                <Navigation className="w-5 h-5" />
+                길 찾기
+              </button>
             </div>
           </div>
         </div>
