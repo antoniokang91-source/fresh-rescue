@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import Link from 'next/link'
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MapPin, Clock, Percent, Phone, Navigation, Settings, AlertTriangle, RefreshCw, LogIn, X } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from '@/lib/auth-context'
@@ -108,6 +108,7 @@ export default function MapPage() {
   const { user, profile, signOut } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const userMarkerRef = useRef<any>(null);
 
   // Supabase에서 실제 데이터 로드
   const loadData = async () => {
@@ -470,7 +471,7 @@ export default function MapPage() {
       {/* 위 바 (헤더) */}
       <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
         <div className="flex items-center gap-2">
-          <div className="text-2xl animate-pulse">🚨</div>
+          <img src="/logo.svg" alt="신선구조대" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/50" />
           <div>
             <h1 className="text-base sm:text-xl font-black tracking-tight leading-tight">신선구조대</h1>
             <p className="text-[10px] sm:text-xs opacity-90 leading-tight hidden sm:block">지역 상권을 살리는 신선 식품 할인 마켓</p>
@@ -530,25 +531,46 @@ export default function MapPage() {
           )}
           <button
             onClick={() => {
-              if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                  (position) => {
-                    const { latitude, longitude } = position.coords;
-                    setUserLocation({ lat: latitude, lng: longitude });
-                    if (map) {
-                      const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-                      map.setCenter(moveLatLng);
-                      map.setLevel(4);
-                    }
-                  },
-                  (error) => {
-                    console.error('위치 접근 실패:', error);
-                    alert('위치 접근이 거부되었거나 지원되지 않습니다.');
-                  }
-                );
-              } else {
+              if (!navigator.geolocation) {
                 alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+                return;
               }
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  setUserLocation({ lat: latitude, lng: longitude });
+                  if (!map) return;
+
+                  const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+                  map.setCenter(moveLatLng);
+                  map.setLevel(4);
+
+                  // 이전 내 위치 마커 제거
+                  if (userMarkerRef.current) {
+                    userMarkerRef.current.setMap(null);
+                  }
+
+                  // 로고 SVG를 내 위치 핀으로 사용
+                  const logoUrl = window.location.origin + '/logo.svg';
+                  const markerImage = new window.kakao.maps.MarkerImage(
+                    logoUrl,
+                    new window.kakao.maps.Size(52, 52),
+                    { offset: new window.kakao.maps.Point(26, 26) }
+                  );
+                  const marker = new window.kakao.maps.Marker({
+                    position: moveLatLng,
+                    map,
+                    image: markerImage,
+                    title: '내 위치',
+                    zIndex: 10,
+                  });
+                  userMarkerRef.current = marker;
+                },
+                (error) => {
+                  console.error('위치 접근 실패:', error);
+                  alert('위치 접근이 거부되었거나 지원되지 않습니다.');
+                }
+              );
             }}
             className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
           >

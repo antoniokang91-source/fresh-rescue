@@ -37,7 +37,7 @@ export default function SellerJoinPage() {
       {/* 헤더 */}
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
-          🚑 신선구조대
+          <img src="/logo.svg" alt="신선구조대" className="w-7 h-7 inline-block mr-1" /> 신선구조대
         </Link>
         <Link
           href="/"

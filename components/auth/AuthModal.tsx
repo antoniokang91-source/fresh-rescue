@@ -259,7 +259,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         {postSignupState !== 'none' ? (
           <div className="px-6 pb-10 pt-2 flex flex-col items-center text-center gap-4">
             <div className="relative mt-2">
-              <div className="text-7xl animate-bounce">🚑</div>
+              <img src="/logo.svg" alt="신선구조대" className="w-24 h-24 animate-bounce" />
               <div className="absolute -top-1 -right-1 w-5 h-5 bg-siren-red rounded-full animate-ping" />
             </div>
             <div>
@@ -306,7 +306,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         {/* ── 헤더 + 탭 ────────────────────────────────────────────────── */}
         <div className="px-6 pt-1 pb-0">
           <div className="flex items-center gap-3 mb-4">
-            <span className="text-3xl">{lockedRole === 'seller' ? '🏪' : '🚑'}</span>
+            {lockedRole === 'seller' ? <span className="text-3xl">🏪</span> : <img src="/logo.svg" alt="신선구조대" className="w-10 h-10" />}
             <div>
               <h2 className="font-black text-xl text-gray-900">
                 {lockedRole === 'seller' ? '사장님 전용' : '신선구조대'}
@@ -517,7 +517,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
               disabled={loading || !allRequired}
               className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
             >
-              {loading ? '처리 중...' : '동의하고 구조대 합류하기 🚑'}
+              {loading ? '처리 중...' : '동의하고 구조대 합류하기'}
             </button>
           </div>
         )}

@@ -33,12 +33,11 @@ export default function Header() {
       <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between z-30 relative shrink-0">
         {/* 로고 */}
         <div className="flex items-center gap-2">
-          <span className="text-2xl">🚑</span>
+          <img src="/logo.svg" alt="신선구조대" className="w-9 h-9" />
           <div>
             <div className="font-black text-rescue-orange text-lg leading-none tracking-tight">
               신선구조대
             </div>
-          
           </div>
         </div>
 
