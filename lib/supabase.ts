@@ -22,23 +22,35 @@ if (process.env.NODE_ENV !== 'production') globalForSupabase.supabase = supabase
 export type Database = {
   public: {
     Tables: {
-      // 1. 구조대원 (일반 사용자)
-      rescuers: {
+      // 1. 전체 회원가입자 (고객 + 사장님 + 관리자)
+      members: {
         Row: {
           id: string
           nickname: string
           phone: string | null
-          session_token: string | null
-          rescue_count: number
+          role: 'user' | 'seller' | 'admin'
+          seller_status: 'pending' | 'approved' | 'rejected' | null
           is_registered: boolean
           marketing_agree: boolean
           marketing_agreed_at: string | null
-          role: 'user' | 'seller' | 'admin'
-          seller_status: 'pending' | 'approved' | 'suspended' | null
           created_at: string
           updated_at: string
         }
-        Insert: Omit<Database['public']['Tables']['rescuers']['Row'], 'id' | 'created_at' | 'updated_at' | 'rescue_count'> & { id?: string }
+        Insert: Omit<Database['public']['Tables']['members']['Row'], 'id' | 'created_at' | 'updated_at'> & { id?: string }
+        Update: Partial<Database['public']['Tables']['members']['Insert']>
+      }
+      // 2. 실고객 활동 데이터 (role='user' 전용)
+      rescuers: {
+        Row: {
+          id: string
+          rescue_count: number
+          latitude: number | null
+          longitude: number | null
+          session_token: string | null
+          last_active: string
+          created_at: string
+        }
+        Insert: Omit<Database['public']['Tables']['rescuers']['Row'], 'created_at'> & { id: string }
         Update: Partial<Database['public']['Tables']['rescuers']['Insert']>
       }
       // 2. 마감 임박 구조 상품 - 기존 products 대체

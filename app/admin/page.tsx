@@ -58,7 +58,7 @@ function AdminLoginForm() {
       }
       // role 검증 — admin이 아니면 즉시 로그아웃
       const { data: profileData } = await supabase
-        .from('rescuers')
+        .from('members')
         .select('role')
         .eq('id', data.user.id)
         .single()
@@ -157,11 +157,11 @@ export default function AdminPage() {
   const [stats, setStats] = useState<MarketingStats | null>(null)
   const [statsLoading, setStatsLoading] = useState(false)
 
-  // 승인 대기 사장님 목록 fetch (rescuers 테이블 기반)
+  // 승인 대기 사장님 목록 fetch (members 테이블 기반)
   const fetchPendingShops = async () => {
     setApprovalLoading(true)
     const { data } = await supabase
-      .from('rescuers')
+      .from('members')
       .select('id, nickname, phone, seller_status, created_at')
       .eq('role', 'seller')
       .eq('seller_status', 'pending')
@@ -224,7 +224,7 @@ export default function AdminPage() {
 
   const handleApprove = async (rescuerId: string) => {
     await supabase
-      .from('rescuers')
+      .from('members')
       .update({ seller_status: 'approved' })
       .eq('id', rescuerId)
     setPendingShops((prev) => prev.filter((s) => s.id !== rescuerId))
@@ -232,7 +232,7 @@ export default function AdminPage() {
 
   const handleReject = async (rescuerId: string) => {
     await supabase
-      .from('rescuers')
+      .from('members')
       .update({ seller_status: 'rejected' })
       .eq('id', rescuerId)
     setPendingShops((prev) => prev.filter((s) => s.id !== rescuerId))

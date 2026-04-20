@@ -45,12 +45,11 @@ export default function JoinModal({ onClose }: JoinModalProps) {
       const userId = authData.user?.id
       if (!userId) throw new Error('계정 생성에 실패했습니다.')
 
-      // 2. rescuers 테이블에 저장
-      const { error: upsertError } = await supabase.from('rescuers').upsert({
+      // 2. members 테이블에 저장 후 rescuers(실고객) 활동 레코드 생성
+      const { error: upsertError } = await supabase.from('members').upsert({
         id: userId,
         nickname: `대원_${rawPhone.slice(-4)}`,
         phone: rawPhone,
-        session_token: rawPhone,
         is_registered: true,
         marketing_agree: marketingAgree,
         role: 'user',

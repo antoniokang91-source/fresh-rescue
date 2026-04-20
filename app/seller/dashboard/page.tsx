@@ -359,7 +359,7 @@ export default function SellerDashboardPage() {
         if (error) throw error
         // 신규 등록 시 seller_status를 'pending'으로 설정
         await supabase
-          .from('rescuers')
+          .from('members')
           .update({ seller_status: 'pending' })
           .eq('id', user!.id)
       }

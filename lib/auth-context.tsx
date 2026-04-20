@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
-      .from('rescuers')
+      .from('members')
       .select('*')
       .eq('id', userId)
       .single()

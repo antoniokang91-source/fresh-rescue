@@ -103,7 +103,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
       let sellerStatus: string | null = null
       if (userId) {
         const { data: profileData } = await supabase
-          .from('rescuers')
+          .from('members')
           .select('role, seller_status, nickname')
           .eq('id', userId)
           .single()
@@ -112,7 +112,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           actualRole = profileData.role ?? loginRole
           sellerStatus = profileData.seller_status ?? null
         } else {
-          await supabase.from('rescuers').insert({
+          await supabase.from('members').insert({
             id: userId,
             phone: rawPhone,
             nickname: `대원_${rawPhone.slice(-4)}`,
@@ -186,8 +186,8 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
       if (!userId) throw new Error('계정 생성에 실패했습니다. 다시 시도해주세요.')
 
       if (joinRole === 'seller') {
-        // 사장님: rescuers에 role='seller', seller_status='pending'으로 등록
-        const { error: rescuerError } = await supabase.from('rescuers').upsert({
+        // 사장님: members에 role='seller', seller_status='pending'으로 등록
+        const { error: rescuerError } = await supabase.from('members').upsert({
           id: userId,
           phone: rawPhone,
           nickname: `대원_${rawPhone.slice(-4)}`,
@@ -205,8 +205,8 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         setPassword('')
         setJoinStep('form')
       } else {
-        // 고객: rescuers 테이블에만 저장
-        const { error: rescuerError } = await supabase.from('rescuers').upsert({
+        // 고객: members 테이블에 저장
+        const { error: rescuerError } = await supabase.from('members').upsert({
           id: userId,
           phone: rawPhone,
           nickname: `대원_${rawPhone.slice(-4)}`,
