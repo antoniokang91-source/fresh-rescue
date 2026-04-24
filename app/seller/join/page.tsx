@@ -35,10 +35,11 @@ export default function SellerJoinPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-2.5 flex items-center justify-between sticky top-0 z-10">
-        <Link href="/" className="flex items-center overflow-hidden" style={{ height: 40 }}>
-          <img src="/logo.png" alt="신선구조대" className="w-auto object-contain"
-            style={{ height: '200%', marginTop: '-50%' }} />
+      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-0 flex items-center justify-between sticky top-0 z-10" style={{ height: 56 }}>
+        <Link href="/" className="overflow-hidden shrink-0" style={{ width: 150, height: 56 }}>
+          <img src="/logo.png" alt="신선구조대"
+            style={{ width: 150, height: 150, objectFit: 'contain',
+              transform: 'scale(2.1)', transformOrigin: 'center center' }} />
         </Link>
         <Link
           href="/"

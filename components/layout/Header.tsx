@@ -28,11 +28,12 @@ export default function Header() {
 
   return (
     <>
-      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-2.5 flex items-center justify-between z-30 relative shrink-0">
+      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-0 flex items-center justify-between z-30 relative shrink-0" style={{ height: 56 }}>
         {/* 로고 */}
-        <div className="flex items-center gap-2 overflow-hidden" style={{ height: 44 }}>
-          <img src="/logo.png" alt="신선구조대" className="w-auto object-contain"
-            style={{ height: '200%', marginTop: '-50%' }} />
+        <div className="overflow-hidden shrink-0" style={{ width: 150, height: 56 }}>
+          <img src="/logo.png" alt="신선구조대"
+            style={{ width: 150, height: 150, objectFit: 'contain',
+              transform: 'scale(2.1)', transformOrigin: 'center center' }} />
         </div>
 
         {/* 액션 버튼 */}
