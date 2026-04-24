@@ -51,6 +51,8 @@ interface Banner {
   image_url: string;
   link_url: string;
   active: boolean;
+  is_active: boolean;
+  sort_order: number;
 }
 
 const DUMMY_PRODUCTS: Product[] = [
@@ -107,6 +109,7 @@ export default function MapPage() {
   const [map, setMap] = useState<any>(null);
   const { user, profile, signOut } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
+  const [bannerIdx, setBannerIdx] = useState([0, 0]); // [slot1 index, slot2 index]
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const userMarkerRef = useRef<any>(null);
   const [selectedPin, setSelectedPin] = useState<'white' | 'yellow' | 'blue' | 'green'>(() => {
@@ -199,15 +202,11 @@ export default function MapPage() {
       const { data, error } = await supabase
         .from('banners')
         .select('*')
-        .eq('active', true)
-        .limit(2);
-
-      if (error) {
-        console.error('배너 로드 실패:', error);
-      } else if (data) {
-        console.log('배너 로드 성공:', data);
-        setBanners(data);
-      }
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true });
+      if (error) console.error('배너 로드 실패:', error);
+      else if (data) setBanners(data);
     } catch (error) {
       console.error('배너 로드 중 오류:', error);
     }
@@ -300,6 +299,35 @@ export default function MapPage() {
     loadData();
     loadBanners();
   }, []);
+
+  // 배너 자동 슬라이드 (슬롯1: 즉시, 슬롯2: 0.5초 오프셋)
+  useEffect(() => {
+    const slot1 = banners.filter(b => b.sort_order === 1);
+    const slot2 = banners.filter(b => b.sort_order === 2);
+    if (slot1.length <= 1 && slot2.length <= 1) return;
+
+    let t1: ReturnType<typeof setInterval> | null = null;
+    let t2: ReturnType<typeof setInterval> | null = null;
+    let offset: ReturnType<typeof setTimeout> | null = null;
+
+    if (slot1.length > 1) {
+      t1 = setInterval(() => {
+        setBannerIdx(prev => [(prev[0] + 1) % slot1.length, prev[1]]);
+      }, 3000);
+    }
+    if (slot2.length > 1) {
+      offset = setTimeout(() => {
+        t2 = setInterval(() => {
+          setBannerIdx(prev => [prev[0], (prev[1] + 1) % slot2.length]);
+        }, 3000);
+      }, 500);
+    }
+    return () => {
+      if (t1) clearInterval(t1);
+      if (t2) clearInterval(t2);
+      if (offset) clearTimeout(offset);
+    };
+  }, [banners]);
 
   // 마커 업데이트 함수
   const updateMarkers = (targetMap?: any) => {
@@ -639,33 +667,57 @@ export default function MapPage() {
       </div>
 
       {/* 하단 배너 광고 */}
-      <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2 flex-shrink-0">
-        {banners.length > 0 ? (
-          banners.map((banner) => (
-            <a
-              key={banner.id}
-              href={banner.link_url}
-              target="_blank"
-              rel="noreferrer"
-              className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 hover:shadow-lg transition-shadow"
-            >
-              <img src={banner.image_url} alt={banner.title} className="w-full h-12 sm:h-16 object-cover" />
-              <div className="px-2 py-1">
-                <p className="text-[10px] sm:text-xs font-bold text-gray-900 truncate">{banner.title}</p>
+      {(() => {
+        const slot1 = banners.filter(b => b.sort_order === 1);
+        const slot2 = banners.filter(b => b.sort_order === 2);
+        const BANNER_H = 88; // px
+
+        const BannerSlot = ({ items, idx, placeholder }: { items: Banner[]; idx: number; placeholder: string }) => (
+          <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 relative shadow-sm" style={{ height: BANNER_H }}>
+            {items.length > 0 ? (
+              <>
+                <div
+                  className="transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateY(-${idx * BANNER_H}px)` }}
+                >
+                  {items.map(b => (
+                    <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer"
+                      style={{ height: BANNER_H, display: 'block' }}>
+                      <img src={b.image_url} alt={b.title}
+                        className="w-full object-cover" style={{ height: BANNER_H }} />
+                    </a>
+                  ))}
+                </div>
+                {/* 제목 오버레이 */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-2 py-1.5 pointer-events-none">
+                  <p className="text-white text-[10px] sm:text-xs font-bold truncate">
+                    {items[idx]?.title}
+                  </p>
+                </div>
+                {/* 페이지 인디케이터 */}
+                {items.length > 1 && (
+                  <div className="absolute top-1.5 right-1.5 flex gap-0.5 pointer-events-none">
+                    {items.map((_, i) => (
+                      <div key={i} className={`w-1 h-1 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/40'}`} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-400 border border-dashed border-gray-300 rounded-xl">
+                {placeholder}
               </div>
-            </a>
-          ))
-        ) : (
-          <>
-            <div className="flex-1 min-w-0 h-14 sm:h-16 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
-              배너 광고 1
-            </div>
-            <div className="flex-1 min-w-0 h-14 sm:h-16 rounded-xl border border-dashed border-gray-300 bg-gray-50 flex items-center justify-center text-xs text-gray-400">
-              배너 광고 2
-            </div>
-          </>
-        )}
-      </div>
+            )}
+          </div>
+        );
+
+        return (
+          <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2 flex-shrink-0">
+            <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" />
+            <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" />
+          </div>
+        );
+      })()}
 
       {/* 상품 상세 팝업 */}
       {selectedProduct && (
