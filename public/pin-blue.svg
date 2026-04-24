@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 110" width="100" height="110">
+  <!-- body -->
+  <path d="M50 10 C25 10 15 28 15 48 C15 72 28 90 50 92 C72 90 85 72 85 48 C85 28 75 10 50 10 Z" fill="#B8DEFF" stroke="#1a4d2e" stroke-width="4" stroke-linejoin="round"/>
+  <!-- left arm -->
+  <ellipse cx="14" cy="52" rx="10" ry="8" fill="#B8DEFF" stroke="#1a4d2e" stroke-width="4"/>
+  <!-- right arm -->
+  <ellipse cx="86" cy="52" rx="10" ry="8" fill="#B8DEFF" stroke="#1a4d2e" stroke-width="4"/>
+  <!-- eyes -->
+  <circle cx="40" cy="46" r="3" fill="#1a4d2e"/>
+  <circle cx="60" cy="46" r="3" fill="#1a4d2e"/>
+  <!-- smile -->
+  <path d="M40 60 Q50 68 60 60" stroke="#1a4d2e" stroke-width="3" fill="none" stroke-linecap="round"/>
+</svg>

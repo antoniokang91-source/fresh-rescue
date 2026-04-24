@@ -109,6 +109,8 @@ export default function MapPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const userMarkerRef = useRef<any>(null);
+  const [selectedPin, setSelectedPin] = useState<'white' | 'yellow' | 'blue' | 'green'>('yellow');
+  const [showPinSelector, setShowPinSelector] = useState(false);
 
   // Supabase에서 실제 데이터 로드
   const loadData = async () => {
@@ -529,62 +531,86 @@ export default function MapPage() {
               </button>
             </>
           )}
-          <button
-            onClick={() => {
-              if (!navigator.geolocation) {
-                alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
-                return;
-              }
-              navigator.geolocation.getCurrentPosition(
-                (position) => {
-                  const { latitude, longitude } = position.coords;
-                  setUserLocation({ lat: latitude, lng: longitude });
-                  if (!map) return;
+          {/* 핀 캐릭터 선택 + 내 위치 */}
+          <div className="relative flex items-center gap-1">
+            {/* 현재 선택된 캐릭터 미리보기 (클릭시 선택창) */}
+            <button
+              onClick={() => setShowPinSelector((v) => !v)}
+              className="bg-white/20 hover:bg-white/30 p-1 rounded-xl transition-colors"
+              title="핀 캐릭터 선택"
+            >
+              <img src={`/pin-${selectedPin}.svg`} className="w-6 h-7" alt="핀 선택" />
+            </button>
+            {/* 캐릭터 선택 팝오버 */}
+            {showPinSelector && (
+              <div className="absolute top-11 right-0 bg-white rounded-2xl shadow-2xl p-3 flex gap-2 z-50 border border-gray-100">
+                {(['white', 'yellow', 'blue', 'green'] as const).map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => { setSelectedPin(color); setShowPinSelector(false); }}
+                    className={`p-1.5 rounded-xl border-2 transition-all ${selectedPin === color ? 'border-rescue-orange scale-110' : 'border-transparent hover:border-gray-200'}`}
+                  >
+                    <img src={`/pin-${color}.svg`} className="w-10 h-11" alt={color} />
+                  </button>
+                ))}
+              </div>
+            )}
+            {/* 내 위치 버튼 */}
+            <button
+              onClick={() => {
+                setShowPinSelector(false);
+                if (!navigator.geolocation) {
+                  alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
+                  return;
+                }
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setUserLocation({ lat: latitude, lng: longitude });
+                    if (!map) return;
 
-                  const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
-                  map.setCenter(moveLatLng);
-                  map.setLevel(4);
+                    const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
+                    map.setCenter(moveLatLng);
+                    map.setLevel(4);
 
-                  if (userMarkerRef.current) {
-                    userMarkerRef.current.setMap(null);
-                  }
+                    if (userMarkerRef.current) {
+                      userMarkerRef.current.setMap(null);
+                    }
 
-                  const logoUrl = window.location.origin + '/logo.png';
-                  const markerImage = new window.kakao.maps.MarkerImage(
-                    logoUrl,
-                    new window.kakao.maps.Size(96, 36),
-                    { offset: new window.kakao.maps.Point(48, 18) }
-                  );
-                  const marker = new window.kakao.maps.Marker({
-                    position: moveLatLng,
-                    map,
-                    image: markerImage,
-                    title: '내 위치',
-                    zIndex: 10,
-                  });
-                  userMarkerRef.current = marker;
-                },
-                (error) => {
-                  console.error('위치 접근 실패:', error.code, error.message);
-                  if (error.code === 1) {
-                    // PERMISSION_DENIED
-                    alert('위치 권한이 차단되어 있습니다.\n\n해제 방법:\n브라우저 주소창 왼쪽 자물쇠(🔒) 또는 정보(ℹ️) 아이콘 클릭\n→ 위치 → 허용으로 변경 후 새로고침해주세요.');
-                  } else if (error.code === 2) {
-                    // POSITION_UNAVAILABLE
-                    alert('현재 위치를 확인할 수 없습니다.\nWi-Fi 또는 GPS를 활성화한 후 다시 시도해주세요.');
-                  } else {
-                    // TIMEOUT or other
-                    alert('위치 요청 시간이 초과되었습니다. 다시 시도해주세요.');
-                  }
-                },
-                { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
-              );
-            }}
-            className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
-          >
-            <Navigation className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">내 위치</span>
-          </button>
+                    const pinUrl = window.location.origin + `/pin-${selectedPin}.svg`;
+                    const markerImage = new window.kakao.maps.MarkerImage(
+                      pinUrl,
+                      new window.kakao.maps.Size(50, 55),
+                      { offset: new window.kakao.maps.Point(25, 27) }
+                    );
+                    const marker = new window.kakao.maps.Marker({
+                      position: moveLatLng,
+                      map,
+                      image: markerImage,
+                      title: '내 위치',
+                      zIndex: 10,
+                    });
+                    userMarkerRef.current = marker;
+                  },
+                  (error) => {
+                    console.error('위치 접근 실패:', error.code, error.message);
+                    if (error.code === 1) {
+                      alert('위치 권한이 차단되어 있습니다.\n\n해제 방법:\n브라우저 주소창 왼쪽 자물쇠(🔒) 또는 정보(ℹ️) 아이콘 클릭\n→ 위치 → 허용으로 변경 후 새로고침해주세요.');
+                    } else if (error.code === 2) {
+                      alert('현재 위치를 확인할 수 없습니다.\nWi-Fi 또는 GPS를 활성화한 후 다시 시도해주세요.');
+                    } else {
+                      alert('위치 요청 시간이 초과되었습니다. 다시 시도해주세요.');
+                    }
+                  },
+                  { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
+                );
+              }}
+              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
+            >
+              <Navigation className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">내 위치</span>
+            </button>
+          </div>
           <button
             onClick={loadData}
             disabled={isLoading}
