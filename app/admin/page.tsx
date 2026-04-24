@@ -94,7 +94,7 @@ function AdminLoginForm() {
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="text-center mb-10">
-          <img src="/logo.png" alt="신선구조대" className="w-20 h-20 mx-auto mb-3" />
+          <img src="/logo.svg" alt="신선구조대" className="w-20 h-20 mx-auto mb-3" />
           <h1 className="text-white font-black text-2xl tracking-tight">
             신선구조대 <span className="text-rescue-orange">HQ</span>
           </h1>
@@ -298,7 +298,7 @@ export default function AdminPage() {
   if (isLoading) {
     return (
       <div className="bg-dark-base flex items-center justify-center" style={{ height: '100dvh' }}>
-        <img src="/logo.png" alt="신선구조대" className="w-16 h-16 animate-bounce" />
+        <img src="/logo.svg" alt="신선구조대" className="w-16 h-16 animate-bounce" />
       </div>
     )
   }
@@ -335,7 +335,7 @@ export default function AdminPage() {
       {/* 헤더 */}
       <header className="bg-dark-base text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 font-black text-lg">
-          <img src="/logo.png" alt="신선구조대" className="w-8 h-8 inline-block" /> <span className="text-rescue-orange">신선구조대</span>
+          <img src="/logo.svg" alt="신선구조대" className="w-8 h-8 inline-block" /> <span className="text-rescue-orange">신선구조대</span>
           <span className="text-xs text-gray-400 font-normal ml-1">HQ</span>
         </Link>
         <div className="flex items-center gap-2">

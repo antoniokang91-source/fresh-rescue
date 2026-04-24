@@ -37,7 +37,7 @@ export default function SellerJoinPage() {
       {/* 헤더 */}
       <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-0 flex items-center justify-between sticky top-0 z-10" style={{ height: 56 }}>
         <Link href="/" className="overflow-hidden shrink-0" style={{ width: 140, height: 56 }}>
-          <img src="/logo.png" alt="신선구조대"
+          <img src="/logo.svg" alt="신선구조대"
             style={{ width: 140, height: 140, objectFit: 'contain',
               transform: 'scale(1.45)', transformOrigin: 'center center' }} />
         </Link>

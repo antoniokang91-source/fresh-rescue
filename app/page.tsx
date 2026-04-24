@@ -546,7 +546,7 @@ export default function MapPage() {
       <div className="bg-[#1A3472] text-white px-3 py-0 sm:px-6 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10" style={{ height: '64px' }}>
         <Link href="/" className="flex items-center cursor-pointer overflow-hidden shrink-0"
           style={{ width: 160, height: 64 }}>
-          <img src="/logo.png" alt="신선구조대"
+          <img src="/logo.svg" alt="신선구조대"
             style={{ width: 160, height: 160, objectFit: 'contain',
               transform: 'scale(1.45)', transformOrigin: 'center center' }} />
         </Link>
@@ -677,7 +677,7 @@ export default function MapPage() {
           className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#0D1D42]"
           style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}
         >
-          <img src="/logo.png" alt="신선구조대"
+          <img src="/logo.svg" alt="신선구조대"
             className="w-72 sm:w-96 h-auto object-contain drop-shadow-2xl mb-8" />
           <div className="flex flex-col items-center gap-3">
             <div className="relative w-8 h-8">

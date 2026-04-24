@@ -264,7 +264,7 @@ export default function SellerDashboardPage() {
   if (shop === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <img src="/logo.png" alt="신선구조대" className="w-16 h-16 animate-bounce" />
+        <img src="/logo.svg" alt="신선구조대" className="w-16 h-16 animate-bounce" />
       </div>
     )
   }
@@ -451,7 +451,7 @@ export default function SellerDashboardPage() {
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
-          <img src="/logo.png" alt="신선구조대" className="w-8 h-8" /> 신선구조대
+          <img src="/logo.svg" alt="신선구조대" className="w-8 h-8" /> 신선구조대
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">🏪 사장님</span>
