@@ -471,7 +471,7 @@ export default function MapPage() {
       {/* 위 바 (헤더) */}
       <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
         <div className="flex items-center gap-2">
-          <img src="/logo.svg" alt="신선구조대" className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/50" />
+          <img src="/logo.png" alt="신선구조대" className="h-9 sm:h-11 w-auto object-contain" />
           <div>
             <h1 className="text-base sm:text-xl font-black tracking-tight leading-tight">신선구조대</h1>
             <p className="text-[10px] sm:text-xs opacity-90 leading-tight hidden sm:block">지역 상권을 살리는 신선 식품 할인 마켓</p>
@@ -549,11 +549,11 @@ export default function MapPage() {
                     userMarkerRef.current.setMap(null);
                   }
 
-                  const logoUrl = window.location.origin + '/logo.svg';
+                  const logoUrl = window.location.origin + '/logo.png';
                   const markerImage = new window.kakao.maps.MarkerImage(
                     logoUrl,
-                    new window.kakao.maps.Size(52, 52),
-                    { offset: new window.kakao.maps.Point(26, 26) }
+                    new window.kakao.maps.Size(96, 36),
+                    { offset: new window.kakao.maps.Point(48, 18) }
                   );
                   const marker = new window.kakao.maps.Marker({
                     position: moveLatLng,
