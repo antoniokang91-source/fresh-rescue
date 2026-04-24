@@ -50,7 +50,7 @@ export default function SellerJoinPage() {
       </header>
 
       {/* 히어로 */}
-      <section className="bg-gradient-to-br from-[#E8521A] via-[#C43D10] to-[#1A3472] text-white px-6 py-12">
+      <section className="bg-[#1A3472] text-white px-6 py-12">
         <div className="max-w-lg mx-auto text-center">
           <div className="text-5xl mb-4">🏪</div>
           <h1 className="text-2xl font-black leading-tight mb-3">

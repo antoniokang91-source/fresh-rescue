@@ -461,7 +461,7 @@ export default function SellerDashboardPage() {
 
       <div className="max-w-lg mx-auto px-4 py-6">
         {/* Shop summary card */}
-        <div className={`rounded-3xl p-5 text-white mb-5 shadow-lg ${shop ? 'bg-gradient-to-br from-rescue-orange to-green-600 shadow-green-200' : 'bg-gradient-to-br from-gray-500 to-gray-700'}`}>
+        <div className={`rounded-3xl p-5 text-white mb-5 shadow-lg ${shop ? 'bg-[#1A3472] shadow-blue-900/30' : 'bg-gray-600'}`}>
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{shop ? (CATEGORY_EMOJI[shop.category] ?? '🏪') : '🏪'}</span>
@@ -680,7 +680,7 @@ export default function SellerDashboardPage() {
         {(activeTab as string) === 'ads' && (
           <div className="space-y-4">
             {/* 안내 카드 */}
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
               <div className="text-3xl mb-3">📣</div>
               <h3 className="font-black text-amber-900 text-base mb-2">긴급 지원 광고 신청</h3>
               <ul className="space-y-2 text-sm text-amber-800 mb-4">

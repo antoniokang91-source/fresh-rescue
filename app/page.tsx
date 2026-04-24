@@ -98,6 +98,9 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
 
 export default function MapPage() {
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [splashVisible, setSplashVisible] = useState(true);
+  const [splashFading, setSplashFading] = useState(false);
+  const mountTime = useRef(Date.now());
   const [products, setProducts] = useState<Product[]>([]);
   const [shops, setShops] = useState<Shop[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -299,6 +302,18 @@ export default function MapPage() {
     loadData();
     loadBanners();
   }, []);
+
+  // 스플래시: 최소 2초 노출 후 페이드아웃
+  useEffect(() => {
+    if (!mapLoaded) return;
+    const elapsed = Date.now() - mountTime.current;
+    const delay = Math.max(0, 2000 - elapsed);
+    const fadeTimer = setTimeout(() => {
+      setSplashFading(true);
+      setTimeout(() => setSplashVisible(false), 700);
+    }, delay);
+    return () => clearTimeout(fadeTimer);
+  }, [mapLoaded]);
 
   // 배너 자동 슬라이드 (슬롯1: 즉시, 슬롯2: 0.5초 오프셋)
   useEffect(() => {
@@ -654,31 +669,25 @@ export default function MapPage() {
       </div>
 
       {/* 지도 (전체 화면) */}
-      <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]">
-        {/* 로딩 오버레이 */}
-        {!mapLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center z-50"
-            style={{ background: 'linear-gradient(160deg, #0D1D42 0%, #1A3472 60%, #2a1810 100%)' }}>
-            <div className="flex flex-col items-center gap-6">
-              {/* 로고 */}
-              <div className="relative">
-                <div className="absolute inset-0 rounded-full blur-2xl opacity-30"
-                  style={{ background: '#E8521A', transform: 'scale(1.4)' }} />
-                <img src="/logo.png" alt="신선구조대"
-                  className="relative w-56 h-auto object-contain drop-shadow-2xl" />
-              </div>
-              {/* 스피너 */}
-              <div className="flex flex-col items-center gap-3">
-                <div className="relative w-10 h-10">
-                  <div className="absolute inset-0 rounded-full border-4 border-white/10" />
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#E8521A] animate-spin" />
-                </div>
-                <p className="text-white/70 text-sm font-medium tracking-wider">지도 불러오는 중...</p>
-              </div>
+      <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]" />
+
+      {/* 전체 화면 스플래시 (최소 2초 노출 후 페이드아웃) */}
+      {splashVisible && (
+        <div
+          className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#0D1D42]"
+          style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}
+        >
+          <img src="/logo.png" alt="신선구조대"
+            className="w-72 sm:w-96 h-auto object-contain drop-shadow-2xl mb-8" />
+          <div className="flex flex-col items-center gap-3">
+            <div className="relative w-8 h-8">
+              <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
+              <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#E8521A] animate-spin" />
             </div>
+            <p className="text-white/50 text-xs tracking-widest">LOADING</p>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 하단 배너 광고 */}
       {(() => {
@@ -738,7 +747,7 @@ export default function MapPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl">
             {/* 팝업 헤더: 1. 가게명 */}
-            <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white p-6 rounded-t-3xl">
+            <div className="bg-[#1A3472] text-white p-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">{CATEGORY_EMOJI_MAP[selectedProduct.category] ?? '🛍️'}</div>
@@ -819,7 +828,7 @@ export default function MapPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-3xl max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl">
             {/* 헤더 */}
-            <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white p-6 rounded-t-3xl">
+            <div className="bg-[#1A3472] text-white p-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="text-2xl">{CATEGORY_EMOJI_MAP[selectedShop.category] ?? '🛍️'}</div>
