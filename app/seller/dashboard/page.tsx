@@ -264,7 +264,7 @@ export default function SellerDashboardPage() {
   if (shop === undefined) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <img src="/logo.svg" alt="신선구조대" className="w-16 h-16 animate-bounce" />
+        <img src="/logo.png" alt="신선구조대" className="w-16 h-16 animate-bounce" />
       </div>
     )
   }
@@ -451,7 +451,7 @@ export default function SellerDashboardPage() {
       {/* Header */}
       <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
-          <img src="/logo.svg" alt="신선구조대" className="w-8 h-8" /> 신선구조대
+          <img src="/logo.png" alt="신선구조대" className="w-8 h-8" /> 신선구조대
         </Link>
         <div className="flex items-center gap-2">
           <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-full font-bold">🏪 사장님</span>
@@ -512,6 +512,12 @@ export default function SellerDashboardPage() {
             className={`flex-1 py-2.5 text-sm font-black rounded-xl transition-all ${activeTab === 'products' ? 'bg-white text-rescue-orange shadow-sm' : 'text-gray-400'}`}
           >
             📦 상품 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('ads' as any)}
+            className={`flex-1 py-2.5 text-sm font-black rounded-xl transition-all ${(activeTab as string) === 'ads' ? 'bg-white text-rescue-orange shadow-sm' : 'text-gray-400'}`}
+          >
+            📣 광고 문의
           </button>
         </div>
 
@@ -667,6 +673,45 @@ export default function SellerDashboardPage() {
               })}
             </div>
             </>
+          </div>
+        )}
+
+        {/* ── 광고 문의 탭 ─────────────────────────────────────────────── */}
+        {(activeTab as string) === 'ads' && (
+          <div className="space-y-4">
+            {/* 안내 카드 */}
+            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
+              <div className="text-3xl mb-3">📣</div>
+              <h3 className="font-black text-amber-900 text-base mb-2">긴급 지원 광고 신청</h3>
+              <ul className="space-y-2 text-sm text-amber-800 mb-4">
+                {[
+                  '지도 화면 하단 배너 광고 슬롯 1·2에 가게 홍보',
+                  '주변 구조대원에게 우선 노출',
+                  '상품 등록 없이도 가게 브랜딩 가능',
+                  '기간별 맞춤 광고 패키지 문의 가능',
+                ].map(t => (
+                  <li key={t} className="flex items-start gap-2">
+                    <span className="text-amber-500 mt-0.5">✓</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-amber-500">* 광고 집행은 관리자 검토 후 게재됩니다</p>
+            </div>
+
+            {/* 카카오 채널 문의 버튼 (추후 연동) */}
+            <button
+              onClick={() => alert('카카오 채널 연동 준비 중입니다.\n잠시 후 이용해 주세요.')}
+              className="w-full flex items-center justify-center gap-3 py-4 bg-[#FEE500] text-[#3C1E1E] font-black rounded-2xl shadow-md active:scale-95 transition-all"
+            >
+              <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
+                alt="카카오" className="w-6 h-6 rounded" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
+              카카오 채널로 광고 문의하기
+            </button>
+
+            <p className="text-center text-xs text-gray-400">
+              운영시간: 평일 10:00 ~ 18:00
+            </p>
           </div>
         )}
       </div>
