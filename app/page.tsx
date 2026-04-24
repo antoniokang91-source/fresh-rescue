@@ -501,13 +501,9 @@ export default function MapPage() {
     <div className="flex flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden" style={{ height: '100dvh' }}>
       {/* 위 바 (헤더) */}
       <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-2.5 sm:px-6 sm:py-4 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="신선구조대" className="h-9 sm:h-11 w-auto object-contain" />
-          <div>
-            <h1 className="text-base sm:text-xl font-black tracking-tight leading-tight">신선구조대</h1>
-            <p className="text-[10px] sm:text-xs opacity-90 leading-tight hidden sm:block">지역 상권을 살리는 신선 식품 할인 마켓</p>
-          </div>
-        </div>
+        <Link href="/">
+          <img src="/logo.png" alt="신선구조대" className="h-10 sm:h-13 w-auto object-contain cursor-pointer" />
+        </Link>
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           {profile ? (
             <>
@@ -560,34 +556,10 @@ export default function MapPage() {
               </button>
             </>
           )}
-          {/* 핀 캐릭터 선택 + 내 위치 */}
+          {/* 내 위치 */}
           <div className="relative flex items-center gap-1">
-            {/* 현재 선택된 캐릭터 미리보기 (클릭시 선택창) */}
-            <button
-              onClick={() => setShowPinSelector((v) => !v)}
-              className="bg-white/20 hover:bg-white/30 p-1 rounded-xl transition-colors"
-              title="핀 캐릭터 선택"
-            >
-              <img src={`/pin-${selectedPin}.svg`} className="w-6 h-7" alt="핀 선택" />
-            </button>
-            {/* 캐릭터 선택 팝오버 */}
-            {showPinSelector && (
-              <div className="absolute top-11 right-0 bg-white rounded-2xl shadow-2xl p-3 flex gap-2 z-50 border border-gray-100">
-                {(['white', 'yellow', 'blue', 'green'] as const).map((color) => (
-                  <button
-                    key={color}
-                    onClick={() => { setSelectedPin(color); localStorage.setItem('fr_pin', color); setShowPinSelector(false); }}
-                    className={`p-1.5 rounded-xl border-2 transition-all ${selectedPin === color ? 'border-rescue-orange scale-110' : 'border-transparent hover:border-gray-200'}`}
-                  >
-                    <img src={`/pin-${color}.svg`} className="w-10 h-11" alt={color} />
-                  </button>
-                ))}
-              </div>
-            )}
-            {/* 내 위치 버튼 */}
             <button
               onClick={() => {
-                setShowPinSelector(false);
                 if (!navigator.geolocation) {
                   alert('이 브라우저는 위치 서비스를 지원하지 않습니다.');
                   return;
