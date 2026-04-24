@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MapPin, Store, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
+import { Store, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import AuthModal from '@/components/auth/AuthModal'
 import type { UserRole } from '@/types'
@@ -16,39 +16,33 @@ export default function Header() {
     setShowAuth(true)
   }
 
-  // 로그인 유저 이름 — 닉네임 > 전화번호 뒷자리
   const displayName = profile?.nickname
     ?? (profile?.phone ? '••' + profile.phone.slice(-4) : null)
 
-  // 역할 배지
   const roleBadge =
     profile?.role === 'admin'
       ? { label: '관리자', color: 'bg-purple-500' }
       : profile?.role === 'seller'
-      ? { label: '사장님', color: 'bg-emerald-500' }
+      ? { label: '사장님', color: 'bg-[#E8521A]' }
       : null
 
   return (
     <>
-      <header className="bg-white shadow-sm px-4 py-3 flex items-center justify-between z-30 relative shrink-0">
+      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-2.5 flex items-center justify-between z-30 relative shrink-0">
         {/* 로고 */}
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="신선구조대" className="h-8 w-auto object-contain" />
-          <div>
-            <div className="font-black text-rescue-orange text-lg leading-none tracking-tight">
-              신선구조대
-            </div>
-          </div>
+        <div className="flex items-center gap-2 overflow-hidden" style={{ height: 44 }}>
+          <img src="/logo.png" alt="신선구조대" className="w-auto object-contain"
+            style={{ height: '200%', marginTop: '-50%' }} />
         </div>
 
         {/* 액션 버튼 */}
         <div className="flex items-center gap-1.5">
-          {/* 사장님인가요? → seller 전용 모달 */}
+          {/* 사장님인가요? */}
           {!user && (
             <button
               onClick={() => openAuth('seller')}
-              className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50
-                border border-emerald-200 px-2.5 py-1.5 rounded-full font-bold"
+              className="flex items-center gap-1 text-xs text-[#E8521A] bg-orange-50
+                border border-orange-200 px-2.5 py-1.5 rounded-full font-bold"
             >
               <Store size={11} />
               <span className="hidden sm:inline">사장님인가요?</span>
@@ -56,33 +50,22 @@ export default function Header() {
             </button>
           )}
 
-          {/* 대시보드 (사장님/관리자) */}
+          {/* 대시보드 */}
           {user && profile && profile.role !== 'user' && (
             <a
               href={profile.role === 'admin' ? '/admin' : '/seller/dashboard'}
-              className="flex items-center gap-1 text-xs text-purple-600 bg-purple-50
-                border border-purple-200 px-2.5 py-1.5 rounded-full font-bold"
+              className="flex items-center gap-1 text-xs text-[#1A3472] bg-blue-50
+                border border-blue-200 px-2.5 py-1.5 rounded-full font-bold"
             >
               <LayoutDashboard size={11} />
               {profile.role === 'admin' ? '관리자' : '내 가게'}
             </a>
           )}
 
-          {/* 내 위치 */}
-          <button
-            className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2.5 py-1.5 rounded-full"
-            onClick={() => navigator.geolocation?.getCurrentPosition(() => {})}
-          >
-            <MapPin size={11} />
-            <span className="hidden sm:inline">내 위치</span>
-          </button>
-
           {/* 로그인 / 유저 정보 */}
-          {/* 로그인 → 고객 전용 모달 */}
           {isLoading ? null : user ? (
             <div className="flex items-center gap-1.5">
-              {/* 유저 아바타 */}
-              <div className="flex items-center gap-1.5 bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-full">
+              <div className="flex items-center gap-1.5 bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-full">
                 {roleBadge && (
                   <span className={`text-[9px] text-white px-1.5 py-0.5 rounded-full font-black ${roleBadge.color}`}>
                     {roleBadge.label}
@@ -90,7 +73,6 @@ export default function Header() {
                 )}
                 <span className="text-xs font-bold text-gray-700">{displayName}</span>
               </div>
-              {/* 로그아웃 */}
               <button
                 onClick={signOut}
                 className="text-gray-400 hover:text-gray-600 p-1.5"
@@ -102,18 +84,16 @@ export default function Header() {
           ) : (
             <button
               onClick={() => openAuth('user')}
-              className="flex items-center gap-1 text-xs text-white bg-rescue-orange
-                px-3 py-1.5 rounded-full font-black shadow-md shadow-green-200"
+              className="flex items-center gap-1 text-xs text-white bg-[#E8521A]
+                px-3 py-1.5 rounded-full font-black shadow-md"
             >
               <LogIn size={11} />
               로그인
             </button>
           )}
-
         </div>
       </header>
 
-      {/* ── 인증 모달 ───────────────────────────────────────────── */}
       {showAuth && (
         <AuthModal
           onClose={() => setShowAuth(false)}

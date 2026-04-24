@@ -526,31 +526,29 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-slate-50 overflow-hidden" style={{ height: '100dvh' }}>
       {/* 위 바 (헤더) */}
-      <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-0 sm:px-6 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10" style={{ height: '60px' }}>
+      <div className="bg-gradient-to-r from-[#E8521A] via-[#C43D10] to-[#1A3472] text-white px-3 py-0 sm:px-6 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-xl relative z-10" style={{ height: '60px' }}>
         <Link href="/" className="h-full overflow-hidden flex items-center">
           <img src="/logo.png" alt="신선구조대" className="h-[200%] w-auto object-contain cursor-pointer" />
         </Link>
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {profile ? (
             <>
               <div className="flex flex-col items-end text-right text-white/90 leading-tight">
                 <span className="font-black text-sm">
                   {profile.nickname ? `${profile.nickname}님` : '대원님'}
                 </span>
-                <span className="text-[10px] opacity-90">
+                <span className="text-[10px] opacity-75">
                   {profile.role === 'seller'
-                    ? profile.seller_status === 'approved'
-                      ? '사장님'
-                      : '승인대기'
+                    ? profile.seller_status === 'approved' ? '사장님' : '승인대기'
                     : '구조중'}
                 </span>
               </div>
               {profile.role === 'seller' && profile.seller_status === 'approved' && (
                 <Link
                   href="/seller/dashboard"
-                  className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
+                  className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
                 >
                   <Settings className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">대시보드</span>
@@ -558,7 +556,7 @@ export default function MapPage() {
               )}
               <button
                 onClick={signOut}
-                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
+                className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
               >
                 <LogIn className="w-3.5 h-3.5 rotate-180" />
                 <span className="hidden sm:inline">로그아웃</span>
@@ -566,21 +564,21 @@ export default function MapPage() {
             </>
           ) : (
             <>
+              {/* 고객 로그인 — 반투명 */}
               <button
                 onClick={() => handleLogin('user')}
-                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
+                className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/25 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
               >
                 <LogIn className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">고객 로그인</span>
-                <span className="sm:hidden text-[11px]">고객</span>
+                <span className="hidden sm:inline">고객</span>
               </button>
+              {/* 사장님 로그인 — 고대비 흰색 버튼으로 차별화 */}
               <button
                 onClick={() => handleLogin('seller')}
-                className="flex items-center gap-1 bg-white/20 hover:bg-white/30 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold"
+                className="flex items-center gap-1 bg-white text-[#1A3472] hover:bg-white/90 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-black shadow-md"
               >
                 <Settings className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">사장님 로그인</span>
-                <span className="sm:hidden text-[11px]">사장님</span>
+                <span className="hidden sm:inline">사장님</span>
               </button>
             </>
           )}
@@ -636,7 +634,7 @@ export default function MapPage() {
                   { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
                 );
               }}
-              className="flex items-center gap-1 bg-blue-600 hover:bg-blue-700 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition-colors text-xs sm:text-sm font-semibold text-white"
+              className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/25 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold text-white"
             >
               <Navigation className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">내 위치</span>
@@ -656,11 +654,24 @@ export default function MapPage() {
       <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]">
         {/* 로딩 오버레이 */}
         {!mapLoaded && (
-          <div className="absolute inset-0 flex items-center justify-center bg-gray-100/80 z-50">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🗺️</div>
-              <p className="text-xl font-semibold text-gray-600">지도를 불러오는 중...</p>
-              <p className="text-sm text-gray-500 mt-2">잠시만 기다려주세요</p>
+          <div className="absolute inset-0 flex items-center justify-center z-50"
+            style={{ background: 'linear-gradient(160deg, #0D1D42 0%, #1A3472 60%, #2a1810 100%)' }}>
+            <div className="flex flex-col items-center gap-6">
+              {/* 로고 */}
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full blur-2xl opacity-30"
+                  style={{ background: '#E8521A', transform: 'scale(1.4)' }} />
+                <img src="/logo.png" alt="신선구조대"
+                  className="relative w-56 h-auto object-contain drop-shadow-2xl" />
+              </div>
+              {/* 스피너 */}
+              <div className="flex flex-col items-center gap-3">
+                <div className="relative w-10 h-10">
+                  <div className="absolute inset-0 rounded-full border-4 border-white/10" />
+                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#E8521A] animate-spin" />
+                </div>
+                <p className="text-white/70 text-sm font-medium tracking-wider">지도 불러오는 중...</p>
+              </div>
             </div>
           </div>
         )}
@@ -712,7 +723,7 @@ export default function MapPage() {
         );
 
         return (
-          <div className="bg-white border-t border-gray-200 px-3 py-2 flex flex-row gap-2 flex-shrink-0">
+          <div className="bg-white px-3 py-2 flex flex-row gap-2 flex-shrink-0" style={{ boxShadow: '0 -6px 20px rgba(0,0,0,0.08)' }}>
             <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" />
             <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" />
           </div>

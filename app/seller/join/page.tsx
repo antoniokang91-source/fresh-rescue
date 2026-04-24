@@ -35,9 +35,10 @@ export default function SellerJoinPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
-          <img src="/logo.svg" alt="신선구조대" className="w-7 h-7 inline-block mr-1" /> 신선구조대
+      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-2.5 flex items-center justify-between sticky top-0 z-10">
+        <Link href="/" className="flex items-center overflow-hidden" style={{ height: 40 }}>
+          <img src="/logo.png" alt="신선구조대" className="w-auto object-contain"
+            style={{ height: '200%', marginTop: '-50%' }} />
         </Link>
         <Link
           href="/"
@@ -48,7 +49,7 @@ export default function SellerJoinPage() {
       </header>
 
       {/* 히어로 */}
-      <section className="bg-gradient-to-br from-rescue-orange to-green-600 text-white px-6 py-12">
+      <section className="bg-gradient-to-br from-[#E8521A] via-[#C43D10] to-[#1A3472] text-white px-6 py-12">
         <div className="max-w-lg mx-auto text-center">
           <div className="text-5xl mb-4">🏪</div>
           <h1 className="text-2xl font-black leading-tight mb-3">

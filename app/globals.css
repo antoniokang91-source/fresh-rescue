@@ -4,10 +4,12 @@
 
 /* ── 기본 설정 ─────────────────────────────────────────────── */
 :root {
-  --rescue-orange: #6ab04c;
-  --siren-red: #ff3b30;
-  --safe-green: #34c759;
-  --dark-base: #1c1c1e;
+  --rescue-orange: #E8521A;
+  --rescue-navy:   #1A3472;
+  --rescue-dark:   #0D1D42;
+  --siren-red:     #CC0000;
+  --safe-green:    #00A854;
+  --dark-base:     #0D1D42;
 }
 
 html,

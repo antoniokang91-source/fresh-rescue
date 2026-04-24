@@ -9,13 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── 브랜드 컬러 (신선구조대 — 신선 연두) ─────────────────
-        'primary':        '#6AB04C',   // 메인 CTA, 버튼, 강조
-        'primary-dark':   '#4E8A35',   // hover/active
-        'rescue-orange':  '#6AB04C',   // 기존 클래스 호환 (연두)
+        // ── 브랜드 컬러 (신선구조대 — 로고 오렌지레드 + 네이비) ──
+        'primary':        '#E8521A',   // 로고 오렌지레드 — 메인 CTA
+        'primary-dark':   '#C43D10',   // hover/active
+        'rescue-orange':  '#E8521A',   // 하위 호환 (오렌지레드)
+        'rescue-navy':    '#1A3472',   // 로고 네이비 — 세컨더리
+        'rescue-dark':    '#0D1D42',   // 딥 다크 네이비
         'siren-red':      '#CC0000',   // 위험·긴급 표시
         'safe-green':     '#00A854',   // 승인·완료
-        'dark-base':      '#1A1A1A',   // 다크 배경
+        'dark-base':      '#0D1D42',   // 다크 배경 (딥 네이비)
         'urgent-yellow':  '#FFB800',   // 강조 숫자·배지
         'deadline-red':   '#FF0000',   // 마감 D-day
       },
