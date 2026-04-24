@@ -90,7 +90,7 @@ function AdminLoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-base flex items-center justify-center px-6">
+    <div className="bg-dark-base overflow-y-auto flex items-center justify-center px-6" style={{ height: '100dvh' }}>
       <div className="w-full max-w-sm">
         {/* 로고 */}
         <div className="text-center mb-10">
@@ -297,7 +297,7 @@ export default function AdminPage() {
   // 로딩 중
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-dark-base flex items-center justify-center">
+      <div className="bg-dark-base flex items-center justify-center" style={{ height: '100dvh' }}>
         <img src="/logo.png" alt="신선구조대" className="w-16 h-16 animate-bounce" />
       </div>
     )
@@ -331,7 +331,7 @@ export default function AdminPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="bg-gray-50 overflow-y-auto" style={{ height: '100dvh' }}>
       {/* 헤더 */}
       <header className="bg-dark-base text-white px-4 py-3 flex items-center justify-between sticky top-0 z-10">
         <Link href="/" className="flex items-center gap-2 font-black text-lg">
