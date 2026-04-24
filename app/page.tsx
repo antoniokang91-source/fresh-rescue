@@ -544,11 +544,10 @@ export default function MapPage() {
     <div className="flex flex-col bg-slate-50 overflow-hidden" style={{ height: '100dvh' }}>
       {/* 위 바 (헤더) */}
       <div className="bg-[#1A3472] text-white px-3 py-0 sm:px-6 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10" style={{ height: '64px' }}>
-        <Link href="/" className="flex items-center cursor-pointer overflow-hidden shrink-0"
+        <Link href="/" className="flex items-center cursor-pointer shrink-0"
           style={{ width: 160, height: 64 }}>
           <img src="/logo.svg" alt="신선구조대"
-            style={{ width: 160, height: 160, objectFit: 'contain',
-              transform: 'scale(1.45)', transformOrigin: 'center center' }} />
+            style={{ width: 160, height: 56, objectFit: 'contain' }} />
         </Link>
         <div className="flex items-center gap-1.5 sm:gap-2">
           {profile ? (

@@ -30,10 +30,9 @@ export default function Header() {
     <>
       <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-0 flex items-center justify-between z-30 relative shrink-0" style={{ height: 56 }}>
         {/* 로고 */}
-        <div className="overflow-hidden shrink-0" style={{ width: 140, height: 56 }}>
+        <div className="shrink-0" style={{ width: 140, height: 56, display: 'flex', alignItems: 'center' }}>
           <img src="/logo.svg" alt="신선구조대"
-            style={{ width: 140, height: 140, objectFit: 'contain',
-              transform: 'scale(1.45)', transformOrigin: 'center center' }} />
+            style={{ width: 140, height: 48, objectFit: 'contain' }} />
         </div>
 
         {/* 액션 버튼 */}
