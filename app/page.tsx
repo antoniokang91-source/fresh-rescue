@@ -109,7 +109,12 @@ export default function MapPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const userMarkerRef = useRef<any>(null);
-  const [selectedPin, setSelectedPin] = useState<'white' | 'yellow' | 'blue' | 'green'>('yellow');
+  const [selectedPin, setSelectedPin] = useState<'white' | 'yellow' | 'blue' | 'green'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('fr_pin') as any) || 'yellow';
+    }
+    return 'yellow';
+  });
   const [showPinSelector, setShowPinSelector] = useState(false);
 
   // Supabase에서 실제 데이터 로드
@@ -385,8 +390,13 @@ export default function MapPage() {
 
     try {
       console.log("Initializing new map...");
+      const savedLoc = (() => {
+        try { return JSON.parse(localStorage.getItem('fr_location') || 'null'); } catch { return null; }
+      })();
+      const initLat = savedLoc?.lat ?? 37.5665;
+      const initLng = savedLoc?.lng ?? 126.978;
       const mapOption = {
-        center: new window.kakao.maps.LatLng(37.5665, 126.978),
+        center: new window.kakao.maps.LatLng(initLat, initLng),
         level: 4,
         draggable: true,
         zoomable: true,
@@ -399,6 +409,25 @@ export default function MapPage() {
       const newMap = new window.kakao.maps.Map(mapContainer, mapOption);
       console.log("✓ Map object created");
       setMap(newMap);
+
+      // 저장된 위치가 있으면 핀 복원
+      if (savedLoc) {
+        const savedPin = (localStorage.getItem('fr_pin') as any) || 'yellow';
+        const pinUrl = window.location.origin + `/pin-${savedPin}.svg`;
+        const markerImage = new window.kakao.maps.MarkerImage(
+          pinUrl,
+          new window.kakao.maps.Size(50, 55),
+          { offset: new window.kakao.maps.Point(25, 27) }
+        );
+        const restoredMarker = new window.kakao.maps.Marker({
+          position: new window.kakao.maps.LatLng(savedLoc.lat, savedLoc.lng),
+          map: newMap,
+          image: markerImage,
+          title: '내 위치',
+          zIndex: 10,
+        });
+        userMarkerRef.current = restoredMarker;
+      }
       console.log("✓ Map initialized successfully");
 
       // 지도 인터랙션 명시적 활성화
@@ -547,7 +576,7 @@ export default function MapPage() {
                 {(['white', 'yellow', 'blue', 'green'] as const).map((color) => (
                   <button
                     key={color}
-                    onClick={() => { setSelectedPin(color); setShowPinSelector(false); }}
+                    onClick={() => { setSelectedPin(color); localStorage.setItem('fr_pin', color); setShowPinSelector(false); }}
                     className={`p-1.5 rounded-xl border-2 transition-all ${selectedPin === color ? 'border-rescue-orange scale-110' : 'border-transparent hover:border-gray-200'}`}
                   >
                     <img src={`/pin-${color}.svg`} className="w-10 h-11" alt={color} />
@@ -567,6 +596,8 @@ export default function MapPage() {
                   (position) => {
                     const { latitude, longitude } = position.coords;
                     setUserLocation({ lat: latitude, lng: longitude });
+                    localStorage.setItem('fr_location', JSON.stringify({ lat: latitude, lng: longitude }));
+                    localStorage.setItem('fr_pin', selectedPin);
                     if (!map) return;
 
                     const moveLatLng = new window.kakao.maps.LatLng(latitude, longitude);
