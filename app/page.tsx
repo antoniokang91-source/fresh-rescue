@@ -500,9 +500,9 @@ export default function MapPage() {
   return (
     <div className="flex flex-col bg-gradient-to-br from-green-50 to-white overflow-hidden" style={{ height: '100dvh' }}>
       {/* 위 바 (헤더) */}
-      <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-1.5 sm:px-6 sm:py-2 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10">
-        <Link href="/">
-          <img src="/logo.png" alt="신선구조대" className="h-14 sm:h-16 w-auto object-contain cursor-pointer" />
+      <div className="bg-gradient-to-r from-rescue-orange to-green-500 text-white px-3 py-0 sm:px-6 flex flex-row items-center justify-between gap-2 flex-shrink-0 shadow-lg relative z-10" style={{ height: '60px' }}>
+        <Link href="/" className="h-full overflow-hidden flex items-center">
+          <img src="/logo.png" alt="신선구조대" className="h-[200%] w-auto object-contain cursor-pointer" />
         </Link>
         <div className="flex items-center gap-1.5 sm:gap-2.5">
           {profile ? (
