@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState, useRef } from "react";
-import { MapPin, Clock, Percent, Phone, Navigation, Settings, AlertTriangle, RefreshCw, LogIn, X } from "lucide-react";
+import { MapPin, Phone, Navigation, RefreshCw, X, Search } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
@@ -43,6 +43,15 @@ interface Shop {
   address?: string;
   shop_image_url?: string;
   description?: string;
+  is_search_ad?: boolean;
+}
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos((lat1 * Math.PI) / 180) * Math.cos((lat2 * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 interface Banner {
@@ -93,6 +102,7 @@ const CATEGORY_EMOJI_MAP: Record<string, string> = {
   수산: '🐟',
   공산품: '📦',
   베이커리: '🥐',
+  식당: '🍽️',
   기타: '🛍️',
 };
 
@@ -122,6 +132,8 @@ export default function MapPage() {
     return 'yellow';
   });
   const [showPinSelector, setShowPinSelector] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
   // Supabase에서 실제 데이터 로드
   const loadData = async () => {
@@ -565,37 +577,31 @@ export default function MapPage() {
               {profile.role === 'seller' && profile.seller_status === 'approved' && (
                 <Link
                   href="/seller/dashboard"
-                  className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
+                  className="bg-white/15 hover:bg-white/25 border border-white/20 px-3 py-1.5 rounded-xl transition-colors text-xs font-bold"
                 >
-                  <Settings className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">대시보드</span>
+                  대시보드
                 </Link>
               )}
               <button
                 onClick={signOut}
-                className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/20 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
+                className="bg-white/15 hover:bg-white/25 border border-white/20 px-3 py-1.5 rounded-xl transition-colors text-xs font-bold"
               >
-                <LogIn className="w-3.5 h-3.5 rotate-180" />
-                <span className="hidden sm:inline">로그아웃</span>
+                로그아웃
               </button>
             </>
           ) : (
             <>
-              {/* 고객 로그인 — 반투명 */}
               <button
                 onClick={() => handleLogin('user')}
-                className="flex items-center gap-1 bg-white/15 hover:bg-white/25 border border-white/25 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-semibold"
+                className="bg-white/15 hover:bg-white/25 border border-white/25 px-3 py-1.5 rounded-xl transition-colors text-xs font-bold"
               >
-                <LogIn className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">고객</span>
+                고객님
               </button>
-              {/* 사장님 로그인 — 고대비 흰색 버튼으로 차별화 */}
               <button
                 onClick={() => handleLogin('seller')}
-                className="flex items-center gap-1 bg-white text-[#1A3472] hover:bg-white/90 px-2.5 py-1.5 rounded-xl transition-colors text-xs font-black shadow-md"
+                className="bg-white text-[#1A3472] hover:bg-white/90 px-3 py-1.5 rounded-xl transition-colors text-xs font-black shadow-md"
               >
-                <Settings className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">사장님</span>
+                사장님
               </button>
             </>
           )}
@@ -667,8 +673,73 @@ export default function MapPage() {
         </div>
       </div>
 
+      {/* 검색바 */}
+      <div className="bg-[#1A3472] px-3 pb-2.5 flex-shrink-0">
+        <div className="relative max-w-lg mx-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+            onFocus={() => setShowSearchResults(true)}
+            placeholder="가게명 검색 (내 위치 기준 3km 이내)"
+            className="w-full bg-white rounded-xl pl-9 pr-9 py-2.5 text-sm outline-none text-gray-900 placeholder-gray-400"
+          />
+          {searchQuery && (
+            <button className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => { setSearchQuery(''); setShowSearchResults(false); }}>
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
+          )}
+
+          {/* 검색 결과 드롭다운 */}
+          {showSearchResults && searchQuery.trim() && (() => {
+            const baseLat = userLocation?.lat ?? 37.5665;
+            const baseLng = userLocation?.lng ?? 126.978;
+            const results = shops
+              .filter(s => s.shop_name.toLowerCase().includes(searchQuery.toLowerCase()))
+              .filter(s => s.latitude && s.longitude && haversineKm(baseLat, baseLng, s.latitude, s.longitude) <= 3)
+              .sort((a, b) => Number(b.is_search_ad ?? false) - Number(a.is_search_ad ?? false));
+            return (
+              <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-xl z-50 mt-1 overflow-hidden max-h-64 overflow-y-auto">
+                {results.length === 0 ? (
+                  <div className="px-4 py-3 text-sm text-gray-400">3km 이내에 '{searchQuery}' 가게가 없습니다</div>
+                ) : results.map(shop => (
+                  <button
+                    key={shop.id}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left border-b border-gray-100 last:border-0"
+                    onClick={() => {
+                      setSelectedShop(shop);
+                      setSearchQuery('');
+                      setShowSearchResults(false);
+                      if (map && shop.latitude && shop.longitude) {
+                        map.setCenter(new window.kakao.maps.LatLng(shop.latitude, shop.longitude));
+                        map.setLevel(3);
+                      }
+                    }}
+                  >
+                    <span className="text-xl">{CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️'}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-bold text-gray-900 truncate">{shop.shop_name}</p>
+                        {shop.is_search_ad && (
+                          <span className="text-[9px] bg-rescue-orange text-white px-1.5 py-0.5 rounded font-black shrink-0">광고</span>
+                        )}
+                      </div>
+                      {shop.address && <p className="text-xs text-gray-400 truncate">{shop.address}</p>}
+                    </div>
+                    <span className="text-xs text-gray-400 shrink-0">
+                      {haversineKm(baseLat, baseLng, shop.latitude, shop.longitude).toFixed(1)}km
+                    </span>
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
+        </div>
+      </div>
+
       {/* 지도 (전체 화면) */}
-      <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]" />
+      <div id="map" className="flex-1 relative bg-gray-100 min-h-[320px] sm:min-h-[400px]" onClick={() => setShowSearchResults(false)} />
 
       {/* 전체 화면 스플래시 (최소 2초 노출 후 페이드아웃) */}
       {splashVisible && (

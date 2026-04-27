@@ -63,10 +63,10 @@ const INITIAL_SHOP_FORM: ShopForm = {
   longitude: null,
 }
 
-const CATEGORIES: ShopCategory[] = ['과일', '야채', '축산', '수산', '공산품', '베이커리', '기타']
+const CATEGORIES: ShopCategory[] = ['과일', '야채', '축산', '수산', '공산품', '베이커리', '식당', '기타']
 
 const CATEGORY_EMOJI: Record<ShopCategory, string> = {
-  과일: '🍎', 야채: '🥬', 축산: '🥩', 수산: '🐟', 공산품: '🛒', 베이커리: '🍞', 기타: '🏪',
+  과일: '🍎', 야채: '🥬', 축산: '🥩', 수산: '🐟', 공산품: '🛒', 베이커리: '🍞', 식당: '🍽️', 기타: '🏪',
 }
 
 // ─── Daum Postcode loader ─────────────────────────────────────────────────────

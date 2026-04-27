@@ -1,5 +1,5 @@
 export type ShopApprovalStatus = 'pending' | 'approved' | 'rejected'
-export type ShopCategory = '과일' | '야채' | '축산' | '수산' | '공산품' | '베이커리' | '기타'
+export type ShopCategory = '과일' | '야채' | '축산' | '수산' | '공산품' | '베이커리' | '식당' | '기타'
 export type FilterType = 'nearest' | 'recommended'
 
 export interface Shop {
