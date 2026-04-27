@@ -35,21 +35,17 @@ export default function SellerJoinPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-100 shadow-sm px-4 py-0 flex items-center justify-between sticky top-0 z-10" style={{ height: 56 }}>
-        <Link href="/" className="shrink-0 flex items-center" style={{ width: 140, height: 56 }}>
-          <img src="/logo.svg" alt="신선구조대"
-            style={{ width: 140, height: 48, objectFit: 'contain' }} />
+      <header className="bg-white border-b border-[#F2F4F6] shadow-sm px-4 py-0 flex items-center justify-between sticky top-0 z-10" style={{ height: 56 }}>
+        <Link href="/" className="shrink-0 flex items-center" style={{ width: 130, height: 56 }}>
+          <img src="/logo.svg" alt="신선구조대" style={{ width: 130, height: 44, objectFit: 'contain' }} />
         </Link>
-        <Link
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-700"
-        >
+        <Link href="/" className="text-sm text-[#8B95A1] hover:text-[#191F28] transition-colors">
           메인으로
         </Link>
       </header>
 
       {/* 히어로 */}
-      <section className="bg-[#1A3472] text-white px-6 py-12">
+      <section className="bg-[#0064FF] text-white px-6 py-12">
         <div className="max-w-lg mx-auto text-center">
           <div className="text-5xl mb-4">🏪</div>
           <h1 className="text-2xl font-black leading-tight mb-3">
@@ -152,8 +148,8 @@ export default function SellerJoinPage() {
       <div className="sticky bottom-0 bg-white border-t px-6 py-4">
         <Link
           href="/seller/dashboard"
-          className="flex items-center justify-center gap-2 w-full py-4 bg-rescue-orange
-            text-white font-black text-base rounded-2xl shadow-lg shadow-green-200
+          className="flex items-center justify-center gap-2 w-full py-4 bg-[#0064FF]
+            text-white font-black text-base rounded-2xl shadow-lg shadow-blue-200
             active:scale-95 transition-transform"
         >
           <Store size={18} />

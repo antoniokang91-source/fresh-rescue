@@ -9,17 +9,25 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // ── 브랜드 컬러 (신선구조대 — 로고 오렌지레드 + 네이비) ──
-        'primary':        '#E8521A',   // 로고 오렌지레드 — 메인 CTA
-        'primary-dark':   '#C43D10',   // hover/active
-        'rescue-orange':  '#E8521A',   // 하위 호환 (오렌지레드)
-        'rescue-navy':    '#1A3472',   // 로고 네이비 — 세컨더리
-        'rescue-dark':    '#0D1D42',   // 딥 다크 네이비
-        'siren-red':      '#CC0000',   // 위험·긴급 표시
-        'safe-green':     '#00A854',   // 승인·완료
-        'dark-base':      '#0D1D42',   // 다크 배경 (딥 네이비)
-        'urgent-yellow':  '#FFB800',   // 강조 숫자·배지
-        'deadline-red':   '#FF0000',   // 마감 D-day
+        // ── Toss Style 컬러 시스템 ──
+        'toss-blue':      '#0064FF',   // Main CTA — Toss Blue
+        'toss-blue-dark': '#0050CC',   // hover/active
+        'toss-blue-light':'#F0F7FF',   // 검색광고 배경, 연한 파랑
+        'toss-red':       '#F04452',   // 긴급·마감임박
+        'toss-grey':      '#F2F4F6',   // 배경·카드·비활성
+        'toss-dark':      '#191F28',   // Primary text
+        'toss-sub':       '#8B95A1',   // Secondary text
+        // ── 하위 호환 (기존 코드) ──
+        'primary':        '#0064FF',
+        'primary-dark':   '#0050CC',
+        'rescue-orange':  '#0064FF',   // 기존 오렌지 → Toss Blue
+        'rescue-navy':    '#0064FF',
+        'rescue-dark':    '#191F28',
+        'siren-red':      '#F04452',
+        'safe-green':     '#00A854',
+        'dark-base':      '#191F28',
+        'urgent-yellow':  '#FFB800',
+        'deadline-red':   '#F04452',
       },
       fontSize: {
         // 4050 타겟: 기본 폰트 크기 상향
