@@ -130,6 +130,9 @@ export default function MapPage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [dbSearchResults, setDbSearchResults] = useState<Shop[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const searchDebounce = useRef<any>(null);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -309,29 +312,46 @@ export default function MapPage() {
 
   useEffect(() => { if (map && mapLoaded) updateMarkers(map); }, [map, products, shops, pinAds, mapLoaded]);
 
-  // ── 검색 로직 (10km + 가게·상품·소개 전체 검색) ───────────────────────────────
-  const getSearchResults = () => {
-    const q = searchQuery.trim().toLowerCase();
-    if (!q) return [];
+  // ── DB 검색 (가게명 + 상품명, 10km 필터) ─────────────────────────────────────
+  const performSearch = async (q: string) => {
+    if (!q.trim()) { setDbSearchResults([]); setSearchLoading(false); return; }
+    setSearchLoading(true);
     const baseLat = userLocation?.lat ?? 37.5665;
     const baseLng = userLocation?.lng ?? 126.978;
 
-    const matchedShopIds = new Set(
-      products
-        .filter(p => p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q))
-        .map(p => p.shopId)
-    );
+    const [{ data: shopData }, { data: productData }] = await Promise.all([
+      supabase.from('shops').select('*').eq('is_active', true)
+        .ilike('shop_name', `%${q}%`),
+      supabase.from('rescue_products').select('shop_id').eq('status', 'active')
+        .ilike('product_name', `%${q}%`),
+    ]);
 
-    return shops
-      .filter(s =>
-        s.shop_name.toLowerCase().includes(q) ||
-        (s.description || '').toLowerCase().includes(q) ||
-        (s.address || '').toLowerCase().includes(q) ||
-        s.category.toLowerCase().includes(q) ||
-        matchedShopIds.has(s.id)
-      )
+    // 상품 검색 결과에서 shop_id 수집 후 shops 추가 조회
+    const productShopIds = [...new Set((productData ?? []).map((p: any) => p.shop_id).filter(Boolean))];
+    let extraShops: Shop[] = [];
+    if (productShopIds.length > 0) {
+      const { data } = await supabase.from('shops').select('*').eq('is_active', true).in('id', productShopIds);
+      extraShops = (data ?? []) as Shop[];
+    }
+
+    // 합치고 중복 제거
+    const merged = new Map<string, Shop>();
+    [...(shopData ?? []), ...extraShops].forEach((s: any) => merged.set(s.id, s));
+
+    const results = Array.from(merged.values())
       .filter(s => s.latitude && s.longitude && haversineKm(baseLat, baseLng, s.latitude, s.longitude) <= 10)
       .sort((a, b) => Number(b.is_search_ad ?? false) - Number(a.is_search_ad ?? false));
+
+    setDbSearchResults(results);
+    setSearchLoading(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setShowSearchResults(true);
+    if (searchDebounce.current) clearTimeout(searchDebounce.current);
+    if (!value.trim()) { setDbSearchResults([]); return; }
+    searchDebounce.current = setTimeout(() => performSearch(value), 350);
   };
 
   const handleLogin = (role: 'user' | 'seller' = 'user') => {
@@ -360,8 +380,6 @@ export default function MapPage() {
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
     );
   };
-
-  const searchResults = getSearchResults();
 
   return (
     <div className="flex flex-col bg-[#F2F4F6]" style={{ height: '100dvh' }}>
@@ -423,14 +441,14 @@ export default function MapPage() {
             <input
               type="text"
               value={searchQuery}
-              onChange={e => { setSearchQuery(e.target.value); setShowSearchResults(true); }}
+              onChange={e => handleSearchChange(e.target.value)}
               onFocus={() => setShowSearchResults(true)}
-              placeholder="가게명, 상품명, 소개 검색 (10km 이내)"
+              placeholder="가게명, 상품명 검색 (10km 이내)"
               className="w-full bg-transparent rounded-2xl pl-10 pr-10 py-3 text-sm outline-none text-[#191F28] placeholder-[#8B95A1] font-medium"
             />
             {searchQuery && (
               <button className="absolute right-4 top-1/2 -translate-y-1/2"
-                onClick={() => { setSearchQuery(''); setShowSearchResults(false); }}>
+                onClick={() => { setSearchQuery(''); setDbSearchResults([]); setShowSearchResults(false); }}>
                 <X className="w-4 h-4 text-[#8B95A1]" />
               </button>
             )}
@@ -439,13 +457,18 @@ export default function MapPage() {
             {showSearchResults && searchQuery.trim() && (
               <div className="absolute top-full left-0 right-0 bg-white rounded-2xl shadow-xl z-50 mt-2 overflow-hidden max-h-72 overflow-y-auto"
                 style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }}>
-                {searchResults.length === 0 ? (
+                {searchLoading ? (
+                  <div className="px-5 py-4 flex items-center gap-2 text-sm text-[#8B95A1]">
+                    <div className="w-4 h-4 border-2 border-[#0064FF] border-t-transparent rounded-full animate-spin" />
+                    검색 중...
+                  </div>
+                ) : dbSearchResults.length === 0 ? (
                   <div className="px-5 py-4 text-sm text-[#8B95A1]">10km 이내에 '{searchQuery}' 결과가 없습니다</div>
-                ) : searchResults.map(shop => (
+                ) : dbSearchResults.map(shop => (
                   <button key={shop.id}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left border-b border-[#F2F4F6] last:border-0 active:bg-[#F2F4F6] transition-colors ${shop.is_search_ad ? 'bg-[#F0F7FF]' : ''}`}
                     onClick={() => {
-                      setSelectedShop(shop); setSearchQuery(''); setShowSearchResults(false);
+                      setSelectedShop(shop); setSearchQuery(''); setDbSearchResults([]); setShowSearchResults(false);
                       if (map && shop.latitude && shop.longitude) {
                         map.setCenter(new window.kakao.maps.LatLng(shop.latitude, shop.longitude));
                         map.setLevel(3);
