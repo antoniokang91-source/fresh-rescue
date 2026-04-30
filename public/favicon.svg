@@ -1,6 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="7" fill="#0064FF"/>
-  <path d="M16 4C16 4 25 9 25 17C25 22 21 26 16 28C11 26 7 22 7 17C7 9 16 4 16 4Z" fill="white"/>
-  <path d="M16 9L16 26" stroke="#0064FF" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M11 17L21 17" stroke="#0064FF" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Life ring base -->
+  <circle cx="16" cy="16" r="15.5" fill="#FF5733"/>
+
+  <!-- White cross clipped -->
+  <clipPath id="fm">
+    <circle cx="16" cy="16" r="15.5"/>
+  </clipPath>
+  <rect x="13.5" y="0.5" width="5" height="31" fill="white" clip-path="url(#fm)"/>
+  <rect x="0.5" y="13.5" width="31" height="5" fill="white" clip-path="url(#fm)"/>
+
+  <!-- Center hole -->
+  <circle cx="16" cy="16" r="7.5" fill="white"/>
+
+  <!-- Mini grocery bag -->
+  <!-- Produce dots -->
+  <circle cx="14" cy="14" r="2.2" fill="#3DAF3D"/>
+  <circle cx="16" cy="13" r="2.4" fill="#56C256"/>
+  <circle cx="18" cy="14" r="2" fill="#3DAF3D"/>
+  <!-- Red tomato -->
+  <circle cx="14.5" cy="13.5" r="1.5" fill="#F44336"/>
+
+  <!-- Bag body -->
+  <path d="M12.5 17 L13.2 22.5 Q13.2 23.5 14.2 23.5 L17.8 23.5 Q18.8 23.5 18.8 22.5 L19.5 17 Z" fill="#D09B28"/>
+  <rect x="12.5" y="16" width="7" height="2" rx="1" fill="#A8791A"/>
 </svg>
