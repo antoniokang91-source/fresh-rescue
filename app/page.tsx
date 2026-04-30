@@ -425,8 +425,8 @@ export default function MapPage() {
 
       {/* ── 헤더 (White Toss) ─────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-[#F2F4F6] px-4 flex items-center justify-between flex-shrink-0 shadow-sm" style={{ height: '56px' }}>
-        <Link href="/" className="flex items-center shrink-0" style={{ width: 130, height: 56 }}>
-          <img src="/logo.svg" alt="신선구조대" style={{ width: 130, height: 44, objectFit: 'contain' }} />
+        <Link href="/" className="flex items-center shrink-0" style={{ width: 40, height: 40 }}>
+          <img src="/logo.svg" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         </Link>
 
         <div className="flex items-center gap-2">
@@ -541,7 +541,8 @@ export default function MapPage() {
       {splashVisible && (
         <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#191F28]"
           style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}>
-          <img src="/logo.svg" alt="신선구조대" className="w-72 sm:w-96 h-auto object-contain mb-8" />
+          <img src="/logo.svg" alt="신선구조대" className="w-20 h-20 object-contain mb-4" />
+          <p className="text-white font-black text-xl tracking-tight mb-6">신선구조대</p>
           <div className="flex flex-col items-center gap-3">
             <div className="relative w-8 h-8">
               <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
