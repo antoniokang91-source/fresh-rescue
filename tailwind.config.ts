@@ -30,7 +30,16 @@ const config: Config = {
         'deadline-red':   '#F04452',
       },
       fontSize: {
-        // 4050 타겟: 기본 폰트 크기 상향
+        // ── TDS Typography tokens ──
+        'tds-title1':   ['24px', { lineHeight: '1.4', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'tds-title2':   ['22px', { lineHeight: '1.4', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'tds-title3':   ['20px', { lineHeight: '1.4', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'tds-title4':   ['18px', { lineHeight: '1.5', fontWeight: '700', letterSpacing: '-0.02em' }],
+        'tds-body1':    ['17px', { lineHeight: '1.6', fontWeight: '400', letterSpacing: '-0.02em' }],
+        'tds-body2':    ['15px', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '-0.02em' }],
+        'tds-caption1': ['13px', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '-0.02em' }],
+        'tds-caption2': ['11px', { lineHeight: '1.5', fontWeight: '400', letterSpacing: '-0.02em' }],
+        // ── Tailwind scale (mapped to TDS equivalents) ──
         'xs':  ['13px', '1.5'],
         'sm':  ['15px', '1.5'],
         'base':['17px', '1.6'],
@@ -38,6 +47,16 @@ const config: Config = {
         'xl':  ['22px', '1.4'],
         '2xl': ['26px', '1.3'],
         '3xl': ['32px', '1.2'],
+      },
+      fontWeight: {
+        thin:       '100',
+        light:      '300',
+        normal:     '400',
+        medium:     '500',
+        semibold:   '600',
+        bold:       '700',
+        extrabold:  '800',
+        black:      '900',
       },
       animation: {
         'marquee':       'marquee 25s linear infinite',

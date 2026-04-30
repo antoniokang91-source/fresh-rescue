@@ -579,12 +579,23 @@ export default function MapPage() {
                 const shopProducts = products.filter(p => p.shopId === selectedProduct.shopId);
                 const display = shopProducts.length > 0 ? shopProducts : [selectedProduct];
                 return (
-                  <div className="rounded-2xl border border-[#F2F4F6] divide-y divide-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 52}px` }}>
-                    {display.map(p => (
-                      <div key={p.id} className="flex items-center gap-3 px-4 py-3 min-h-[52px]">
-                        <div className="flex-1 overflow-x-auto"><span className="text-sm text-[#191F28] font-semibold whitespace-nowrap">{p.name}</span></div>
-                        <span className="text-sm text-[#0064FF] font-black shrink-0">{p.price.toLocaleString()}원</span>
-                        <span className="text-xs text-[#8B95A1] shrink-0">재고 {p.stock ?? 0}</span>
+                  <div className="rounded-2xl border border-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
+                    {display.map((p, i) => (
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F6] transition-colors ${i < display.length - 1 ? 'border-b border-[#F2F4F6]' : ''}`}>
+                        {/* left */}
+                        <div className="w-9 h-9 rounded-xl bg-[#F2F4F6] flex items-center justify-center text-lg shrink-0">
+                          {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
+                        </div>
+                        {/* contents */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-[#191F28] truncate">{p.name}</p>
+                          {p.description && <p className="text-xs text-[#8B95A1] truncate">{p.description}</p>}
+                        </div>
+                        {/* right */}
+                        <div className="flex flex-col items-end shrink-0">
+                          <span className="text-sm font-black text-[#0064FF]">{p.price.toLocaleString()}원</span>
+                          <span className="text-xs text-[#8B95A1]">재고 {p.stock ?? 0}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -642,12 +653,23 @@ export default function MapPage() {
               {(() => {
                 const shopProducts = products.filter(p => p.shopId === selectedShop.id);
                 return shopProducts.length > 0 ? (
-                  <div className="rounded-2xl border border-[#F2F4F6] divide-y divide-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 52}px` }}>
-                    {shopProducts.map(p => (
-                      <div key={p.id} className="flex items-center gap-3 px-4 py-3 min-h-[52px]">
-                        <div className="flex-1 overflow-x-auto"><span className="text-sm text-[#191F28] font-semibold whitespace-nowrap">{p.name}</span></div>
-                        <span className="text-sm text-[#0064FF] font-black shrink-0">{p.price.toLocaleString()}원</span>
-                        <span className="text-xs text-[#8B95A1] shrink-0">재고 {p.stock ?? 0}</span>
+                  <div className="rounded-2xl border border-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
+                    {shopProducts.map((p, i) => (
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F6] transition-colors ${i < shopProducts.length - 1 ? 'border-b border-[#F2F4F6]' : ''}`}>
+                        {/* left */}
+                        <div className="w-9 h-9 rounded-xl bg-[#F2F4F6] flex items-center justify-center text-lg shrink-0">
+                          {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
+                        </div>
+                        {/* contents */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-[#191F28] truncate">{p.name}</p>
+                          {p.description && <p className="text-xs text-[#8B95A1] truncate">{p.description}</p>}
+                        </div>
+                        {/* right */}
+                        <div className="flex flex-col items-end shrink-0">
+                          <span className="text-sm font-black text-[#0064FF]">{p.price.toLocaleString()}원</span>
+                          <span className="text-xs text-[#8B95A1]">재고 {p.stock ?? 0}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
