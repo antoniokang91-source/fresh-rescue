@@ -79,25 +79,26 @@ function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): nu
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function buildPinAdBubbleHTML(shopName: string, product?: Product): string {
+function buildPinAdBubbleHTML(productName: string, productPrice: number): string {
   return `
     <div style="
-      background:white; border:2px solid #0064FF; border-radius:16px;
-      padding:6px 12px; box-shadow:0 4px 16px rgba(0,100,255,0.18);
+      background:white; border:2px solid #0064FF; border-radius:14px;
+      padding:5px 10px; box-shadow:0 4px 16px rgba(0,100,255,0.18);
       cursor:pointer; position:relative; white-space:nowrap;
-      display:flex; align-items:center; gap:6px; pointer-events:auto;
+      display:flex; align-items:center; gap:5px; pointer-events:auto;
       font-family:'Pretendard',-apple-system,sans-serif;
+      overflow:hidden;
     ">
-      <span style="font-weight:900;font-size:12px;color:#191F28;">${shopName}</span>
-      ${product ? `<span style="font-weight:900;font-size:12px;color:#0064FF;">${product.price.toLocaleString()}원</span>` : ''}
+      <span data-bubble-name style="font-weight:700;font-size:11px;color:#191F28;display:inline-block;transition:opacity 0.2s ease,transform 0.2s ease;">${productName}</span>
+      <span data-bubble-price style="font-weight:900;font-size:11px;color:#0064FF;display:inline-block;transition:opacity 0.2s ease,transform 0.2s ease;">${productPrice.toLocaleString()}원</span>
       <div style="
         position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
-        width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;
+        width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
         border-top:9px solid #0064FF;
       "></div>
       <div style="
         position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
-        width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;
+        width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;
         border-top:8px solid white;
       "></div>
     </div>
@@ -272,14 +273,52 @@ export default function MapPage() {
       const pinAd = pinAds.find(pa => pa.shop_id === shop.id && pa.is_active);
       if (pinAd) {
         try {
-          const topProduct = products.find(p => p.shopId === shop.id);
+          const shopProds = products
+            .filter(p => p.shopId === shop.id)
+            .sort((a, b) => a.price - b.price); // 최저가 순
+          if (shopProds.length === 0) throw new Error('no products');
+
           const el = document.createElement('div');
-          el.innerHTML = buildPinAdBubbleHTML(shop.shop_name, topProduct);
+          el.innerHTML = buildPinAdBubbleHTML(shopProds[0].name, shopProds[0].price);
           el.style.cursor = 'pointer';
           el.addEventListener('click', () => setSelectedShop(shop));
+
+          // 상품 2개 이상이면 자동 순환
+          if (shopProds.length > 1) {
+            let idx = 0;
+            setInterval(() => {
+              idx = (idx + 1) % shopProds.length;
+              const nameEl = el.querySelector('[data-bubble-name]') as HTMLElement | null;
+              const priceEl = el.querySelector('[data-bubble-price]') as HTMLElement | null;
+              if (!nameEl || !priceEl) return;
+              // 위로 슬라이드 아웃
+              nameEl.style.opacity = '0';
+              nameEl.style.transform = 'translateY(-6px)';
+              priceEl.style.opacity = '0';
+              priceEl.style.transform = 'translateY(-6px)';
+              setTimeout(() => {
+                nameEl.textContent = shopProds[idx].name;
+                priceEl.textContent = shopProds[idx].price.toLocaleString() + '원';
+                // 아래에서 슬라이드 인
+                nameEl.style.transition = 'none';
+                priceEl.style.transition = 'none';
+                nameEl.style.transform = 'translateY(6px)';
+                priceEl.style.transform = 'translateY(6px)';
+                requestAnimationFrame(() => requestAnimationFrame(() => {
+                  nameEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                  priceEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                  nameEl.style.opacity = '1';
+                  nameEl.style.transform = 'translateY(0)';
+                  priceEl.style.opacity = '1';
+                  priceEl.style.transform = 'translateY(0)';
+                }));
+              }, 220);
+            }, 2500);
+          }
+
           new window.kakao.maps.CustomOverlay({
             position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
-            content: el, yAnchor: 3.2, zIndex: 20,
+            content: el, yAnchor: 2.1, zIndex: 20,
           }).setMap(currentMap);
         } catch { }
       }
