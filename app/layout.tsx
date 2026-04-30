@@ -9,8 +9,8 @@ export const metadata: Metadata = {
     '버려질 위기의 상품을 구출하라! 우리 동네 오프라인 소상공인 실시간 재고 구조 작전 서비스',
   keywords: ['신선구조대', '재고 할인', '소상공인', '지역 상권', '음식물 낭비'],
   icons: {
-    icon: [{ url: '/favicon.svg', type: 'image/svg+xml' }],
-    apple: '/favicon.svg',
+    icon: [{ url: '/favicon.png', type: 'image/png' }],
+    apple: '/favicon.png',
   },
   openGraph: {
     title: '신선구조대',

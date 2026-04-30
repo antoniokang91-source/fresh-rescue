@@ -31,7 +31,7 @@ export default function Header() {
       <header className="bg-white border-b border-[#F2F4F6] px-4 py-0 flex items-center justify-between z-30 relative shrink-0 shadow-sm" style={{ height: 56 }}>
         {/* 로고 */}
         <div className="shrink-0 flex items-center" style={{ width: 40, height: 40 }}>
-          <img src="/logo.svg" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+          <img src="/logo.png" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         </div>
 
         {/* 액션 버튼 */}
