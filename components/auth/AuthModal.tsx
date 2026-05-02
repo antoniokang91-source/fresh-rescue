@@ -252,6 +252,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           setJoinStep('form')
           setPassword('')
           setError('이미 가입된 번호입니다. 비밀번호를 입력해 로그인해주세요.')
+          setLoading(false)
           return
         }
         throw signUpError
@@ -262,7 +263,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
 
       if (joinRole === 'seller') {
         // 사장님: members에 role='seller', seller_status='pending'으로 등록
-        const { error: rescuerError } = await supabase.from('members').upsert({
+        const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,
           phone: rawPhone,
           nickname: `사장님_${rawPhone.slice(-4)}`,
@@ -272,16 +273,20 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           marketing_agree: marketingAgree,
           marketing_agreed_at: marketingAgree ? now : null,
         })
-        if (rescuerError) throw rescuerError
+        if (rescuerError) {
+          console.error('Members insert error:', rescuerError)
+          throw new Error(`멤버 등록 실패: ${rescuerError.message}`)
+        }
 
         await supabase.auth.signOut()
         setPostSignupState('seller')
         setPhone('')
         setPassword('')
         setJoinStep('form')
+        setLoading(false)
       } else {
         // 고객: members 테이블에 저장
-        const { error: rescuerError } = await supabase.from('members').upsert({
+        const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,
           phone: rawPhone,
           nickname: `대원_${rawPhone.slice(-4)}`,
@@ -290,21 +295,26 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           marketing_agree: marketingAgree,
           marketing_agreed_at: marketingAgree ? now : null,
         })
-        if (rescuerError) throw rescuerError
+        if (rescuerError) {
+          console.error('Members insert error:', rescuerError)
+          throw new Error(`멤버 등록 실패: ${rescuerError.message}`)
+        }
 
         // 고객은 바로 로그인
         setPostSignupState('user')
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
         if (signInError) {
           console.error('Auto sign in failed:', signInError)
-          // 실패해도 진행
-        } else {
-          await refreshProfile()
+          setError('자동 로그인에 실패했습니다. 로그인을 다시 시도해주세요.')
+          setLoading(false)
+          return
         }
+        await refreshProfile()
+        setLoading(false)
       }
     } catch (e: any) {
-      setError(e.message || '회원가입에 실패했습니다.')
-    } finally {
+      console.error('Signup error:', e)
+      setError(e.message || '회문가입에 실패했습니다.')
       setLoading(false)
     }
   }
