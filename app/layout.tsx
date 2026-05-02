@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import Script from 'next/script'
 import { AuthProvider } from '@/lib/auth-context'
+import AuthModalWrapper from '@/components/auth/AuthModalWrapper'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body className="antialiased">
         <AuthProvider>
+          <AuthModalWrapper />
           {children}
         </AuthProvider>
         {kakaoKey ? (

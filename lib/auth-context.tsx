@@ -11,7 +11,6 @@ import {
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types'
-import AuthModal from '@/components/auth/AuthModal'
 
 interface AuthContextValue {
   user: User | null
@@ -87,9 +86,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return (
     <AuthContext.Provider value={{ user, profile, isLoading, showAuthModal, setShowAuthModal, signOut, refreshProfile }}>
       {children}
-      {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} />
-      )}
     </AuthContext.Provider>
   )
 }
