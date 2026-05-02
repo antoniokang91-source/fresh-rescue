@@ -679,7 +679,7 @@ export default function MapPage() {
                 return (
                   <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
                     {display.map((p, i) => (
-                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < display.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < display.length - 1 ? 'border-b border-gray-100' : ''}`}>
                         {/* left */}
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
                           {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
@@ -687,12 +687,15 @@ export default function MapPage() {
                         {/* contents */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
+                            <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
+                          </div>
                         </div>
                         {/* right */}
                         <div className="flex flex-col items-end shrink-0">
                           <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
-                          <span className="text-xs text-gray-500">재고 {p.stock ?? 0}</span>
+                          <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
                         </div>
                       </div>
                     ))}
@@ -753,7 +756,7 @@ export default function MapPage() {
                 return shopProducts.length > 0 ? (
                   <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
                     {shopProducts.map((p, i) => (
-                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
                         {/* left */}
                         <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
                           {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
@@ -761,12 +764,15 @@ export default function MapPage() {
                         {/* contents */}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
+                            <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
+                          </div>
                         </div>
                         {/* right */}
                         <div className="flex flex-col items-end shrink-0">
                           <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
-                          <span className="text-xs text-gray-500">재고 {p.stock ?? 0}</span>
+                          <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
                         </div>
                       </div>
                     ))}
