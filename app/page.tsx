@@ -351,7 +351,7 @@ export default function MapPage() {
 
   useEffect(() => { if (map && mapLoaded) updateMarkers(map); }, [map, products, shops, pinAds, mapLoaded]);
 
-  // ── DB 검색 (가게명 + 상품명, 10km 필터) ─────────────────────────────────────
+  // ── DB 검색 (가게명 + 상품명, 3km 필터) ──────────────────────────────────────
   const performSearch = async (q: string) => {
     if (!q.trim()) { setDbSearchResults([]); setSearchLoading(false); return; }
     setSearchLoading(true);
@@ -378,7 +378,7 @@ export default function MapPage() {
     [...(shopData ?? []), ...extraShops].forEach((s: any) => merged.set(s.id, s));
 
     const results = Array.from(merged.values())
-      .filter(s => s.latitude && s.longitude && haversineKm(baseLat, baseLng, s.latitude, s.longitude) <= 10)
+      .filter(s => s.latitude && s.longitude && haversineKm(baseLat, baseLng, s.latitude, s.longitude) <= 3)
       .sort((a, b) => Number(b.is_search_ad ?? false) - Number(a.is_search_ad ?? false));
 
     setDbSearchResults(results);
@@ -425,8 +425,9 @@ export default function MapPage() {
 
       {/* ── Header (TDS) ─────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-100 px-4 flex items-center justify-between flex-shrink-0 shadow-sm" style={{ height: '56px' }}>
-        <Link href="/" className="flex items-center shrink-0" style={{ width: 40, height: 40 }}>
+        <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <img src="/logo.png" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+          <span className="font-bold text-base text-gray-900 hidden sm:block">신선구조대</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -482,7 +483,7 @@ export default function MapPage() {
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
               onFocus={() => setShowSearchResults(true)}
-              placeholder="가게명, 상품명 검색 (10km 이내)"
+              placeholder="가게명, 상품명 검색 (3km 이내)"
               className="w-full bg-transparent rounded-xl pl-10 pr-10 py-3.5 text-sm outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
             {searchQuery && (
@@ -502,7 +503,7 @@ export default function MapPage() {
                     검색 중...
                   </div>
                 ) : dbSearchResults.length === 0 ? (
-                  <div className="px-5 py-4 text-sm text-gray-500">10km 이내에 '{searchQuery}' 결과가 없습니다</div>
+                  <div className="px-5 py-4 text-sm text-gray-500">3km 이내에 '{searchQuery}' 결과가 없습니다</div>
                 ) : dbSearchResults.map(shop => (
                   <button key={shop.id}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-100 last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors ${shop.is_search_ad ? 'bg-blue-50' : ''}`}
