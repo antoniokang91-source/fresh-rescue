@@ -579,16 +579,10 @@ export default function MapPage() {
               </button>
             </>
           ) : (
-            <>
-              <button onClick={() => handleLogin('user')}
-                className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 active:scale-95 transition-all">
-                고객님
-              </button>
-              <button onClick={() => handleLogin('seller')}
-                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm">
-                사장님
-              </button>
-            </>
+            <button onClick={handleLogin}
+              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm">
+              로그인
+            </button>
           )}
           <button onClick={handleLocate}
             className="text-gray-600 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all">

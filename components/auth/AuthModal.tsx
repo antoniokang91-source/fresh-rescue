@@ -410,13 +410,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         {/* ── 헤더 + 탭 ────────────────────────────────────────────────── */}
         <div className="px-6 pt-1 pb-0">
           <div className="flex items-center gap-3 mb-4">
-            {lockedRole === 'seller' ? <span className="text-3xl">🏪</span> : <img src="/logo.png" alt="신선구조대" className="w-10 h-10" />}
+            {selectedRole === 'seller' ? <span className="text-3xl">🏪</span> : <img src="/logo.png" alt="신선구조대" className="w-10 h-10" />}
             <div>
               <h2 className="font-black text-xl text-gray-900">
-                {lockedRole === 'seller' ? '사장님 전용' : '신선구조대'}
+                {selectedRole === 'seller' ? '사장님 전용' : '신선구조대'}
               </h2>
               <p className="text-xs text-gray-400">
-                {lockedRole === 'seller' ? '가게 등록 & 관리' : '구조대원 입장'}
+                {selectedRole === 'seller' ? '가게 등록 & 관리' : '구조대원 입장'}
               </p>
             </div>
           </div>
@@ -443,8 +443,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         {/* ── 로그인 탭 ────────────────────────────────────────────────── */}
         {tab === 'login' && (
           <div className="px-6 pb-8">
-            {/* 역할 선택 — lockedRole 없을 때만 표시 */}
-            {!lockedRole && (
+            {/* 역할 선택 — selectedRole 없을 때만 표시 */}
+            {!selectedRole && (
               <div className="grid grid-cols-2 gap-2 mb-5">
                 {ROLE_OPTIONS.map((r) => (
                   <button
@@ -529,8 +529,8 @@ export default function AuthModal({ onClose }: AuthModalProps) {
         {/* ── 회원가입 탭 — 폼 ─────────────────────────────────────────── */}
         {tab === 'join' && joinStep === 'form' && (
           <div className="px-6 pb-8">
-            {/* 역할 선택 — lockedRole 없을 때만 표시 */}
-            {!lockedRole && (
+            {/* 역할 선택 — selectedRole 없을 때만 표시 */}
+            {!selectedRole && (
               <div className="grid grid-cols-2 gap-2 mb-5">
                 {ROLE_OPTIONS.map((r) => (
                   <button
