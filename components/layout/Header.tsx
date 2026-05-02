@@ -8,15 +8,8 @@ import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
 import type { UserRole } from '@/types'
 
 export default function Header() {
-  const { user, profile, isLoading, signOut } = useAuth()
-  const [showAuth, setShowAuth] = useState(false)
+  const { user, profile, isLoading, signOut, showAuthModal, setShowAuthModal } = useAuth()
   const [showAvatarEdit, setShowAvatarEdit] = useState(false)
-  const [lockedRole, setLockedRole] = useState<UserRole>('user')
-
-  const openAuth = (role: UserRole) => {
-    setLockedRole(role)
-    setShowAuth(true)
-  }
 
   const displayName = profile?.nickname
     ?? (profile?.phone ? '••' + profile.phone.slice(-4) : null)
@@ -38,14 +31,6 @@ export default function Header() {
 
         {/* 액션 버튼 */}
         <div className="flex items-center gap-2">
-          {!user && (
-            <button onClick={() => openAuth('seller')}
-              className="text-xs text-[#0064FF] bg-[#F0F7FF] px-3 py-1.5 rounded-xl font-bold active:scale-95 transition-all">
-              <span className="hidden sm:inline">사장님인가요?</span>
-              <span className="sm:hidden">입점</span>
-            </button>
-          )}
-
           {user && profile && profile.role !== 'user' && (
             <a href={profile.role === 'admin' ? '/admin' : '/seller/dashboard'}
               className="flex items-center gap-1 text-xs text-[#191F28] bg-[#F2F4F6] px-3 py-1.5 rounded-xl font-bold active:scale-95 transition-all">
@@ -83,20 +68,13 @@ export default function Header() {
               </button>
             </div>
           ) : (
-            <button onClick={() => openAuth('user')}
+            <button onClick={() => setShowAuthModal(true)}
               className="text-xs text-white bg-[#0064FF] px-3 py-1.5 rounded-xl font-black shadow-sm active:scale-95 transition-all">
               로그인
             </button>
           )}
         </div>
       </header>
-
-      {showAuth && (
-        <AuthModal
-          onClose={() => setShowAuth(false)}
-          lockedRole={lockedRole}
-        />
-      )}
 
       {showAvatarEdit && (
         <AvatarSelectModal

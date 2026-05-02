@@ -11,11 +11,14 @@ import {
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import type { Profile } from '@/types'
+import AuthModal from '@/components/auth/AuthModal'
 
 interface AuthContextValue {
   user: User | null
   profile: Profile | null
   isLoading: boolean
+  showAuthModal: boolean
+  setShowAuthModal: (show: boolean) => void
   signOut: () => Promise<void>
   refreshProfile: () => Promise<void>
 }
@@ -24,6 +27,8 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   profile: null,
   isLoading: true,
+  showAuthModal: false,
+  setShowAuthModal: () => {},
   signOut: async () => {},
   refreshProfile: async () => {},
 })
@@ -32,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showAuthModal, setShowAuthModal] = useState(false)
 
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
@@ -79,8 +85,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile])
 
   return (
-    <AuthContext.Provider value={{ user, profile, isLoading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, isLoading, showAuthModal, setShowAuthModal, signOut, refreshProfile }}>
       {children}
+      {showAuthModal && (
+        <AuthModal onClose={() => setShowAuthModal(false)} />
+      )}
     </AuthContext.Provider>
   )
 }

@@ -121,11 +121,8 @@ export default function MapPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [shopDetailTab, setShopDetailTab] = useState<1 | 2 | 3>(1);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authInitialTab, setAuthInitialTab] = useState<'login' | 'join'>('login');
-  const [authInitialRole, setAuthInitialRole] = useState<'user' | 'seller'>('user');
   const [map, setMap] = useState<any>(null);
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, setShowAuthModal } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerIdx, setBannerIdx] = useState([0, 0]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -816,8 +813,6 @@ export default function MapPage() {
                   onClick={() => {
                     if (!user) {
                       setShowAuthModal(true);
-                      setAuthInitialTab('join');
-                      setAuthInitialRole('user');
                       return;
                     }
                     handleReserve(selectedProduct);
@@ -829,8 +824,6 @@ export default function MapPage() {
                   onClick={() => {
                     if (!user) {
                       setShowAuthModal(true);
-                      setAuthInitialTab('join');
-                      setAuthInitialRole('user');
                       return;
                     }
                     setSelectedProduct(null);
@@ -1006,10 +999,7 @@ export default function MapPage() {
       )}
 
       {/* ── 인증 모달 ─────────────────────────────────────────────────────────── */}
-      {showAuthModal && (
-        <AuthModal onClose={() => setShowAuthModal(false)} initialTab={authInitialTab}
-          initialRole={authInitialRole} lockedRole={authInitialRole} />
-      )}
+      {/* Context에서 관리되므로 여기서는 렌더링하지 않음 */}
 
       {/* ── 리뷰 모달 ─────────────────────────────────────────────────────────── */}
       {showReviewModal && completedReservation && (

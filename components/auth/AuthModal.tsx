@@ -12,9 +12,6 @@ type JoinStep = 'form' | 'consent'
 
 interface AuthModalProps {
   onClose: () => void
-  initialRole?: UserRole
-  initialTab?: Tab
-  lockedRole?: UserRole  // 설정 시 역할 선택 UI 숨기고 해당 역할로 고정
 }
 
 const ROLE_OPTIONS: { value: UserRole; emoji: string; label: string; sub: string }[] = [
@@ -96,11 +93,12 @@ AI 기반 개인화 추천 서비스를 제공하기 위해 활용됩니다.
   },
 }
 
-export default function AuthModal({ onClose, initialRole = 'user', initialTab = 'login', lockedRole }: AuthModalProps) {
+export default function AuthModal({ onClose }: AuthModalProps) {
   const router = useRouter()
   const { refreshProfile } = useAuth()
   const [visible, setVisible] = useState(false)
-  const [tab, setTab] = useState<Tab>(initialTab)
+  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)  // 역할 선택 화면 제어
+  const [tab, setTab] = useState<Tab>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -109,10 +107,9 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   const [password, setPassword] = useState('')
   const [nickname, setNickname] = useState('')
 
-  // lockedRole이 있으면 그걸로 고정, 없으면 자유 선택
-  const effectiveInitial = lockedRole ?? initialRole
-  const [loginRole, setLoginRole] = useState<UserRole>(effectiveInitial)
-  const [joinRole, setJoinRole] = useState<UserRole>(effectiveInitial)
+  // selectedRole이 정해지면 그걸로 고정
+  const [loginRole, setLoginRole] = useState<UserRole>(selectedRole ?? 'user')
+  const [joinRole, setJoinRole] = useState<UserRole>(selectedRole ?? 'user')
 
   // 회원가입 탭 전용
   const [joinStep, setJoinStep] = useState<JoinStep>('form')
@@ -130,12 +127,12 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
     return () => clearTimeout(t)
   }, [])
 
-  // initialRole / lockedRole 변경 시 양쪽 탭 역할 동기화
+  // selectedRole 변경 시 양쪽 탭 역할 동기화
   useEffect(() => {
-    const role = lockedRole ?? initialRole
+    const role = selectedRole ?? 'user'
     setLoginRole(role)
     setJoinRole(role)
-  }, [initialRole, lockedRole])
+  }, [selectedRole])
 
   const handleClose = () => {
     setVisible(false)
@@ -344,8 +341,26 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
           <div className="w-10 h-1 bg-gray-200 rounded-full" />
         </div>
 
-        {/* ── 환영 / 승인 대기 화면 ─────────────────────────────────────────── */}
-        {postSignupState !== 'none' ? (
+        {/* ── 역할 선택 (첫 화면) ──────────────────────────────────────────────── */}
+        {!selectedRole ? (
+          <div className="px-6 pb-10 pt-6 flex flex-col items-center text-center gap-4">
+            <h2 className="font-black text-2xl text-gray-900">어떻게 이용할까요?</h2>
+            <p className="text-gray-500 text-sm">신선구조대에 오신 것을 환영합니다!</p>
+            <div className="w-full space-y-3 mt-4">
+              {ROLE_OPTIONS.map((role) => (
+                <button
+                  key={role.value}
+                  onClick={() => setSelectedRole(role.value)}
+                  className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-colors text-left active:scale-95"
+                >
+                  <div className="text-2xl mb-1">{role.emoji}</div>
+                  <div className="font-bold text-gray-900">{role.label}</div>
+                  <div className="text-xs text-gray-600 mt-0.5">{role.sub}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : postSignupState !== 'none' ? (
           <div className="px-6 pb-10 pt-2 flex flex-col items-center text-center gap-4">
             <div className="relative mt-2">
               <img src="/logo.png" alt="신선구조대" className="w-24 h-24 animate-bounce" />
