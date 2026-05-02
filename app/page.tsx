@@ -686,10 +686,10 @@ export default function MapPage() {
                 </div>
               )}
               {selectedShop.phone && (
-                <div className="flex items-center gap-3 text-sm text-gray-700">
+                <a href={`tel:${selectedShop.phone}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors -mx-3 cursor-pointer">
                   <Phone className="w-4 h-4 shrink-0 text-blue-600" />
                   <span>{selectedShop.phone}</span>
-                </div>
+                </a>
               )}
               {(() => {
                 const shopProducts = products.filter(p => p.shopId === selectedShop.id);
