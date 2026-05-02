@@ -116,6 +116,7 @@ export default function MapPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
+  const [shopDetailTab, setShopDetailTab] = useState<1 | 2 | 3>(1);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authInitialTab, setAuthInitialTab] = useState<'login' | 'join'>('login');
   const [authInitialRole, setAuthInitialRole] = useState<'user' | 'seller'>('user');
@@ -239,6 +240,11 @@ export default function MapPage() {
     }, delay);
     return () => clearTimeout(t);
   }, [mapLoaded]);
+
+  // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (selectedShop) setShopDetailTab(1);
+  }, [selectedShop]);
 
   // ── 배너 자동 슬라이드 ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -732,58 +738,94 @@ export default function MapPage() {
                 </button>
               </div>
             </div>
-            <div className="p-6 space-y-5">
-              {selectedShop.shop_image_url && (
-                <div className="overflow-hidden rounded-2xl"><img src={selectedShop.shop_image_url} alt={selectedShop.shop_name} className="w-full h-44 object-cover" /></div>
+            {/* ── 탭 버튼 ────────────────────────────────────────────────────────── */}
+            <div className="flex border-b border-gray-200 bg-gray-50">
+              <button onClick={() => setShopDetailTab(1)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 1 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
+                1. 가게정보
+              </button>
+              <button onClick={() => setShopDetailTab(2)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 2 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
+                2. 상품정보
+              </button>
+              <button onClick={() => setShopDetailTab(3)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 3 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
+                3. 가게리뷰
+              </button>
+            </div>
+
+            {/* ── 탭 내용 ────────────────────────────────────────────────────────── */}
+            <div className="p-6 space-y-5 overflow-y-auto flex-1">
+              {/* 탭 1: 가게정보 */}
+              {shopDetailTab === 1 && (
+                <>
+                  {selectedShop.shop_image_url && (
+                    <div className="overflow-hidden rounded-2xl"><img src={selectedShop.shop_image_url} alt={selectedShop.shop_name} className="w-full h-44 object-cover" /></div>
+                  )}
+                  {selectedShop.description && (
+                    <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-xl">{selectedShop.description}</p>
+                  )}
+                  {selectedShop.address && (
+                    <div className="flex items-start gap-3 text-sm text-gray-700">
+                      <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-blue-600" />
+                      <span>{selectedShop.address}</span>
+                    </div>
+                  )}
+                  {selectedShop.phone && (
+                    <a href={`tel:${selectedShop.phone}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors -mx-3 cursor-pointer">
+                      <Phone className="w-4 h-4 shrink-0 text-blue-600" />
+                      <span>{selectedShop.phone}</span>
+                    </a>
+                  )}
+                </>
               )}
-              {selectedShop.description && (
-                <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-xl">{selectedShop.description}</p>
+
+              {/* 탭 2: 상품정보 */}
+              {shopDetailTab === 2 && (
+                <>
+                  {(() => {
+                    const shopProducts = products.filter(p => p.shopId === selectedShop.id);
+                    return shopProducts.length > 0 ? (
+                      <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
+                        {shopProducts.map((p, i) => (
+                          <div key={p.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                            {/* left */}
+                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
+                              {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
+                            </div>
+                            {/* contents */}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
+                                <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
+                              </div>
+                            </div>
+                            {/* right */}
+                            <div className="flex flex-col items-end shrink-0">
+                              <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
+                              <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">
+                        <p className="text-sm font-semibold">현재 등록된 구조 상품이 없습니다</p>
+                        <p className="text-xs mt-1">곧 상품이 올라올 예정이에요!</p>
+                      </div>
+                    );
+                  })()}
+                </>
               )}
-              {selectedShop.address && (
-                <div className="flex items-start gap-3 text-sm text-gray-700">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-blue-600" />
-                  <span>{selectedShop.address}</span>
+
+              {/* 탭 3: 가게리뷰 */}
+              {shopDetailTab === 3 && (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-sm">리뷰 기능이 준비 중입니다</p>
                 </div>
               )}
-              {selectedShop.phone && (
-                <a href={`tel:${selectedShop.phone}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors -mx-3 cursor-pointer">
-                  <Phone className="w-4 h-4 shrink-0 text-blue-600" />
-                  <span>{selectedShop.phone}</span>
-                </a>
-              )}
-              {(() => {
-                const shopProducts = products.filter(p => p.shopId === selectedShop.id);
-                return shopProducts.length > 0 ? (
-                  <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
-                    {shopProducts.map((p, i) => (
-                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                        {/* left */}
-                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
-                          {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
-                        </div>
-                        {/* contents */}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
-                            <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
-                          </div>
-                        </div>
-                        {/* right */}
-                        <div className="flex flex-col items-end shrink-0">
-                          <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
-                          <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">
-                    <p className="text-sm font-semibold">현재 등록된 구조 상품이 없습니다</p>
-                    <p className="text-xs mt-1">곧 상품이 올라올 예정이에요!</p>
-                  </div>
-                );
-              })()}
+            </div>
+
+            {/* ── 길찾기 버튼 ────────────────────────────────────────────────────── */}
+            <div className="p-6 border-t border-gray-200">
               <button
                 onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedShop.shop_name)},${selectedShop.latitude},${selectedShop.longitude}`; window.open(kakaoLink, '_blank'); }}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">

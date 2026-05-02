@@ -107,6 +107,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   // 전화번호·비밀번호는 탭 전환 시 공유
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
+  const [nickname, setNickname] = useState('')
 
   // lockedRole이 있으면 그걸로 고정, 없으면 자유 선택
   const effectiveInitial = lockedRole ?? initialRole
@@ -155,6 +156,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
     setError('')
     setJoinStep('form')
     setPassword('')
+    setNickname('')
   }
 
   // ── 로그인 ──────────────────────────────────────────────────────────────────
@@ -227,6 +229,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   const handleJoinNext = () => {
     if (rawPhone.length < 10) { setError('올바른 휴대폰 번호를 입력해주세요.'); return }
     if (password.length < 6) { setError('비밀번호는 6자리 이상 입력해주세요.'); return }
+    if (nickname.trim().length < 2) { setError('닉네임은 2자리 이상 입력해주세요.'); return }
     setError('')
     setJoinStep('consent')
   }
@@ -282,6 +285,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         setPostSignupState('seller')
         setPhone('')
         setPassword('')
+        setNickname('')
         setJoinStep('form')
         setLoading(false)
       } else {
@@ -289,7 +293,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
         const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,
           phone: rawPhone,
-          nickname: `대원_${rawPhone.slice(-4)}`,
+          nickname: nickname,
           role: 'user',
           is_registered: true,
           marketing_agree: marketingAgree,
@@ -549,6 +553,16 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="6자리 이상 입력"
+              className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-3"
+              onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
+            />
+
+            <label className="block text-xs font-bold text-gray-500 mb-2">👤 사용하실 닉네임</label>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              placeholder="2자리 이상 입력"
               className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-5"
               onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
             />
