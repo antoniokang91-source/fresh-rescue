@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState, useRef } from "react";
-import { MapPin, Phone, Navigation, RefreshCw, X, Search } from "lucide-react";
+import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
@@ -536,6 +536,16 @@ export default function MapPage() {
             )}
           </div>
         </div>
+
+        {/* 카카오 채널 상담 버튼 */}
+        <a
+          href="http://pf.kakao.com/_xdtxbxaG"
+          target="_blank"
+          rel="noreferrer"
+          className="absolute bottom-4 right-4 z-20 bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center"
+        >
+          <MessageCircle className="w-6 h-6" />
+        </a>
       </div>
 
       {/* ── Splash (TDS) ────────────────────────────────────────────────────── */}
