@@ -84,12 +84,11 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
     setLoading(true)
     setError('')
     try {
-      const { error: updateError } = await supabase
+      const { error: upsertError } = await supabase
         .from('members')
-        .update({ avatar_url: selectedUrl })
-        .eq('id', user.id)
+        .upsert({ id: user.id, avatar_url: selectedUrl }, { onConflict: 'id' })
 
-      if (updateError) throw updateError
+      if (upsertError) throw upsertError
 
       await refreshProfile()
       onSave(selectedUrl)
@@ -106,12 +105,11 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
     setLoading(true)
     try {
       const randomUrl = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
-      const { error: updateError } = await supabase
+      const { error: upsertError } = await supabase
         .from('members')
-        .update({ avatar_url: randomUrl })
-        .eq('id', user.id)
+        .upsert({ id: user.id, avatar_url: randomUrl }, { onConflict: 'id' })
 
-      if (updateError) throw updateError
+      if (upsertError) throw upsertError
 
       await refreshProfile()
       onClose()
