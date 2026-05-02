@@ -540,16 +540,16 @@ export default function MapPage() {
 
       {/* ── Splash (TDS) ────────────────────────────────────────────────────── */}
       {splashVisible && (
-        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-gray-950"
+        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-white"
           style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}>
           <img src="/logo.png" alt="신선구조대" className="w-20 h-20 object-contain mb-6" />
-          <p className="text-white font-black text-xl tracking-tight mb-8">신선구조대</p>
+          <p className="text-gray-900 font-black text-xl tracking-tight mb-8">신선구조대</p>
           <div className="flex flex-col items-center gap-3">
             <div className="relative w-8 h-8">
-              <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
+              <div className="absolute inset-0 rounded-full border-[3px] border-gray-200" />
               <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-600 animate-spin" />
             </div>
-            <p className="text-white/40 text-xs tracking-widest">LOADING</p>
+            <p className="text-gray-500 text-xs tracking-widest">LOADING</p>
           </div>
         </div>
       )}
