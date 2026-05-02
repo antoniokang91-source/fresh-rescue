@@ -6,6 +6,7 @@ import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "
 import AuthModal from "@/components/auth/AuthModal";
 import ReviewModal from "@/components/review/ReviewModal";
 import ReviewSuccessPopup from "@/components/review/ReviewSuccessPopup";
+import AvatarSelectModal from "@/components/avatar/AvatarSelectModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
 import type { Reservation, Review, ShopRanking } from '@/types';
@@ -146,6 +147,7 @@ export default function MapPage() {
   const [reviewSuccess, setReviewSuccess] = useState<{ shopName: string; rank: number } | null>(null);
   const [shopReviews, setShopReviews] = useState<any[]>([]);
   const [shopRanking, setShopRanking] = useState<any>(null);
+  const [showAvatarSelect, setShowAvatarSelect] = useState(false);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -250,6 +252,17 @@ export default function MapPage() {
     }, delay);
     return () => clearTimeout(t);
   }, [mapLoaded]);
+
+  // ── 캐릭터 미설정 시 선택 모달 표시 ────────────────────────────────────────
+  useEffect(() => {
+    if (profile && profile.role === 'user' && !profile.avatar_url) {
+      const prompted = sessionStorage.getItem('avatarPrompted');
+      if (!prompted) {
+        setShowAvatarSelect(true);
+        sessionStorage.setItem('avatarPrompted', 'true');
+      }
+    }
+  }, [profile]);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
@@ -813,9 +826,19 @@ export default function MapPage() {
                   🎫 구조 예약하기
                 </button>
                 <button
-                  onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`; window.open(kakaoLink, '_blank'); }}
+                  onClick={() => {
+                    if (!user) {
+                      setShowAuthModal(true);
+                      setAuthInitialTab('join');
+                      setAuthInitialRole('user');
+                      return;
+                    }
+                    setSelectedProduct(null);
+                    setSelectedShop({ id: selectedProduct.shopId, shop_name: selectedProduct.shop, category: selectedProduct.category, latitude: selectedProduct.lat, longitude: selectedProduct.lng, phone: selectedProduct.shopPhone, address: selectedProduct.description, shop_image_url: selectedProduct.shopImage, description: selectedProduct.shopDescription } as Shop);
+                    setShopDetailTab(2);
+                  }}
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold py-3 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                  <Navigation className="w-4 h-4" /> 길찾기
+                  <Navigation className="w-4 h-4" /> 구조하러 가기
                 </button>
               </div>
             </div>
@@ -846,13 +869,13 @@ export default function MapPage() {
             {/* ── 탭 버튼 ────────────────────────────────────────────────────────── */}
             <div className="flex border-b border-gray-200 bg-gray-50">
               <button onClick={() => setShopDetailTab(1)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 1 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
-                1. 가게정보
+                가게정보
               </button>
               <button onClick={() => setShopDetailTab(2)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 2 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
-                2. 상품정보
+                상품정보
               </button>
               <button onClick={() => setShopDetailTab(3)} className={`flex-1 py-3 text-sm font-semibold transition-colors ${shopDetailTab === 3 ? 'text-blue-600 border-b-2 border-blue-600 bg-white' : 'text-gray-600'}`}>
-                3. 가게리뷰
+                가게리뷰 {shopRanking?.avg_rating ? `⭐${shopRanking.avg_rating.toFixed(1)}` : ''}
               </button>
             </div>
 
@@ -1007,6 +1030,15 @@ export default function MapPage() {
           shopName={reviewSuccess.shopName}
           rankPosition={reviewSuccess.rank}
           onClose={() => setReviewSuccess(null)}
+        />
+      )}
+
+      {/* ── 캐릭터 선택 모달 ─────────────────────────────────────────────────────── */}
+      {showAvatarSelect && (
+        <AvatarSelectModal
+          onClose={() => setShowAvatarSelect(false)}
+          onSave={() => setShowAvatarSelect(false)}
+          canSkip={true}
         />
       )}
     </div>

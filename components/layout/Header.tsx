@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { Store, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import AuthModal from '@/components/auth/AuthModal'
+import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
 import type { UserRole } from '@/types'
 
 export default function Header() {
   const { user, profile, isLoading, signOut } = useAuth()
   const [showAuth, setShowAuth] = useState(false)
+  const [showAvatarEdit, setShowAvatarEdit] = useState(false)
   const [lockedRole, setLockedRole] = useState<UserRole>('user')
 
   const openAuth = (role: UserRole) => {
@@ -54,14 +56,28 @@ export default function Header() {
 
           {isLoading ? null : user ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 bg-[#F2F4F6] px-2.5 py-1.5 rounded-xl">
+              <button
+                onClick={() => setShowAvatarEdit(true)}
+                className="flex items-center gap-1.5 bg-[#F2F4F6] px-2.5 py-1.5 rounded-xl hover:bg-[#E8EAED] transition-colors active:scale-95"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="avatar"
+                    className="w-5 h-5 rounded-lg object-cover"
+                  />
+                ) : (
+                  <div className="w-5 h-5 rounded-lg bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {displayName?.charAt(0) ?? '👤'}
+                  </div>
+                )}
                 {roleBadge && (
                   <span className={`text-[9px] text-white px-1.5 py-0.5 rounded-lg font-black ${roleBadge.color}`}>
                     {roleBadge.label}
                   </span>
                 )}
                 <span className="text-xs font-bold text-[#191F28]">{displayName}</span>
-              </div>
+              </button>
               <button onClick={signOut} className="text-[#8B95A1] hover:text-[#191F28] p-1.5 transition-colors" title="로그아웃">
                 <LogOut size={15} />
               </button>
@@ -79,6 +95,14 @@ export default function Header() {
         <AuthModal
           onClose={() => setShowAuth(false)}
           lockedRole={lockedRole}
+        />
+      )}
+
+      {showAvatarEdit && (
+        <AvatarSelectModal
+          onClose={() => setShowAvatarEdit(false)}
+          onSave={() => setShowAvatarEdit(false)}
+          currentUrl={profile?.avatar_url}
         />
       )}
     </>
