@@ -89,7 +89,7 @@ function buildPinAdBubbleHTML(productName: string, productPrice: number): string
       font-family:'Pretendard',-apple-system,sans-serif;
       overflow:hidden;
     ">
-      <span data-bubble-name style="font-weight:700;font-size:11px;color:#191F28;display:inline-block;transition:opacity 0.2s ease,transform 0.2s ease;">${productName}</span>
+      <span data-bubble-name style="font-weight:700;font-size:11px;color:#191F28;display:inline-block;transition:opacity 0.2s ease,transform 0.2s ease;max-width:50px;overflow:hidden;text-overflow:ellipsis;">${productName}</span>
       <span data-bubble-price style="font-weight:900;font-size:11px;color:#0064FF;display:inline-block;transition:opacity 0.2s ease,transform 0.2s ease;">${productPrice.toLocaleString()}원</span>
       <div style="
         position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
