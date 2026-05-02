@@ -22,6 +22,80 @@ const ROLE_OPTIONS: { value: UserRole; emoji: string; label: string; sub: string
   { value: 'seller', emoji: '🏪', label: '사장님', sub: '가게 등록 & 관리' },
 ]
 
+const TERMS_CONTENT: Record<string, { label: string; content: string }> = {
+  terms: {
+    label: '서비스 이용약관',
+    content: `신선구조대 서비스 이용약관
+
+1. 총칙
+본 약관은 신선구조대가 제공하는 서비스 이용에 관한 기본적인 사항을 규정합니다.
+
+2. 서비스 설명
+신선구조대는 유통기한이 임박한 상품을 실시간으로 매칭하여 판매자와 구매자를 연결하는 플랫폼입니다.
+
+3. 이용자의 의무
+- 실명으로 가입해야 합니다.
+- 거짓 정보를 제공해서는 안 됩니다.
+- 타인의 계정을 무단으로 사용할 수 없습니다.
+
+4. 서비스 이용 제한
+다음과 같은 경우 서비스 이용을 제한할 수 있습니다:
+- 법령 위반 행위
+- 타인의 권리 침해
+- 플랫폼 운영 방해 행위
+
+5. 면책 조항
+신선구조대는 사용자 간의 거래로 인한 분쟁에 대해 책임을 지지 않습니다.
+
+6. 기타
+본 약관은 사전 공지 없이 변경될 수 있습니다.`,
+  },
+  privacy: {
+    label: '개인정보 처리방침',
+    content: `신선구조대 개인정보 처리방침
+
+1. 수집하는 개인정보
+- 전화번호
+- 가게 정보 (판매자)
+- 위치 정보 (선택)
+
+2. 이용 목적
+- 서비스 제공 및 거래 진행
+- 고객 지원
+- 마케팅 및 분석
+
+3. 보관 기간
+개인정보는 회원 탈퇴 시까지 보관합니다.
+
+4. 제3자 제공
+명시적 동의 없이 제3자에게 제공되지 않습니다.
+
+5. 보안
+개인정보 보호를 위해 암호화 등 기술적 조치를 취합니다.
+
+6. 이용자 권리
+이용자는 언제든지 개인정보 열람, 정정, 삭제를 요청할 수 있습니다.`,
+  },
+  marketing: {
+    label: 'AI 실시간 추천 알림 동의',
+    content: `AI 실시간 추천 알림 동의서
+
+1. 목적
+AI 기반 개인화 추천 서비스를 제공하기 위해 활용됩니다.
+
+2. 수집 정보
+- 열람 상품 정보
+- 거래 이력
+- 위치 정보
+
+3. 비동의 시 처우
+비동의해도 기본 서비스 이용에는 제약이 없습니다.
+
+4. 언제든지 철회 가능
+설정에서 알림 동의를 철회할 수 있습니다.`,
+  },
+}
+
 export default function AuthModal({ onClose, initialRole = 'user', initialTab = 'login', lockedRole }: AuthModalProps) {
   const router = useRouter()
   const { refreshProfile } = useAuth()
@@ -45,6 +119,7 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   const [privacyAgree, setPrivacyAgree] = useState(false)
   const [marketingAgree, setMarketingAgree] = useState(false)
   const [postSignupState, setPostSignupState] = useState<'none' | 'user' | 'seller'>('none')
+  const [expandedTerm, setExpandedTerm] = useState<string | null>(null)
 
   const allRequired = termsAgree && privacyAgree
   const allChecked = allRequired && marketingAgree
@@ -505,10 +580,23 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
             </button>
 
             <div className="space-y-2.5 mb-5">
-              <ConsentItem checked={termsAgree} onChange={setTermsAgree} required label="서비스 이용약관" />
-              <ConsentItem checked={privacyAgree} onChange={setPrivacyAgree} required label="개인정보 처리방침" />
-              <ConsentItem checked={marketingAgree} onChange={setMarketingAgree} required={false} label="AI 실시간 추천 알림 동의" />
+              <ConsentItem checked={termsAgree} onChange={setTermsAgree} required termKey="terms" label="서비스 이용약관" expandedTerm={expandedTerm} onExpandTerm={setExpandedTerm} />
+              <ConsentItem checked={privacyAgree} onChange={setPrivacyAgree} required termKey="privacy" label="개인정보 처리방침" expandedTerm={expandedTerm} onExpandTerm={setExpandedTerm} />
+              <ConsentItem checked={marketingAgree} onChange={setMarketingAgree} required={false} termKey="marketing" label="AI 실시간 추천 알림 동의" expandedTerm={expandedTerm} onExpandTerm={setExpandedTerm} />
             </div>
+
+            {/* ── 약관 내용 표시 ────────────────────────────────────── */}
+            {expandedTerm && TERMS_CONTENT[expandedTerm] && (
+              <div className="bg-gray-50 rounded-xl p-4 mb-5 max-h-96 overflow-y-auto border border-gray-200">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-900">{TERMS_CONTENT[expandedTerm].label}</h3>
+                  <button onClick={() => setExpandedTerm(null)} className="text-gray-400 hover:text-gray-600">
+                    <X size={20} />
+                  </button>
+                </div>
+                <p className="text-xs text-gray-600 leading-relaxed whitespace-pre-wrap font-light">{TERMS_CONTENT[expandedTerm].content}</p>
+              </div>
+            )}
 
             {error && <p className="text-xs text-siren-red mb-3 text-center">{error}</p>}
 
@@ -528,19 +616,24 @@ export default function AuthModal({ onClose, initialRole = 'user', initialTab = 
   )
 }
 
-function ConsentItem({ checked, onChange, required, label }: any) {
+function ConsentItem({ checked, onChange, required, label, termKey, expandedTerm, onExpandTerm }: any) {
   return (
     <div className="flex items-center gap-2.5">
       <button onClick={() => onChange(!checked)}>
-        {checked ? <CheckCircle2 size={20} className="text-rescue-orange" /> : <Circle size={20} className="text-gray-300" />}
+        {checked ? <CheckCircle2 size={20} className="text-blue-600" /> : <Circle size={20} className="text-gray-300" />}
       </button>
-      <span className="flex-1 text-sm text-gray-700">
-        <span className={`text-[11px] font-black px-1.5 py-0.5 rounded-md mr-1.5 ${required ? 'bg-siren-red text-white' : 'bg-gray-200 text-gray-500'}`}>
-          {required ? '필수' : '선택'}
+      <button
+        onClick={() => onExpandTerm(expandedTerm === termKey ? null : termKey)}
+        className="flex-1 flex items-center gap-2.5 text-left hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors"
+      >
+        <span className="flex-1 text-sm text-gray-700">
+          <span className={`text-[11px] font-semibold px-1.5 py-0.5 rounded-md mr-1.5 ${required ? 'bg-red-100 text-red-700' : 'bg-gray-200 text-gray-600'}`}>
+            {required ? '필수' : '선택'}
+          </span>
+          {label}
         </span>
-        {label}
-      </span>
-      <ChevronRight size={16} className="text-gray-300" />
+        <ChevronRight size={16} className={`text-gray-400 transition-transform ${expandedTerm === termKey ? 'rotate-90' : ''}`} />
+      </button>
     </div>
   )
 }
