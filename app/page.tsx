@@ -4,8 +4,11 @@ import Link from 'next/link'
 import { useEffect, useState, useRef } from "react";
 import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
+import ReviewModal from "@/components/review/ReviewModal";
+import ReviewSuccessPopup from "@/components/review/ReviewSuccessPopup";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
+import type { Reservation, Review, ShopRanking } from '@/types';
 
 declare global {
   interface Window { kakao: any; }
@@ -137,6 +140,13 @@ export default function MapPage() {
   const searchDebounce = useRef<any>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
+  // ── 예약·리뷰 ────────────────────────────────────────────────────
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [completedReservation, setCompletedReservation] = useState<any>(null);
+  const [reviewSuccess, setReviewSuccess] = useState<{ shopName: string; rank: number } | null>(null);
+  const [shopReviews, setShopReviews] = useState<any[]>([]);
+  const [shopRanking, setShopRanking] = useState<any>(null);
+
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
     setIsLoading(true);
@@ -245,6 +255,41 @@ export default function MapPage() {
   useEffect(() => {
     if (selectedShop) setShopDetailTab(1);
   }, [selectedShop]);
+
+  useEffect(() => {
+    if (shopDetailTab === 3 && selectedShop) {
+      loadShopReviews(selectedShop.id);
+    }
+  }, [shopDetailTab, selectedShop?.id]);
+
+  // ── 예약 완료 Realtime 수신 (고객용) ────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`user-reservations-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'reservations',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload: any) => {
+          const updated = payload.new as Reservation;
+          if (updated.status === 'COMPLETED') {
+            setCompletedReservation(updated);
+            setShowReviewModal(true);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   // ── 배너 자동 슬라이드 ────────────────────────────────────────────────────────
   useEffect(() => {
@@ -373,6 +418,51 @@ export default function MapPage() {
   }, [mapLoaded]);
 
   useEffect(() => { if (map && mapLoaded) updateMarkers(map); }, [map, products, shops, pinAds, mapLoaded]);
+
+  // ── 구조 예약 ────────────────────────────────────────────────────────
+  const handleReserve = async (product: Product) => {
+    if (!user) return;
+    try {
+      const { data: reservation, error } = await supabase.from('reservations').insert({
+        user_id: user.id,
+        product_id: product.id,
+        shop_id: product.shopId,
+        status: 'PENDING',
+        quantity: 1,
+        user_nickname: profile?.nickname || '고객',
+        product_name: product.name,
+      }).select().single();
+
+      if (error) throw error;
+
+      setSelectedProduct(null);
+      alert('예약 완료! 사장님이 확인하면 알림을 받으실 거예요.');
+    } catch (err: any) {
+      alert('예약 실패: ' + err.message);
+    }
+  };
+
+  // ── 리뷰 로드 (가게별) ────────────────────────────────────────────────
+  const loadShopReviews = async (shopId: string) => {
+    try {
+      const { data: reviews } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('shop_id', shopId)
+        .order('created_at', { ascending: false });
+
+      const { data: ranking } = await supabase
+        .from('shop_rankings')
+        .select('*')
+        .eq('shop_id', shopId)
+        .single();
+
+      setShopReviews((reviews as Review[]) || []);
+      setShopRanking(ranking as ShopRanking | null);
+    } catch (err: any) {
+      console.error('Review load error:', err);
+    }
+  };
 
   // ── DB 검색 (가게명 + 주소 + 상품명, 3km 필터) ──────────────────────────────────────
   const performSearch = async (q: string = '') => {
@@ -708,11 +798,26 @@ export default function MapPage() {
                   </div>
                 );
               })()}
-              <button
-                onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`; window.open(kakaoLink, '_blank'); }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
-                <Phone className="w-5 h-5" /> 구출하러 가기
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    if (!user) {
+                      setShowAuthModal(true);
+                      setAuthInitialTab('join');
+                      setAuthInitialRole('user');
+                      return;
+                    }
+                    handleReserve(selectedProduct);
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                  🎫 구조 예약하기
+                </button>
+                <button
+                  onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`; window.open(kakaoLink, '_blank'); }}
+                  className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold py-3 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                  <Navigation className="w-4 h-4" /> 길찾기
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -818,8 +923,49 @@ export default function MapPage() {
 
               {/* 탭 3: 가게리뷰 */}
               {shopDetailTab === 3 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-sm">리뷰 기능이 준비 중입니다</p>
+                <div>
+                  {shopRanking && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-bold text-blue-700">현재 순위</span>
+                        <span className="text-2xl font-bold text-blue-600">#{shopRanking.rank_position || '-'}</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                          <p className="text-gray-600">평균 별점</p>
+                          <p className="text-lg font-bold text-gray-900">{shopRanking.avg_rating?.toFixed(1) || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">리뷰 수</p>
+                          <p className="text-lg font-bold text-gray-900">{shopRanking.review_count || 0}개</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    {shopReviews.length > 0 ? (
+                      shopReviews.map((r: Review) => (
+                        <div key={r.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <p className="text-sm font-semibold text-gray-900">⭐ {r.rating}점</p>
+                              <p className="text-xs text-gray-500">{new Date(r.created_at).toLocaleDateString('ko-KR')}</p>
+                            </div>
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                              신선도: {r.freshness_score === 1 ? '보통' : r.freshness_score === 2 ? '신선' : '매우신선'}
+                            </span>
+                          </div>
+                          {r.comment && <p className="text-sm text-gray-700 mb-2">{r.comment}</p>}
+                          {r.photo_url && <img src={r.photo_url} alt="review" className="w-full h-24 object-cover rounded-lg" />}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-sm">아직 리뷰가 없습니다</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -840,6 +986,28 @@ export default function MapPage() {
       {showAuthModal && (
         <AuthModal onClose={() => setShowAuthModal(false)} initialTab={authInitialTab}
           initialRole={authInitialRole} lockedRole={authInitialRole} />
+      )}
+
+      {/* ── 리뷰 모달 ─────────────────────────────────────────────────────────── */}
+      {showReviewModal && completedReservation && (
+        <ReviewModal
+          reservation={completedReservation}
+          onClose={() => { setShowReviewModal(false); setCompletedReservation(null); }}
+          onSuccess={(rank, shopName) => {
+            setShowReviewModal(false);
+            setCompletedReservation(null);
+            setReviewSuccess({ shopName, rank });
+          }}
+        />
+      )}
+
+      {/* ── 리뷰 성공 팝업 ─────────────────────────────────────────────────────── */}
+      {reviewSuccess && (
+        <ReviewSuccessPopup
+          shopName={reviewSuccess.shopName}
+          rankPosition={reviewSuccess.rank}
+          onClose={() => setReviewSuccess(null)}
+        />
       )}
     </div>
   );

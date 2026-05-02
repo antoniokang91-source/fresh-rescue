@@ -66,3 +66,46 @@ export interface Profile {
   created_at: string
   updated_at: string
 }
+
+// ── 예약 / 리뷰 / 랭킹 ────────────────────────────────────────
+export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+
+export interface Reservation {
+  id: string
+  user_id: string
+  product_id: string
+  shop_id: string
+  status: ReservationStatus
+  quantity: number
+  user_nickname?: string
+  product_name?: string
+  pickup_completed_at?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface Review {
+  id: string
+  reservation_id: string
+  user_id: string
+  shop_id: string
+  product_id?: string
+  rating: number
+  freshness_score: number
+  comment?: string
+  photo_url?: string
+  is_auto_comment?: boolean
+  time_weight?: number
+  weighted_score?: number
+  created_at: string
+}
+
+export interface ShopRanking {
+  shop_id: string
+  shop_name?: string
+  total_weighted_score: number
+  review_count: number
+  avg_rating: number
+  rank_position?: number
+  updated_at: string
+}

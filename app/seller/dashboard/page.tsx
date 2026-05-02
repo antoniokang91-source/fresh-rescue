@@ -10,7 +10,7 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import { formatPrice, timeUntilExpiry } from '@/lib/utils'
 import AuthModal from '@/components/auth/AuthModal'
-import type { DbShop, ShopCategory } from '@/types'
+import type { DbShop, ShopCategory, Reservation } from '@/types'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -165,7 +165,9 @@ export default function SellerDashboardPage() {
 
   const [shop, setShop] = useState<DbShop | null | undefined>(undefined) // undefined = loading
   const [products, setProducts] = useState<any[]>([])
-  const [activeTab, setActiveTab] = useState<'shop' | 'products'>('shop')
+  const [reservations, setReservations] = useState<Reservation[]>([])
+  const [newReservationAlert, setNewReservationAlert] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'shop' | 'products' | 'reservations' | 'ads'>('shop')
 
   const [showShopSheet, setShowShopSheet] = useState(false)
   const [shopForm, setShopForm] = useState<ShopForm>(INITIAL_SHOP_FORM)
@@ -209,8 +211,50 @@ export default function SellerDashboardPage() {
     setProducts(data ?? [])
   }, [shop?.id])
 
+  const fetchReservations = useCallback(async () => {
+    if (!shop?.id) return
+    const { data } = await supabase
+      .from('reservations')
+      .select('*')
+      .eq('shop_id', shop.id)
+      .in('status', ['PENDING', 'CONFIRMED'])
+      .order('created_at', { ascending: false })
+    setReservations((data as Reservation[]) ?? [])
+  }, [shop?.id])
+
   useEffect(() => { if (user) fetchShop() }, [user, fetchShop])
   useEffect(() => { if (shop) fetchProducts() }, [shop, fetchProducts])
+  useEffect(() => { if (shop) fetchReservations() }, [shop, fetchReservations])
+
+  // ── 예약 실시간 구독 (새 예약 알림) ────────────────────────────────────────
+  useEffect(() => {
+    if (!shop?.id) return
+
+    const channel = supabase
+      .channel(`seller-reservations-${shop.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'reservations',
+          filter: `shop_id=eq.${shop.id}`,
+        },
+        (payload: any) => {
+          const newRes = payload.new as Reservation
+          setNewReservationAlert(
+            `🔔 새로운 구조 예약! ${newRes.user_nickname || '고객'}님이 "${newRes.product_name}"을 예약했습니다`
+          )
+          fetchReservations()
+          setTimeout(() => setNewReservationAlert(null), 4000)
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [shop?.id, fetchReservations])
 
   // ── Guard: not logged in ──────────────────────────────────────────────────
   if (!isLoading && !user) {
@@ -312,6 +356,22 @@ export default function SellerDashboardPage() {
         }))
       },
     }).open()
+  }
+
+  // ── 수령 완료 처리 ────────────────────────────────────────────────────────────
+  const handleCompletePickup = async (reservationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'COMPLETED' })
+        .eq('id', reservationId)
+
+      if (error) throw error
+
+      fetchReservations()
+    } catch (err: any) {
+      alert('수령 완료 처리 실패: ' + err.message)
+    }
   }
 
   // ── Save shop ──────────────────────────────────────────────────────────────
@@ -515,8 +575,14 @@ export default function SellerDashboardPage() {
             📦 상품 관리
           </button>
           <button
-            onClick={() => setActiveTab('ads' as any)}
-            className={`flex-1 py-2.5 text-sm font-black rounded-xl transition-all ${(activeTab as string) === 'ads' ? 'bg-white text-rescue-orange shadow-sm' : 'text-gray-400'}`}
+            onClick={() => setActiveTab('reservations')}
+            className={`flex-1 py-2.5 text-sm font-black rounded-xl transition-all ${activeTab === 'reservations' ? 'bg-white text-rescue-orange shadow-sm' : 'text-gray-400'}`}
+          >
+            🎫 예약 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('ads')}
+            className={`flex-1 py-2.5 text-sm font-black rounded-xl transition-all ${activeTab === 'ads' ? 'bg-white text-rescue-orange shadow-sm' : 'text-gray-400'}`}
           >
             📣 광고 문의
           </button>
@@ -677,8 +743,58 @@ export default function SellerDashboardPage() {
           </div>
         )}
 
+        {/* ── 예약 관리 탭 ─────────────────────────────────────────────── */}
+        {activeTab === 'reservations' && (
+          <div className="space-y-3">
+            {newReservationAlert && (
+              <div className="bg-green-100 text-green-800 p-3 rounded-xl text-sm font-semibold flex items-center justify-between">
+                <span>{newReservationAlert}</span>
+                <button onClick={() => setNewReservationAlert(null)} className="ml-2">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {reservations.length > 0 ? (
+              reservations.map((r) => (
+                <div key={r.id} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1">
+                      <p className="font-bold text-gray-900">{r.user_nickname || '고객'}님</p>
+                      <p className="text-sm text-gray-600 mt-1">📦 {r.product_name}</p>
+                      <p className="text-xs text-gray-400 mt-2">{new Date(r.created_at).toLocaleString('ko-KR')}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCompletePickup(r.id)}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
+                    >
+                      ✓ 수령 완료
+                    </button>
+                    <button
+                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-all"
+                      onClick={() => {
+                        if (confirm('이 예약을 취소하시겠습니까?')) {
+                          supabase.from('reservations').update({ status: 'CANCELLED' }).eq('id', r.id).then(() => fetchReservations())
+                        }
+                      }}
+                    >
+                      취소
+                    </button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-sm">현재 대기 중인 예약이 없습니다</p>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ── 광고 문의 탭 ─────────────────────────────────────────────── */}
-        {(activeTab as string) === 'ads' && (
+        {activeTab === 'ads' && (
           <div className="space-y-4">
             {/* 안내 카드 */}
             <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
