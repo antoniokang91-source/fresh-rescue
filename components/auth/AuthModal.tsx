@@ -164,7 +164,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setLoading(true)
     setError('')
     try {
-      const email = `${rawPhone}@fruitrescue.app`
+      const email = `user+${rawPhone}@fruitrescue.app`
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         setError('전화번호 또는 비밀번호가 올바르지 않습니다.')
@@ -237,7 +237,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setLoading(true)
     setError('')
     try {
-      const email = `${rawPhone}@fruitrescue.app`
+      const email = `user+${rawPhone}@fruitrescue.app`
       const now = new Date().toISOString()
 
       const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password })
