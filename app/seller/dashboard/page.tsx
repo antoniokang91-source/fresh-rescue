@@ -700,15 +700,17 @@ export default function SellerDashboardPage() {
               <p className="text-xs text-amber-500">* 광고 집행은 관리자 검토 후 게재됩니다</p>
             </div>
 
-            {/* 카카오 채널 문의 버튼 (추후 연동) */}
-            <button
-              onClick={() => alert('카카오 채널 연동 준비 중입니다.\n잠시 후 이용해 주세요.')}
+            {/* 카카오 채널 문의 버튼 */}
+            <a
+              href="http://pf.kakao.com/_EqxoTX"
+              target="_blank"
+              rel="noreferrer"
               className="w-full flex items-center justify-center gap-3 py-4 bg-[#FEE500] text-[#3C1E1E] font-black rounded-2xl shadow-md active:scale-95 transition-all"
             >
               <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png"
                 alt="카카오" className="w-6 h-6 rounded" onError={e => { (e.target as HTMLImageElement).style.display='none' }} />
               카카오 채널로 광고 문의하기
-            </button>
+            </a>
 
             <p className="text-center text-xs text-gray-400">
               운영시간: 평일 10:00 ~ 18:00
