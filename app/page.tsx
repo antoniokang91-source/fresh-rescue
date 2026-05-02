@@ -421,10 +421,10 @@ export default function MapPage() {
   };
 
   return (
-    <div className="flex flex-col bg-[#F2F4F6]" style={{ height: '100dvh' }}>
+    <div className="flex flex-col bg-gray-50" style={{ height: '100dvh' }}>
 
-      {/* ── 헤더 (White Toss) ─────────────────────────────────────────────────── */}
-      <div className="bg-white border-b border-[#F2F4F6] px-4 flex items-center justify-between flex-shrink-0 shadow-sm" style={{ height: '56px' }}>
+      {/* ── Header (TDS) ─────────────────────────────────────────────────────── */}
+      <div className="bg-white border-b border-gray-100 px-4 flex items-center justify-between flex-shrink-0 shadow-sm" style={{ height: '56px' }}>
         <Link href="/" className="flex items-center shrink-0" style={{ width: 40, height: 40 }}>
           <img src="/logo.png" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
         </Link>
@@ -432,37 +432,37 @@ export default function MapPage() {
         <div className="flex items-center gap-2">
           {profile ? (
             <>
-              <span className="font-bold text-sm text-[#191F28] hidden sm:inline">{profile.nickname ?? '대원님'}</span>
+              <span className="font-semibold text-sm text-gray-900 hidden sm:inline">{profile.nickname ?? '대원님'}</span>
               {profile.role === 'seller' && profile.seller_status === 'approved' && (
                 <Link href="/seller/dashboard"
-                  className="bg-[#F2F4F6] text-[#191F28] px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">
+                  className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 active:scale-95 transition-all">
                   대시보드
                 </Link>
               )}
               <button onClick={signOut}
-                className="bg-[#F2F4F6] text-[#8B95A1] px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">
+                className="text-gray-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 active:scale-95 transition-all">
                 로그아웃
               </button>
             </>
           ) : (
             <>
               <button onClick={() => handleLogin('user')}
-                className="bg-[#F2F4F6] text-[#191F28] px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">
+                className="bg-gray-100 text-gray-900 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-200 active:scale-95 transition-all">
                 고객님
               </button>
               <button onClick={() => handleLogin('seller')}
-                className="bg-[#0064FF] text-white px-3 py-1.5 rounded-xl text-xs font-black shadow-sm active:scale-95 transition-all">
+                className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm">
                 사장님
               </button>
             </>
           )}
           <button onClick={handleLocate}
-            className="bg-[#F2F4F6] p-2 rounded-xl active:scale-95 transition-all">
-            <Navigation className="w-4 h-4 text-[#191F28]" />
+            className="text-gray-600 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all">
+            <Navigation className="w-4 h-4" />
           </button>
           <button onClick={loadData} disabled={isLoading}
-            className="bg-[#F2F4F6] p-2 rounded-xl active:scale-95 transition-all disabled:opacity-40">
-            <RefreshCw className={`w-4 h-4 text-[#191F28] ${isLoading ? 'animate-spin' : ''}`} />
+            className="text-gray-600 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-all disabled:opacity-40">
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </div>
@@ -473,39 +473,39 @@ export default function MapPage() {
         <div id="map" className="w-full h-full" style={{ filter: 'saturate(0.6)' }}
           onClick={() => setShowSearchResults(false)} />
 
-        {/* 플로팅 검색바 */}
+        {/* 플로팅 검색바 (TDS) */}
         <div className="absolute top-4 left-4 right-4 z-[100]">
-          <div className="relative bg-white rounded-2xl" style={{ boxShadow: '0px 8px 16px rgba(0,0,0,0.08)' }}>
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8B95A1] pointer-events-none" />
+          <div className="relative bg-white rounded-xl shadow-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
               onFocus={() => setShowSearchResults(true)}
               placeholder="가게명, 상품명 검색 (10km 이내)"
-              className="w-full bg-transparent rounded-2xl pl-10 pr-10 py-3 text-sm outline-none text-[#191F28] placeholder-[#8B95A1] font-medium"
+              className="w-full bg-transparent rounded-xl pl-10 pr-10 py-3.5 text-sm outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
             {searchQuery && (
-              <button className="absolute right-4 top-1/2 -translate-y-1/2"
+              <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
                 onClick={() => { setSearchQuery(''); setDbSearchResults([]); setShowSearchResults(false); }}>
-                <X className="w-4 h-4 text-[#8B95A1]" />
+                <X className="w-4 h-4 text-gray-400" />
               </button>
             )}
 
-            {/* 검색 결과 드롭다운 */}
+            {/* 검색 결과 드롭다운 (TDS) */}
             {showSearchResults && searchQuery.trim() && (
-              <div className="absolute top-full left-0 right-0 bg-white rounded-2xl shadow-xl z-50 mt-2 overflow-hidden max-h-72 overflow-y-auto"
-                style={{ boxShadow: '0px 8px 24px rgba(0,0,0,0.12)' }}>
+              <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-2xl z-50 mt-2 overflow-hidden max-h-72 overflow-y-auto"
+                style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
                 {searchLoading ? (
-                  <div className="px-5 py-4 flex items-center gap-2 text-sm text-[#8B95A1]">
-                    <div className="w-4 h-4 border-2 border-[#0064FF] border-t-transparent rounded-full animate-spin" />
+                  <div className="px-5 py-4 flex items-center gap-2 text-sm text-gray-500">
+                    <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
                     검색 중...
                   </div>
                 ) : dbSearchResults.length === 0 ? (
-                  <div className="px-5 py-4 text-sm text-[#8B95A1]">10km 이내에 '{searchQuery}' 결과가 없습니다</div>
+                  <div className="px-5 py-4 text-sm text-gray-500">10km 이내에 '{searchQuery}' 결과가 없습니다</div>
                 ) : dbSearchResults.map(shop => (
                   <button key={shop.id}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left border-b border-[#F2F4F6] last:border-0 active:bg-[#F2F4F6] transition-colors ${shop.is_search_ad ? 'bg-[#F0F7FF]' : ''}`}
+                    className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-100 last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors ${shop.is_search_ad ? 'bg-blue-50' : ''}`}
                     onClick={() => {
                       setSelectedShop(shop); setSearchQuery(''); setDbSearchResults([]); setShowSearchResults(false);
                       if (map && shop.latitude && shop.longitude) {
@@ -514,19 +514,19 @@ export default function MapPage() {
                       }
                     }}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-[#F2F4F6] flex items-center justify-center shrink-0 text-lg">
+                    <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center shrink-0 text-lg">
                       {CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️'}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-bold text-[#191F28] truncate">{shop.shop_name}</p>
+                        <p className="text-sm font-semibold text-gray-900 truncate">{shop.shop_name}</p>
                         {shop.is_search_ad && (
-                          <span className="text-[9px] bg-[#0064FF] text-white px-1.5 py-0.5 rounded-md font-black shrink-0">추천</span>
+                          <span className="text-[9px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-semibold shrink-0">추천</span>
                         )}
                       </div>
-                      {shop.address && <p className="text-xs text-[#8B95A1] truncate">{shop.address}</p>}
+                      {shop.address && <p className="text-xs text-gray-500 truncate">{shop.address}</p>}
                     </div>
-                    <span className="text-xs text-[#8B95A1] shrink-0 font-medium">
+                    <span className="text-xs text-gray-500 shrink-0 font-medium">
                       {haversineKm(userLocation?.lat ?? 37.5665, userLocation?.lng ?? 126.978, shop.latitude, shop.longitude).toFixed(1)}km
                     </span>
                   </button>
@@ -537,16 +537,16 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* ── 스플래시 ─────────────────────────────────────────────────────────── */}
+      {/* ── Splash (TDS) ────────────────────────────────────────────────────── */}
       {splashVisible && (
-        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-[#191F28]"
+        <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-gray-950"
           style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}>
-          <img src="/logo.png" alt="신선구조대" className="w-20 h-20 object-contain mb-4" />
-          <p className="text-white font-black text-xl tracking-tight mb-6">신선구조대</p>
+          <img src="/logo.png" alt="신선구조대" className="w-20 h-20 object-contain mb-6" />
+          <p className="text-white font-black text-xl tracking-tight mb-8">신선구조대</p>
           <div className="flex flex-col items-center gap-3">
             <div className="relative w-8 h-8">
               <div className="absolute inset-0 rounded-full border-[3px] border-white/10" />
-              <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-[#0064FF] animate-spin" />
+              <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-blue-600 animate-spin" />
             </div>
             <p className="text-white/40 text-xs tracking-widest">LOADING</p>
           </div>
@@ -559,7 +559,7 @@ export default function MapPage() {
         const slot2 = banners.filter(b => b.sort_order === 2);
         const BANNER_H = 88;
         const BannerSlot = ({ items, idx, placeholder }: { items: Banner[]; idx: number; placeholder: string }) => (
-          <div className="flex-1 min-w-0 rounded-2xl overflow-hidden bg-[#F2F4F6] relative shadow-sm" style={{ height: BANNER_H }}>
+          <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 relative shadow-sm" style={{ height: BANNER_H }}>
             {items.length > 0 ? (
               <>
                 <div className="transition-transform duration-500 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
@@ -569,48 +569,48 @@ export default function MapPage() {
                     </a>
                   ))}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/50 to-transparent px-2 py-1.5 pointer-events-none">
-                  <p className="text-white text-[10px] font-bold truncate">{items[idx]?.title}</p>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent px-3 py-2.5 pointer-events-none">
+                  <p className="text-white text-xs font-semibold truncate">{items[idx]?.title}</p>
                 </div>
                 {items.length > 1 && (
-                  <div className="absolute top-1.5 right-1.5 flex gap-0.5 pointer-events-none">
-                    {items.map((_, i) => <div key={i} className={`w-1 h-1 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/40'}`} />)}
+                  <div className="absolute top-2.5 right-2.5 flex gap-1 pointer-events-none">
+                    {items.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/50'}`} />)}
                   </div>
                 )}
               </>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-[#8B95A1] rounded-2xl">{placeholder}</div>
+              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 rounded-xl">{placeholder}</div>
             )}
           </div>
         );
         return (
-          <div className="bg-white px-3 py-2 flex gap-2 flex-shrink-0" style={{ boxShadow: '0 -4px 16px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white px-3 py-3 flex gap-2 flex-shrink-0 shadow-sm" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' }}>
             <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" />
             <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" />
           </div>
         );
       })()}
 
-      {/* ── 상품 상세 팝업 ────────────────────────────────────────────────────── */}
+      {/* ── Product Detail Modal (TDS) ────────────────────────────────────── */}
       {selectedProduct && (
-        <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-            <div className="bg-[#0064FF] text-white p-5 rounded-t-3xl">
+            <div className="bg-blue-600 text-white p-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
                     {CATEGORY_EMOJI_MAP[selectedProduct.category] ?? '🛍️'}
                   </div>
-                  <h2 className="text-lg font-black">{selectedProduct.shop}</h2>
+                  <h2 className="text-lg font-semibold">{selectedProduct.shop}</h2>
                 </div>
-                <button onClick={() => setSelectedProduct(null)} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                <button onClick={() => setSelectedProduct(null)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-6 space-y-5">
               {selectedProduct.shopDescription && (
-                <p className="text-sm text-[#8B95A1] bg-[#F2F4F6] p-4 rounded-2xl">{selectedProduct.shopDescription}</p>
+                <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-xl">{selectedProduct.shopDescription}</p>
               )}
               {selectedProduct.shopImage && (
                 <div className="overflow-hidden rounded-2xl"><img src={selectedProduct.shopImage} alt={selectedProduct.shop} className="w-full h-44 object-cover" /></div>
@@ -619,22 +619,22 @@ export default function MapPage() {
                 const shopProducts = products.filter(p => p.shopId === selectedProduct.shopId);
                 const display = shopProducts.length > 0 ? shopProducts : [selectedProduct];
                 return (
-                  <div className="rounded-2xl border border-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
+                  <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
                     {display.map((p, i) => (
-                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F6] transition-colors ${i < display.length - 1 ? 'border-b border-[#F2F4F6]' : ''}`}>
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < display.length - 1 ? 'border-b border-gray-100' : ''}`}>
                         {/* left */}
-                        <div className="w-9 h-9 rounded-xl bg-[#F2F4F6] flex items-center justify-center text-lg shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
                           {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
                         </div>
                         {/* contents */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-[#191F28] truncate">{p.name}</p>
-                          {p.description && <p className="text-xs text-[#8B95A1] truncate">{p.description}</p>}
+                          <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
                         </div>
                         {/* right */}
                         <div className="flex flex-col items-end shrink-0">
-                          <span className="text-sm font-black text-[#0064FF]">{p.price.toLocaleString()}원</span>
-                          <span className="text-xs text-[#8B95A1]">재고 {p.stock ?? 0}</span>
+                          <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
+                          <span className="text-xs text-gray-500">재고 {p.stock ?? 0}</span>
                         </div>
                       </div>
                     ))}
@@ -643,7 +643,7 @@ export default function MapPage() {
               })()}
               <button
                 onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedProduct.shop)},${selectedProduct.lat},${selectedProduct.lng}`; window.open(kakaoLink, '_blank'); }}
-                className="w-full bg-[#0064FF] hover:bg-[#0050CC] text-white text-base font-black py-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
                 <Phone className="w-5 h-5" /> 구출하러 가기
               </button>
             </div>
@@ -651,78 +651,78 @@ export default function MapPage() {
         </div>
       )}
 
-      {/* ── 가게 팝업 ─────────────────────────────────────────────────────────── */}
+      {/* ── Shop Modal (TDS) ───────────────────────────────────────────────── */}
       {selectedShop && (
-        <div className="fixed inset-0 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50">
+        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-            <div className="bg-[#0064FF] text-white p-5 rounded-t-3xl">
+            <div className="bg-blue-600 text-white p-6 rounded-t-3xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
+                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
                     {CATEGORY_EMOJI_MAP[selectedShop.category] ?? '🛍️'}
                   </div>
                   <div>
-                    <h2 className="text-lg font-black">{selectedShop.shop_name}</h2>
-                    <p className="text-sm text-white/70">{selectedShop.category}</p>
+                    <h2 className="text-lg font-semibold">{selectedShop.shop_name}</h2>
+                    <p className="text-sm text-white/80">{selectedShop.category}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedShop(null)} className="p-2 hover:bg-white/20 rounded-xl transition-colors">
+                <button onClick={() => setSelectedShop(null)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
-            <div className="p-5 space-y-4">
+            <div className="p-6 space-y-5">
               {selectedShop.shop_image_url && (
                 <div className="overflow-hidden rounded-2xl"><img src={selectedShop.shop_image_url} alt={selectedShop.shop_name} className="w-full h-44 object-cover" /></div>
               )}
               {selectedShop.description && (
-                <p className="text-sm text-[#8B95A1] bg-[#F2F4F6] p-4 rounded-2xl">{selectedShop.description}</p>
+                <p className="text-sm text-gray-600 bg-gray-100 p-4 rounded-xl">{selectedShop.description}</p>
               )}
               {selectedShop.address && (
-                <div className="flex items-start gap-2 text-sm text-[#8B95A1]">
-                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-[#0064FF]" />
+                <div className="flex items-start gap-3 text-sm text-gray-700">
+                  <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-blue-600" />
                   <span>{selectedShop.address}</span>
                 </div>
               )}
               {selectedShop.phone && (
-                <div className="flex items-center gap-2 text-sm text-[#8B95A1]">
-                  <Phone className="w-4 h-4 shrink-0 text-[#0064FF]" />
+                <div className="flex items-center gap-3 text-sm text-gray-700">
+                  <Phone className="w-4 h-4 shrink-0 text-blue-600" />
                   <span>{selectedShop.phone}</span>
                 </div>
               )}
               {(() => {
                 const shopProducts = products.filter(p => p.shopId === selectedShop.id);
                 return shopProducts.length > 0 ? (
-                  <div className="rounded-2xl border border-[#F2F4F6] overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
+                  <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
                     {shopProducts.map((p, i) => (
-                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3 active:bg-[#F2F4F6] transition-colors ${i < shopProducts.length - 1 ? 'border-b border-[#F2F4F6]' : ''}`}>
+                      <div key={p.id} className={`flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
                         {/* left */}
-                        <div className="w-9 h-9 rounded-xl bg-[#F2F4F6] flex items-center justify-center text-lg shrink-0">
+                        <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
                           {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
                         </div>
                         {/* contents */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-[#191F28] truncate">{p.name}</p>
-                          {p.description && <p className="text-xs text-[#8B95A1] truncate">{p.description}</p>}
+                          <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                          {p.description && <p className="text-xs text-gray-500 truncate">{p.description}</p>}
                         </div>
                         {/* right */}
                         <div className="flex flex-col items-end shrink-0">
-                          <span className="text-sm font-black text-[#0064FF]">{p.price.toLocaleString()}원</span>
-                          <span className="text-xs text-[#8B95A1]">재고 {p.stock ?? 0}</span>
+                          <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
+                          <span className="text-xs text-gray-500">재고 {p.stock ?? 0}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-[#8B95A1] bg-[#F2F4F6] rounded-2xl">
-                    <p className="text-sm font-bold">현재 등록된 구조 상품이 없습니다</p>
+                  <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl">
+                    <p className="text-sm font-semibold">현재 등록된 구조 상품이 없습니다</p>
                     <p className="text-xs mt-1">곧 상품이 올라올 예정이에요!</p>
                   </div>
                 );
               })()}
               <button
                 onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedShop.shop_name)},${selectedShop.latitude},${selectedShop.longitude}`; window.open(kakaoLink, '_blank'); }}
-                className="w-full bg-[#0064FF] text-white text-base font-black py-4 rounded-2xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
                 <Navigation className="w-5 h-5" /> 길 찾기
               </button>
             </div>
