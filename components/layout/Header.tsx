@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Store, LogIn, LogOut, LayoutDashboard } from 'lucide-react'
+import { LogOut, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import AuthModal from '@/components/auth/AuthModal'
 import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
-import type { UserRole } from '@/types'
 
 export default function Header() {
   const { user, profile, isLoading, signOut, showAuthModal, setShowAuthModal } = useAuth()

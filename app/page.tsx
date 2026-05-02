@@ -526,8 +526,8 @@ export default function MapPage() {
     searchDebounce.current = setTimeout(() => performSearch(value), 350);
   };
 
-  const handleLogin = (role: 'user' | 'seller' = 'user') => {
-    setAuthInitialRole(role); setAuthInitialTab('login'); setShowAuthModal(true);
+  const handleLogin = () => {
+    setShowAuthModal(true);
   };
 
   const handleLocate = () => {
