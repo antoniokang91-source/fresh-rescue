@@ -351,19 +351,30 @@ export default function MapPage() {
 
   useEffect(() => { if (map && mapLoaded) updateMarkers(map); }, [map, products, shops, pinAds, mapLoaded]);
 
-  // ── DB 검색 (가게명 + 상품명, 3km 필터) ──────────────────────────────────────
-  const performSearch = async (q: string) => {
-    if (!q.trim()) { setDbSearchResults([]); setSearchLoading(false); return; }
+  // ── DB 검색 (가게명 + 주소 + 상품명, 3km 필터) ──────────────────────────────────────
+  const performSearch = async (q: string = '') => {
     setSearchLoading(true);
     const baseLat = userLocation?.lat ?? 37.5665;
     const baseLng = userLocation?.lng ?? 126.978;
 
-    const [{ data: shopData }, { data: productData }] = await Promise.all([
-      supabase.from('shops').select('*').eq('is_active', true)
-        .ilike('shop_name', `%${q}%`),
-      supabase.from('rescue_products').select('shop_id').eq('status', 'active')
-        .ilike('product_name', `%${q}%`),
-    ]);
+    let shopData: any[] = [];
+    let productData: any[] = [];
+
+    if (q.trim()) {
+      // 검색어가 있으면 가게명, 주소, 상품명으로 검색
+      const [shopRes, productRes] = await Promise.all([
+        supabase.from('shops').select('*').eq('is_active', true)
+          .or(`shop_name.ilike.%${q}%,address.ilike.%${q}%`),
+        supabase.from('rescue_products').select('shop_id').eq('status', 'active')
+          .ilike('product_name', `%${q}%`),
+      ]);
+      shopData = shopRes.data ?? [];
+      productData = productRes.data ?? [];
+    } else {
+      // 검색어가 없으면 모든 활성 가게를 조회
+      const res = await supabase.from('shops').select('*').eq('is_active', true);
+      shopData = res.data ?? [];
+    }
 
     // 상품 검색 결과에서 shop_id 수집 후 shops 추가 조회
     const productShopIds = [...new Set((productData ?? []).map((p: any) => p.shop_id).filter(Boolean))];
@@ -389,7 +400,6 @@ export default function MapPage() {
     setSearchQuery(value);
     setShowSearchResults(true);
     if (searchDebounce.current) clearTimeout(searchDebounce.current);
-    if (!value.trim()) { setDbSearchResults([]); return; }
     searchDebounce.current = setTimeout(() => performSearch(value), 350);
   };
 
@@ -482,7 +492,12 @@ export default function MapPage() {
               type="text"
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
-              onFocus={() => setShowSearchResults(true)}
+              onFocus={async () => {
+                setShowSearchResults(true);
+                if (!searchQuery.trim() && dbSearchResults.length === 0) {
+                  await performSearch('');
+                }
+              }}
               placeholder="가게명, 상품명 검색 (3km 이내)"
               className="w-full bg-transparent rounded-xl pl-10 pr-10 py-3.5 text-sm outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
@@ -494,7 +509,7 @@ export default function MapPage() {
             )}
 
             {/* 검색 결과 드롭다운 (TDS) */}
-            {showSearchResults && searchQuery.trim() && (
+            {showSearchResults && (searchQuery.trim() || dbSearchResults.length > 0) && (
               <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-2xl z-50 mt-2 overflow-hidden max-h-72 overflow-y-auto"
                 style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
                 {searchLoading ? (
@@ -503,8 +518,17 @@ export default function MapPage() {
                     검색 중...
                   </div>
                 ) : dbSearchResults.length === 0 ? (
-                  <div className="px-5 py-4 text-sm text-gray-500">3km 이내에 '{searchQuery}' 결과가 없습니다</div>
-                ) : dbSearchResults.map(shop => (
+                  <div className="px-5 py-4 text-sm text-gray-500">
+                    {searchQuery.trim() ? `3km 이내에 '${searchQuery}' 결과가 없습니다` : '주변에 등록된 가게가 없습니다'}
+                  </div>
+                ) : (
+                  <>
+                    {!searchQuery.trim() && (
+                      <div className="px-5 py-3 bg-blue-50 border-b border-blue-100">
+                        <p className="text-xs font-semibold text-blue-700">📍 주변 3km 가게</p>
+                      </div>
+                    )}
+                    {dbSearchResults.map(shop => (
                   <button key={shop.id}
                     className={`w-full flex items-center gap-3 px-4 py-3.5 text-left border-b border-gray-100 last:border-0 hover:bg-gray-50 active:bg-gray-100 transition-colors ${shop.is_search_ad ? 'bg-blue-50' : ''}`}
                     onClick={() => {
@@ -531,7 +555,9 @@ export default function MapPage() {
                       {haversineKm(userLocation?.lat ?? 37.5665, userLocation?.lng ?? 126.978, shop.latitude, shop.longitude).toFixed(1)}km
                     </span>
                   </button>
-                ))}
+                    ))}
+                  </>
+                )}
               </div>
             )}
           </div>
