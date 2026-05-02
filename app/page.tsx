@@ -134,6 +134,7 @@ export default function MapPage() {
   const [dbSearchResults, setDbSearchResults] = useState<Shop[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const searchDebounce = useRef<any>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -210,6 +211,22 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => { loadData(); loadBanners(); loadPinAds(); }, []);
+
+  // ── 자동 위치 감지 ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        const { latitude, longitude } = coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        localStorage.setItem('fr_location', JSON.stringify({ lat: latitude, lng: longitude }));
+      },
+      (err) => {
+        console.log('위치 감지 실패:', err.code);
+      },
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 30000 }
+    );
+  }, []);
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -482,13 +499,17 @@ export default function MapPage() {
       <div className="flex-1 relative overflow-hidden">
         {/* 지도 (채도 낮춤으로 핀 강조) */}
         <div id="map" className="w-full h-full" style={{ filter: 'saturate(0.6)' }}
-          onClick={() => setShowSearchResults(false)} />
+          onClick={() => {
+            setShowSearchResults(false);
+            searchInputRef.current?.blur();
+          }} />
 
         {/* 플로팅 검색바 (TDS) */}
         <div className="absolute top-4 left-4 right-4 z-[100]">
           <div className="relative bg-white rounded-xl shadow-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
+              ref={searchInputRef}
               type="text"
               value={searchQuery}
               onChange={e => handleSearchChange(e.target.value)}
