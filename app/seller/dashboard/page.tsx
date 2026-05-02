@@ -447,9 +447,9 @@ export default function SellerDashboardPage() {
 
   // ─── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white border-b px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+      <header className="bg-white border-b px-4 py-3 flex items-center justify-between flex-shrink-0 z-10">
         <Link href="/" className="flex items-center gap-2 text-rescue-orange font-black text-lg">
           <img src="/logo.png" alt="신선구조대" className="w-8 h-8" /> 신선구조대
         </Link>
@@ -459,7 +459,8 @@ export default function SellerDashboardPage() {
         </div>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 py-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-lg mx-auto px-4 py-6">
         {/* Shop summary card */}
         <div className={`rounded-3xl p-5 text-white mb-5 shadow-lg ${shop ? 'bg-[#1A3472] shadow-blue-900/30' : 'bg-gray-600'}`}>
           <div className="flex items-center justify-between mb-2">
@@ -714,6 +715,7 @@ export default function SellerDashboardPage() {
             </p>
           </div>
         )}
+        </div>
       </div>
 
       {/* ── 가게 등록/수정 바텀 시트 ──────────────────────────────────── */}
