@@ -539,7 +539,7 @@ export default function MapPage() {
 
         {/* 카카오 채널 상담 버튼 */}
         <a
-          href="http://pf.kakao.com/_xdtxbxaG"
+          href="http://pf.kakao.com/_EqxoTX"
           target="_blank"
           rel="noreferrer"
           className="absolute bottom-4 right-4 z-20 bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center"
