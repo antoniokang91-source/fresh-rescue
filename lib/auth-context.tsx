@@ -16,6 +16,7 @@ interface AuthContextValue {
   user: User | null
   profile: Profile | null
   isLoading: boolean
+  profileLoading: boolean
   showAuthModal: boolean
   setShowAuthModal: (show: boolean) => void
   signOut: () => Promise<void>
@@ -26,6 +27,7 @@ const AuthContext = createContext<AuthContextValue>({
   user: null,
   profile: null,
   isLoading: true,
+  profileLoading: false,
   showAuthModal: false,
   setShowAuthModal: () => {},
   signOut: async () => {},
@@ -36,15 +38,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [profileLoading, setProfileLoading] = useState(false)
   const [showAuthModal, setShowAuthModal] = useState(false)
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('members')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    setProfile(data as Profile | null)
+    setProfileLoading(true)
+    try {
+      const { data, error } = await supabase
+        .from('members')
+        .select('id, phone, nickname, role, avatar_url, seller_status, marketing_agree, marketing_agreed_at, created_at, updated_at')
+        .eq('id', userId)
+        .single()
+      if (error) {
+        console.error('Profile fetch error:', error)
+      }
+      setProfile(data as Profile | null)
+    } finally {
+      setProfileLoading(false)
+    }
   }, [])
 
   useEffect(() => {
@@ -84,7 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile])
 
   return (
-    <AuthContext.Provider value={{ user, profile, isLoading, showAuthModal, setShowAuthModal, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, isLoading, profileLoading, showAuthModal, setShowAuthModal, signOut, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

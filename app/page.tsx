@@ -122,7 +122,7 @@ export default function MapPage() {
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [shopDetailTab, setShopDetailTab] = useState<1 | 2 | 3>(1);
   const [map, setMap] = useState<any>(null);
-  const { user, profile, signOut, setShowAuthModal } = useAuth();
+  const { user, profile, signOut, setShowAuthModal, refreshProfile } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerIdx, setBannerIdx] = useState([0, 0]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -253,11 +253,7 @@ export default function MapPage() {
   // ── 캐릭터 미설정 시 선택 모달 표시 ────────────────────────────────────────
   useEffect(() => {
     if (profile && profile.role === 'user' && !profile.avatar_url) {
-      const prompted = sessionStorage.getItem('avatarPrompted');
-      if (!prompted) {
-        setShowAvatarSelect(true);
-        sessionStorage.setItem('avatarPrompted', 'true');
-      }
+      setShowAvatarSelect(true);
     }
   }, [profile]);
 
@@ -1021,7 +1017,10 @@ export default function MapPage() {
       {showAvatarSelect && (
         <AvatarSelectModal
           onClose={() => setShowAvatarSelect(false)}
-          onSave={() => setShowAvatarSelect(false)}
+          onSave={async () => {
+            await refreshProfile()
+            setShowAvatarSelect(false)
+          }}
           canSkip={true}
         />
       )}

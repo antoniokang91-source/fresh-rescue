@@ -164,7 +164,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setLoading(true)
     setError('')
     try {
-      const email = `user+${rawPhone}@fruitrescue.app`
+      const email = `${rawPhone}@rescue.app`
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         setError('전화번호 또는 비밀번호가 올바르지 않습니다.')
@@ -237,8 +237,9 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setLoading(true)
     setError('')
     try {
-      const email = `user+${rawPhone}@fruitrescue.app`
+      const email = `${rawPhone}@rescue.app`
       const now = new Date().toISOString()
+      const role = selectedRole ?? 'user'  // selectedRole 직접 사용 (joinRole 동기화 문제 방지)
 
       const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password })
 
@@ -261,7 +262,7 @@ export default function AuthModal({ onClose }: AuthModalProps) {
       const userId = authData.user?.id
       if (!userId) throw new Error('계정 생성에 실패했습니다. 다시 시도해주세요.')
 
-      if (joinRole === 'seller') {
+      if (role === 'seller') {
         // 사장님: members에 role='seller', seller_status='pending'으로 등록
         const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,

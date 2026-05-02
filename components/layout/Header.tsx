@@ -1,13 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import Link from 'next/link'
 import { LogOut, LayoutDashboard } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
-import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
 
 export default function Header() {
-  const { user, profile, isLoading, signOut, showAuthModal, setShowAuthModal } = useAuth()
-  const [showAvatarEdit, setShowAvatarEdit] = useState(false)
+  const { user, profile, isLoading, profileLoading, signOut, showAuthModal, setShowAuthModal } = useAuth()
 
   const displayName = profile?.nickname
     ?? (profile?.phone ? '••' + profile.phone.slice(-4) : null)
@@ -37,10 +35,10 @@ export default function Header() {
             </a>
           )}
 
-          {isLoading ? null : user ? (
+          {isLoading || profileLoading ? null : user ? (
             <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowAvatarEdit(true)}
+              <Link
+                href="/profile"
                 className="flex items-center gap-1.5 bg-[#F2F4F6] px-2.5 py-1.5 rounded-xl hover:bg-[#E8EAED] transition-colors active:scale-95"
               >
                 {profile?.avatar_url ? (
@@ -60,7 +58,7 @@ export default function Header() {
                   </span>
                 )}
                 <span className="text-xs font-bold text-[#191F28]">{displayName}</span>
-              </button>
+              </Link>
               <button onClick={signOut} className="text-[#8B95A1] hover:text-[#191F28] p-1.5 transition-colors" title="로그아웃">
                 <LogOut size={15} />
               </button>
@@ -73,14 +71,6 @@ export default function Header() {
           )}
         </div>
       </header>
-
-      {showAvatarEdit && (
-        <AvatarSelectModal
-          onClose={() => setShowAvatarEdit(false)}
-          onSave={() => setShowAvatarEdit(false)}
-          currentUrl={profile?.avatar_url}
-        />
-      )}
     </>
   )
 }

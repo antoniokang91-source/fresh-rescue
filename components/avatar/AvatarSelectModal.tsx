@@ -155,14 +155,14 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
 
           {/* 사진 업로드 */}
           <div>
-            <p className="text-sm font-bold text-gray-700 mb-3">📷 내 사진 업로드</p>
+            <p className="text-sm font-bold text-gray-700 mb-3">📷 캐릭터 직접 업로드</p>
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={loading}
               className="w-full py-4 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               <Upload className="w-6 h-6 text-gray-400" />
-              <p className="text-sm font-semibold text-gray-600">사진 업로드</p>
+              <p className="text-sm font-semibold text-gray-600">캐릭터 직접 업로드</p>
             </button>
             <input
               ref={fileInputRef}
