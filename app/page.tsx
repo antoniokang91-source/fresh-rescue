@@ -427,7 +427,7 @@ export default function MapPage() {
       <div className="bg-white border-b border-gray-100 px-4 flex items-center justify-between flex-shrink-0 shadow-sm" style={{ height: '56px' }}>
         <Link href="/" className="flex items-center gap-2.5 shrink-0">
           <img src="/logo.png" alt="신선구조대" style={{ width: 40, height: 40, objectFit: 'contain' }} />
-          <span className="font-bold text-base text-gray-900 hidden sm:block">신선구조대</span>
+          <span className="font-bold text-base text-gray-900">신선구조대</span>
         </Link>
 
         <div className="flex items-center gap-2">
