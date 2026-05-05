@@ -224,9 +224,10 @@ export default function AuthModal({ onClose }: AuthModalProps) {
 
   // ── 회원가입 Step 1: 폼 → 동의 화면으로 ──────────────────────────────────
   const handleJoinNext = () => {
+    const role = selectedRole ?? joinRole
     if (rawPhone.length < 10) { setError('올바른 휴대폰 번호를 입력해주세요.'); return }
     if (password.length < 6) { setError('비밀번호는 6자리 이상 입력해주세요.'); return }
-    if (nickname.trim().length < 2) { setError('닉네임은 2자리 이상 입력해주세요.'); return }
+    if (role === 'user' && nickname.trim().length < 2) { setError('닉네임은 2자리 이상 입력해주세요.'); return }
     setError('')
     setJoinStep('consent')
   }
@@ -573,15 +574,19 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
             />
 
-            <label className="block text-xs font-bold text-gray-500 mb-2">👤 사용하실 닉네임</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-              placeholder="2자리 이상 입력"
-              className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-5"
-              onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
-            />
+            {joinRole === 'user' && (
+              <>
+                <label className="block text-xs font-bold text-gray-500 mb-2">👤 사용하실 닉네임</label>
+                <input
+                  type="text"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
+                  placeholder="2자리 이상 입력"
+                  className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-5"
+                  onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
+                />
+              </>
+            )}
 
             {error && <p className="text-xs text-siren-red mb-3">{error}</p>}
 
