@@ -6,7 +6,6 @@ import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "
 import AuthModal from "@/components/auth/AuthModal";
 import ReviewModal from "@/components/review/ReviewModal";
 import ReviewSuccessPopup from "@/components/review/ReviewSuccessPopup";
-import AvatarSelectModal from "@/components/avatar/AvatarSelectModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
 import type { Reservation, Review, ShopRanking } from '@/types';
@@ -122,7 +121,7 @@ export default function MapPage() {
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [shopDetailTab, setShopDetailTab] = useState<1 | 2 | 3>(1);
   const [map, setMap] = useState<any>(null);
-  const { user, profile, signOut, setShowAuthModal, refreshProfile } = useAuth();
+  const { user, profile, signOut, setShowAuthModal } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerIdx, setBannerIdx] = useState([0, 0]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -144,7 +143,6 @@ export default function MapPage() {
   const [reviewSuccess, setReviewSuccess] = useState<{ shopName: string; rank: number } | null>(null);
   const [shopReviews, setShopReviews] = useState<any[]>([]);
   const [shopRanking, setShopRanking] = useState<any>(null);
-  const [showAvatarSelect, setShowAvatarSelect] = useState(false);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -249,13 +247,6 @@ export default function MapPage() {
     }, delay);
     return () => clearTimeout(t);
   }, [mapLoaded]);
-
-  // ── 캐릭터 미설정 시 선택 모달 표시 ────────────────────────────────────────
-  useEffect(() => {
-    if (profile && profile.role === 'user' && !profile.avatar_url) {
-      setShowAvatarSelect(true);
-    }
-  }, [profile]);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
@@ -1013,17 +1004,6 @@ export default function MapPage() {
         />
       )}
 
-      {/* ── 캐릭터 선택 모달 ─────────────────────────────────────────────────────── */}
-      {showAvatarSelect && (
-        <AvatarSelectModal
-          onClose={() => setShowAvatarSelect(false)}
-          onSave={async () => {
-            await refreshProfile()
-            setShowAvatarSelect(false)
-          }}
-          canSkip={true}
-        />
-      )}
     </div>
   );
 }
