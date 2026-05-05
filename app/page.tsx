@@ -560,6 +560,12 @@ export default function MapPage() {
                   대시보드
                 </Link>
               )}
+              {profile.role === 'user' && (
+                <Link href="/profile"
+                  className="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-200 active:scale-95 transition-all">
+                  프로필
+                </Link>
+              )}
               <button onClick={signOut}
                 className="text-gray-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-gray-100 active:scale-95 transition-all">
                 로그아웃
