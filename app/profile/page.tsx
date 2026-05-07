@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const router = useRouter()
   const { user, profile, signOut, refreshProfile } = useAuth()
   const [reservations, setReservations] = useState<Reservation[]>([])
+  const [pendingReservations, setPendingReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(false)
   const [showAvatarEdit, setShowAvatarEdit] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
@@ -30,16 +31,27 @@ export default function ProfilePage() {
     if (!user) return
     setLoading(true)
     try {
-      const { data, error } = await supabase
+      const { data: pendingData, error: pendingError } = await supabase
+        .from('reservations')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'PENDING')
+        .order('created_at', { ascending: false })
+
+      const { data: confirmedData, error: confirmedError } = await supabase
         .from('reservations')
         .select('*')
         .eq('user_id', user.id)
         .in('status', ['READY', 'COMPLETED'])
         .order('created_at', { ascending: false })
 
-      if (!error && data) {
+      if (!pendingError && pendingData) {
+        setPendingReservations(pendingData as Reservation[])
+      }
+
+      if (!confirmedError && confirmedData) {
         const withReviewStatus = await Promise.all(
-          data.map(async (res: any) => {
+          confirmedData.map(async (res: any) => {
             const { data: review } = await supabase
               .from('reviews')
               .select('id')
@@ -155,6 +167,36 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* 예약 대기 중 */}
+        {pendingReservations.length > 0 && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4 border-l-4 border-blue-500">
+            <h2 className="text-lg font-bold text-gray-900">⏳ 예약 확정 대기 중</h2>
+            <div className="space-y-3">
+              {pendingReservations.map((reservation) => (
+                <div
+                  key={reservation.id}
+                  className="border border-blue-200 rounded-xl p-4 bg-blue-50 hover:bg-blue-100 transition-colors"
+                >
+                  <div className="flex items-start justify-between gap-4 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-900 truncate">{reservation.product_name ?? '상품'}</p>
+                      <p className="text-sm text-gray-600 mt-1">수량: {reservation.quantity}개</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-700">
+                        대기 중
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-blue-600 mt-2">
+                    사장님의 확정을 기다리고 있습니다. 곧 연락 드릴게요!
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 구조 내역 */}
         <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
