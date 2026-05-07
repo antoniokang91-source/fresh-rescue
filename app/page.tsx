@@ -31,6 +31,7 @@ interface Product {
   shopPhone?: string;
   shopImage?: string;
   shopDescription?: string;
+  shopOperatingHours?: string;
   stock?: number;
 }
 
@@ -44,6 +45,7 @@ interface Shop {
   address?: string;
   shop_image_url?: string;
   description?: string;
+  operating_hours?: string;
   is_search_ad?: boolean;
 }
 
@@ -171,7 +173,7 @@ export default function MapPage() {
             shopId: item.shop_id, category: item.category || shop?.category || '기타',
             description: item.description || '', stock: item.stock_quantity ?? 0,
             shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
-            shopDescription: shop?.description || '',
+            shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
             distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
           };
         });
@@ -831,7 +833,7 @@ export default function MapPage() {
                       return;
                     }
                     setSelectedProduct(null);
-                    setSelectedShop({ id: selectedProduct.shopId, shop_name: selectedProduct.shop, category: selectedProduct.category, latitude: selectedProduct.lat, longitude: selectedProduct.lng, phone: selectedProduct.shopPhone, address: selectedProduct.description, shop_image_url: selectedProduct.shopImage, description: selectedProduct.shopDescription } as Shop);
+                    setSelectedShop({ id: selectedProduct.shopId, shop_name: selectedProduct.shop, category: selectedProduct.category, latitude: selectedProduct.lat, longitude: selectedProduct.lng, phone: selectedProduct.shopPhone, address: selectedProduct.description, shop_image_url: selectedProduct.shopImage, description: selectedProduct.shopDescription, operating_hours: selectedProduct.shopOperatingHours } as Shop);
                     setShopDetailTab(2);
                   }}
                   className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 text-sm font-semibold py-3 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
@@ -898,6 +900,12 @@ export default function MapPage() {
                       <Phone className="w-4 h-4 shrink-0 text-blue-600" />
                       <span>{selectedShop.phone}</span>
                     </a>
+                  )}
+                  {selectedShop.operating_hours && (
+                    <div className="flex items-start gap-3 text-sm text-gray-700">
+                      <span className="shrink-0 text-blue-600">🕐</span>
+                      <span>{selectedShop.operating_hours}</span>
+                    </div>
                   )}
                 </>
               )}

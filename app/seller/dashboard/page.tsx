@@ -37,6 +37,7 @@ interface ShopForm {
   address_detail: string
   latitude: number | null
   longitude: number | null
+  operating_hours: string
 }
 
 const INITIAL_PRODUCT_FORM: ProductForm = {
@@ -61,6 +62,7 @@ const INITIAL_SHOP_FORM: ShopForm = {
   address_detail: '',
   latitude: null,
   longitude: null,
+  operating_hours: '',
 }
 
 const CATEGORIES: ShopCategory[] = ['과일', '야채', '축산', '수산', '공산품', '베이커리', '식당', '기타']
@@ -328,6 +330,7 @@ export default function SellerDashboardPage() {
         address_detail: shop.address_detail ?? '',
         latitude: shop.latitude,
         longitude: shop.longitude,
+        operating_hours: shop.operating_hours ?? '',
       })
       if (shop.shop_image_url) setShopImagePreview(shop.shop_image_url)
       if (shop.business_registration_url) setBizDocName('등록된 파일 있음')
@@ -404,6 +407,7 @@ export default function SellerDashboardPage() {
         address_detail: shopForm.address_detail || null,
         latitude: shopForm.latitude,
         longitude: shopForm.longitude,
+        operating_hours: shopForm.operating_hours || null,
         shop_image_url: shopImageUrl,
         business_registration_url: bizDocUrl,
         // admin 승인 후 등록이므로 shops 자체 승인 불필요
@@ -613,6 +617,7 @@ export default function SellerDashboardPage() {
                 {shop.owner_name && <InfoCard label="대표자" value={shop.owner_name} />}
                 {shop.business_number && <InfoCard label="사업자번호" value={shop.business_number} />}
                 {shop.phone && <InfoCard label="전화번호" value={shop.phone} />}
+                {shop.operating_hours && <InfoCard label="운영시간" value={shop.operating_hours} />}
                 <InfoCard label="주소" value={shop.address + (shop.address_detail ? ` ${shop.address_detail}` : '')} />
                 {shop.latitude && shop.longitude && (
                   <InfoCard label="좌표" value={`${shop.latitude.toFixed(5)}, ${shop.longitude.toFixed(5)}`} />
@@ -1020,6 +1025,9 @@ export default function SellerDashboardPage() {
 
                 {/* 전화번호 */}
                 <FormField label="가게 전화번호" value={shopForm.phone} onChange={v => setShopForm(p => ({ ...p, phone: v }))} placeholder="02-1234-5678" type="tel" />
+
+                {/* 운영시간 */}
+                <FormField label="운영시간 (예: 09:00 - 20:00 / 월-일)" value={shopForm.operating_hours} onChange={v => setShopForm(p => ({ ...p, operating_hours: v }))} placeholder="09:00 - 20:00 / 월-일" />
 
                 {/* 대표자명 */}
                 <FormField label="대표자명" value={shopForm.owner_name} onChange={v => setShopForm(p => ({ ...p, owner_name: v }))} placeholder="홍길동" />
