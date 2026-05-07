@@ -158,7 +158,7 @@ export default function MapPage() {
       if (productError) { setProducts(DUMMY_PRODUCTS); setIsLoading(false); return; }
 
       const { data: shopData } = await supabase.from('shops').select('*').eq('is_active', true).limit(50);
-      const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
+      const shopMap = new Map((shopData ?? []).filter((s: any) => s.is_operating).map((s: any) => [s.id, s]));
 
       if (productData && productData.length > 0) {
         const formatted: Product[] = productData.map((item: any) => {

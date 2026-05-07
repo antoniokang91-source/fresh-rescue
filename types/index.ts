@@ -44,6 +44,7 @@ export interface DbShop {
   business_registration_url: string | null
   shop_image_url: string | null
   operating_hours: string | null
+  is_operating: boolean
   is_active: boolean
   status: ShopApprovalStatus
   created_at: string

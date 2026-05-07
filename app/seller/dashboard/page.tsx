@@ -38,6 +38,7 @@ interface ShopForm {
   latitude: number | null
   longitude: number | null
   operating_hours: string
+  is_operating: boolean
 }
 
 const INITIAL_PRODUCT_FORM: ProductForm = {
@@ -63,6 +64,7 @@ const INITIAL_SHOP_FORM: ShopForm = {
   latitude: null,
   longitude: null,
   operating_hours: '',
+  is_operating: true,
 }
 
 const CATEGORIES: ShopCategory[] = ['과일', '야채', '축산', '수산', '공산품', '베이커리', '식당', '기타']
@@ -331,6 +333,7 @@ export default function SellerDashboardPage() {
         latitude: shop.latitude,
         longitude: shop.longitude,
         operating_hours: shop.operating_hours ?? '',
+        is_operating: shop.is_operating ?? true,
       })
       if (shop.shop_image_url) setShopImagePreview(shop.shop_image_url)
       if (shop.business_registration_url) setBizDocName('등록된 파일 있음')
@@ -341,6 +344,22 @@ export default function SellerDashboardPage() {
     }
     setShopError('')
     setShowShopSheet(true)
+  }
+
+  // ── Toggle operating status ───────────────────────────────────────────────────
+  const toggleOperatingStatus = async () => {
+    if (!shop) return
+    try {
+      const { error } = await supabase
+        .from('shops')
+        .update({ is_operating: !shop.is_operating })
+        .eq('id', shop.id)
+      if (error) throw error
+      await fetchShop()
+    } catch (e: any) {
+      console.error('Toggle operating status error:', e)
+      alert('상태 변경에 실패했습니다.')
+    }
   }
 
   // ── Address search ─────────────────────────────────────────────────────────
@@ -408,6 +427,7 @@ export default function SellerDashboardPage() {
         latitude: shopForm.latitude,
         longitude: shopForm.longitude,
         operating_hours: shopForm.operating_hours || null,
+        is_operating: shopForm.is_operating,
         shop_image_url: shopImageUrl,
         business_registration_url: bizDocUrl,
         // admin 승인 후 등록이므로 shops 자체 승인 불필요
@@ -611,6 +631,33 @@ export default function SellerDashboardPage() {
               </div>
             ) : (
               <div className="space-y-3">
+                {/* 운영 상태 */}
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 text-white shadow-lg">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-sm font-bold">운영 상태</span>
+                    <button
+                      onClick={toggleOperatingStatus}
+                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
+                        shop.is_operating
+                          ? 'bg-green-500 hover:bg-green-600 text-white'
+                          : 'bg-gray-600 hover:bg-gray-700 text-white'
+                      }`}
+                    >
+                      {shop.is_operating ? '🟢 운영중' : '🔴 영업종료'}
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p className="text-xs text-blue-100 mb-1">구조 완료</p>
+                      <p className="text-2xl font-black">{(products || []).filter(p => p.status !== 'active').length}개</p>
+                    </div>
+                    <div className="bg-white/20 rounded-lg p-3">
+                      <p className="text-xs text-blue-100 mb-1">등록상품</p>
+                      <p className="text-2xl font-black">{(products || []).filter(p => p.status === 'active').length}개</p>
+                    </div>
+                  </div>
+                </div>
+
                 <InfoCard label="가게명" value={shop.shop_name} />
                 <InfoCard label="카테고리" value={`${CATEGORY_EMOJI[shop.category]} ${shop.category}`} />
                 {shop.description && <InfoCard label="소개" value={shop.description} />}
