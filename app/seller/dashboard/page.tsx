@@ -567,18 +567,29 @@ export default function SellerDashboardPage() {
             <>
               {/* 승인 상태 배지 */}
               <div className="grid grid-cols-3 gap-2 mt-3">
-                {[
-                  { label: '구조 대기', value: products.filter(p => p.status === 'active').length, unit: '건' },
-                  { label: '등록 상품', value: products.length, unit: '개' },
-                  { label: '가게 상태', value: shop.is_active ? '운영중' : '휴무', unit: '' },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-white/20 rounded-2xl p-2.5 text-center">
-                    <div className="font-black text-lg leading-none">
-                      {stat.value}<span className="text-xs font-normal ml-0.5">{stat.unit}</span>
-                    </div>
-                    <div className="text-[10px] text-green-200 mt-0.5">{stat.label}</div>
+                <div className="bg-white/20 rounded-2xl p-2.5 text-center">
+                  <div className="font-black text-lg leading-none">
+                    {products.filter(p => p.status === 'active').length}<span className="text-xs font-normal ml-0.5">건</span>
                   </div>
-                ))}
+                  <div className="text-[10px] text-green-200 mt-0.5">구조 대기</div>
+                </div>
+                <div className="bg-white/20 rounded-2xl p-2.5 text-center">
+                  <div className="font-black text-lg leading-none">
+                    {products.filter(p => p.status !== 'active').length}<span className="text-xs font-normal ml-0.5">개</span>
+                  </div>
+                  <div className="text-[10px] text-green-200 mt-0.5">구조 완료</div>
+                </div>
+                <button
+                  onClick={toggleOperatingStatus}
+                  className={`rounded-2xl p-2.5 text-center font-black transition-all active:scale-95 ${
+                    shop.is_operating
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-gray-700 hover:bg-gray-800 text-white'
+                  }`}
+                >
+                  <div className="text-lg leading-none">{shop.is_operating ? '🟢' : '🔴'}</div>
+                  <div className="text-[10px] mt-0.5 font-bold">{shop.is_operating ? '운영중' : '영업종료'}</div>
+                </button>
               </div>
             </>
           )}
@@ -631,33 +642,6 @@ export default function SellerDashboardPage() {
               </div>
             ) : (
               <div className="space-y-3">
-                {/* 운영 상태 */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 text-white shadow-lg">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm font-bold">운영 상태</span>
-                    <button
-                      onClick={toggleOperatingStatus}
-                      className={`px-4 py-2 rounded-lg font-bold text-sm transition-all active:scale-95 ${
-                        shop.is_operating
-                          ? 'bg-green-500 hover:bg-green-600 text-white'
-                          : 'bg-gray-600 hover:bg-gray-700 text-white'
-                      }`}
-                    >
-                      {shop.is_operating ? '🟢 운영중' : '🔴 영업종료'}
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-white/20 rounded-lg p-3">
-                      <p className="text-xs text-blue-100 mb-1">구조 완료</p>
-                      <p className="text-2xl font-black">{(products || []).filter(p => p.status !== 'active').length}개</p>
-                    </div>
-                    <div className="bg-white/20 rounded-lg p-3">
-                      <p className="text-xs text-blue-100 mb-1">등록상품</p>
-                      <p className="text-2xl font-black">{(products || []).filter(p => p.status === 'active').length}개</p>
-                    </div>
-                  </div>
-                </div>
-
                 <InfoCard label="가게명" value={shop.shop_name} />
                 <InfoCard label="카테고리" value={`${CATEGORY_EMOJI[shop.category]} ${shop.category}`} />
                 {shop.description && <InfoCard label="소개" value={shop.description} />}
