@@ -332,10 +332,10 @@ export default function MapPage() {
       try {
         const emoji = CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️';
         const isOperating = shop.is_operating !== false;
+        const displayEmoji = isOperating ? emoji : emoji + '😴';
         const svg = `<svg width="50" height="55" viewBox="0 0 50 55" xmlns="http://www.w3.org/2000/svg">
           <circle cx="25" cy="25" r="18" fill="${isOperating ? '#0064FF' : '#999'}" stroke="white" stroke-width="3" opacity="${isOperating ? '1' : '0.5'}"/>
-          <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" font-size="22">${emoji}</text>
-          ${!isOperating ? '<text x="85%" y="10%" font-size="14" font-weight="bold" fill="#FF6B6B">Zzz</text>' : ''}
+          <text x="25" y="28" dominant-baseline="middle" text-anchor="middle" font-size="${isOperating ? '24' : '18'}">${displayEmoji}</text>
         </svg>`;
         const marker = new window.kakao.maps.Marker({
           position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
