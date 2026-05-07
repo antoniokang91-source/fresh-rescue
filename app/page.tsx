@@ -875,14 +875,17 @@ export default function MapPage() {
       {selectedShop && (
         <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md max-h-[80vh] overflow-y-auto shadow-2xl">
-            <div className="bg-blue-600 text-white p-6 rounded-t-3xl">
+            <div className={`${selectedShop.is_operating === false ? 'bg-gray-600' : 'bg-blue-600'} text-white p-6 rounded-t-3xl`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-xl">
+                  <div className={`w-12 h-12 ${selectedShop.is_operating === false ? 'bg-white/10' : 'bg-white/20'} rounded-2xl flex items-center justify-center text-xl`}>
                     {CATEGORY_EMOJI_MAP[selectedShop.category] ?? '🛍️'}
                   </div>
                   <div>
-                    <h2 className="text-lg font-semibold">{selectedShop.shop_name}</h2>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-lg font-semibold">{selectedShop.shop_name}</h2>
+                      {selectedShop.is_operating === false && <span className="text-xs bg-red-500 px-2 py-1 rounded font-semibold">휴무</span>}
+                    </div>
                     <p className="text-sm text-white/80">{selectedShop.category}</p>
                   </div>
                 </div>
@@ -922,8 +925,8 @@ export default function MapPage() {
                     </div>
                   )}
                   {selectedShop.phone && (
-                    <a href={`tel:${selectedShop.phone}`} className="flex items-center gap-3 text-sm text-gray-700 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors -mx-3 cursor-pointer">
-                      <Phone className="w-4 h-4 shrink-0 text-blue-600" />
+                    <a href={selectedShop.is_operating === false ? '#' : `tel:${selectedShop.phone}`} onClick={(e) => selectedShop.is_operating === false && e.preventDefault()} className={`flex items-center gap-3 text-sm px-3 py-2 rounded-lg transition-colors -mx-3 ${selectedShop.is_operating === false ? 'text-gray-400 cursor-not-allowed' : 'text-gray-700 hover:text-blue-600 hover:bg-blue-50 cursor-pointer'}`}>
+                      <Phone className={`w-4 h-4 shrink-0 ${selectedShop.is_operating === false ? 'text-gray-400' : 'text-blue-600'}`} />
                       <span>{selectedShop.phone}</span>
                     </a>
                   )}
@@ -965,12 +968,13 @@ export default function MapPage() {
                             {/* reserve button */}
                             <button
                               onClick={() => {
+                                if (selectedShop.is_operating === false) return;
                                 if (!user) { setShowAuthModal(true); return; }
                                 handleReserve(p);
                               }}
-                              disabled={reservationLoading}
-                              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-xs font-semibold py-2 rounded-lg active:scale-95 transition-all">
-                              {reservationLoading ? '예약 중...' : '예약하기'}
+                              disabled={reservationLoading || selectedShop.is_operating === false}
+                              className={`w-full text-white text-xs font-semibold py-2 rounded-lg transition-all ${selectedShop.is_operating === false ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-400'}`}>
+                              {selectedShop.is_operating === false ? '휴무중' : reservationLoading ? '예약 중...' : '예약하기'}
                             </button>
                           </div>
                         ))}
