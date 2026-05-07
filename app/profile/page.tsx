@@ -31,8 +31,8 @@ export default function ProfilePage() {
         .from('reservations')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'COMPLETED')
-        .order('pickup_completed_at', { ascending: false })
+        .in('status', ['READY', 'COMPLETED'])
+        .order('created_at', { ascending: false })
 
       if (!error && data) {
         setReservations(data as Reservation[])
@@ -41,6 +41,21 @@ export default function ProfilePage() {
       console.error('Error loading reservations:', e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handlePickupComplete = async (reservationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'COMPLETED', pickup_completed_at: new Date().toISOString() })
+        .eq('id', reservationId)
+
+      if (error) throw error
+      await loadReservations()
+    } catch (e) {
+      console.error('Error completing pickup:', e)
+      alert('픽업 완료 처리에 실패했습니다.')
     }
   }
 
@@ -146,24 +161,38 @@ export default function ProfilePage() {
                       day: 'numeric',
                     })
                   : '-'
+                const isReady = reservation.status === 'READY'
+                const isCompleted = reservation.status === 'COMPLETED'
 
                 return (
                   <div
                     key={reservation.id}
                     className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-4 mb-3">
                       <div className="flex-1 min-w-0">
                         <p className="font-semibold text-gray-900 truncate">{reservation.product_name ?? '상품'}</p>
                         <p className="text-sm text-gray-600 mt-1">수량: {reservation.quantity}개</p>
-                        <p className="text-xs text-gray-500 mt-1">픽업 완료: {completedDate}</p>
+                        {isCompleted && (
+                          <p className="text-xs text-gray-500 mt-1">픽업 완료: {completedDate}</p>
+                        )}
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <span className="inline-block px-3 py-1 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                          구조완료
+                        <span className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                          isReady ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {isReady ? '준비완료' : '구조완료'}
                         </span>
                       </div>
                     </div>
+                    {isReady && (
+                      <button
+                        onClick={() => handlePickupComplete(reservation.id)}
+                        className="w-full py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 transition-colors active:scale-95"
+                      >
+                        ✓ 픽업 완료
+                      </button>
+                    )}
                   </div>
                 )
               })}
