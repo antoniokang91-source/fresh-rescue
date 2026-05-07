@@ -241,11 +241,9 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapLoaded || !profile) return;
     const savedLocation = localStorage.getItem('fr_location');
-    if (savedLocation) {
-      const loc = JSON.parse(savedLocation);
-      setUserLocation(loc);
-      createUserMarker(loc.lat, loc.lng);
-    }
+    const loc = savedLocation ? JSON.parse(savedLocation) : { lat: 37.5665, lng: 126.978 };
+    setUserLocation(loc);
+    createUserMarker(loc.lat, loc.lng);
   }, [mapLoaded, profile?.avatar_url]);
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
