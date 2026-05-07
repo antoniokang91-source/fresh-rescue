@@ -52,6 +52,7 @@ export default function ProfilePage() {
   const handleAvatarSave = async (url: string) => {
     await refreshProfile()
     setShowAvatarEdit(false)
+    router.push('/')
   }
 
   if (!user || !profile) {
