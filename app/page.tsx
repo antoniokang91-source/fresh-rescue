@@ -319,11 +319,22 @@ export default function MapPage() {
     products.forEach((product) => {
       if (!product.lat || !product.lng) return;
       try {
-        const marker = new window.kakao.maps.Marker({
+        const el = document.createElement('div');
+        el.style.cssText = `
+          background: #10B981; color: white; padding: 6px 8px;
+          border-radius: 6px; font-size: 11px; font-weight: bold;
+          border: 2px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+          cursor: pointer; white-space: nowrap;
+        `;
+        el.textContent = `${product.discount}% ${product.price.toLocaleString()}원`;
+        el.onclick = () => setSelectedProduct(product);
+
+        new window.kakao.maps.CustomOverlay({
           position: new window.kakao.maps.LatLng(product.lat, product.lng),
-          map: currentMap, title: product.name,
+          content: el,
+          map: currentMap,
+          zIndex: 5,
         });
-        window.kakao.maps.event.addListener(marker, 'click', () => setSelectedProduct(product));
       } catch { }
     });
 
