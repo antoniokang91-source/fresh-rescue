@@ -143,7 +143,6 @@ export default function MapPage() {
   const [reviewSuccess, setReviewSuccess] = useState<{ shopName: string; rank: number } | null>(null);
   const [shopReviews, setShopReviews] = useState<any[]>([]);
   const [shopRanking, setShopRanking] = useState<any>(null);
-  const [reservationQuantity, setReservationQuantity] = useState(1);
   const [reservationLoading, setReservationLoading] = useState(false);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
@@ -911,26 +910,36 @@ export default function MapPage() {
                   {(() => {
                     const shopProducts = products.filter(p => p.shopId === selectedShop.id);
                     return shopProducts.length > 0 ? (
-                      <div className="rounded-xl border border-gray-200 overflow-y-auto" style={{ maxHeight: `${3 * 64}px` }}>
-                        {shopProducts.map((p, i) => (
-                          <div key={p.id} className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors ${i < shopProducts.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            {/* left */}
-                            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
-                              {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
-                            </div>
-                            {/* contents */}
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
-                                <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
+                      <div className="space-y-2 max-h-96 overflow-y-auto">
+                        {shopProducts.map((p) => (
+                          <div key={p.id} className="border border-gray-200 rounded-xl p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                            {/* top row */}
+                            <div className="flex items-start gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
+                                {CATEGORY_EMOJI_MAP[p.category] ?? '🛍️'}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 truncate">{p.name}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <span className="text-xs text-gray-400 line-through">{p.originalPrice.toLocaleString()}원</span>
+                                  <span className="text-[11px] bg-red-100 text-red-700 px-1.5 rounded font-bold">-{p.discount}%</span>
+                                </div>
+                              </div>
+                              <div className="flex flex-col items-end shrink-0">
+                                <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
+                                <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
                               </div>
                             </div>
-                            {/* right */}
-                            <div className="flex flex-col items-end shrink-0">
-                              <span className="text-sm font-semibold text-blue-600">{p.price.toLocaleString()}원</span>
-                              <span className="text-[11px] text-gray-500 mt-0.5">{p.timeLeft}시간</span>
-                            </div>
+                            {/* reserve button */}
+                            <button
+                              onClick={() => {
+                                if (!user) { setShowAuthModal(true); return; }
+                                handleReserve(p);
+                              }}
+                              disabled={reservationLoading}
+                              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white text-xs font-semibold py-2 rounded-lg active:scale-95 transition-all">
+                              {reservationLoading ? '예약 중...' : '예약하기'}
+                            </button>
                           </div>
                         ))}
                       </div>
@@ -993,39 +1002,12 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* ── 수량 선택 ────────────────────────────────────────────────────── */}
+            {/* ── 하단 액션 버튼 ────────────────────────────────────────────────────── */}
             <div className="p-6 border-t border-gray-200 space-y-4">
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-semibold text-gray-700">수량:</span>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setReservationQuantity(Math.max(1, reservationQuantity - 1))}
-                    className="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-                    −
-                  </button>
-                  <span className="w-8 text-center font-bold">{reservationQuantity}</span>
-                  <button
-                    onClick={() => setReservationQuantity(Math.min(selectedProduct?.stock || 10, reservationQuantity + 1))}
-                    className="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {/* ── 구조하러가기 버튼 ────────────────────────────────────────────────────── */}
-              <button
-                onClick={() => {
-                  if (!user) { setShowAuthModal(true); return; }
-                  handleReserve(selectedProduct!);
-                }}
-                disabled={reservationLoading}
-                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
-                <Navigation className="w-5 h-5" /> {reservationLoading ? '예약 중...' : '구조하러가기'}
-              </button>
               <button
                 onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedShop.shop_name)},${selectedShop.latitude},${selectedShop.longitude}`; window.open(kakaoLink, '_blank'); }}
-                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-3 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
-                🗺️ 카카오맵에서 길찾기
+                className="w-full bg-green-600 hover:bg-green-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                <Navigation className="w-5 h-5" /> 구조하러가기
               </button>
             </div>
           </div>
