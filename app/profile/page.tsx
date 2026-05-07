@@ -6,6 +6,7 @@ import { ArrowLeft, LogOut } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
+import ReviewModal from '@/components/review/ReviewModal'
 import type { Reservation } from '@/types'
 
 export default function ProfilePage() {
@@ -14,6 +15,8 @@ export default function ProfilePage() {
   const [reservations, setReservations] = useState<Reservation[]>([])
   const [loading, setLoading] = useState(false)
   const [showAvatarEdit, setShowAvatarEdit] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [selectedReservationForReview, setSelectedReservationForReview] = useState<Reservation | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -194,6 +197,17 @@ export default function ProfilePage() {
                         ✓ 픽업 완료
                       </button>
                     )}
+                    {isCompleted && (
+                      <button
+                        onClick={() => {
+                          setSelectedReservationForReview(reservation)
+                          setShowReviewModal(true)
+                        }}
+                        className="w-full py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors active:scale-95"
+                      >
+                        ✍️ 리뷰 작성
+                      </button>
+                    )}
                   </div>
                 )
               })}
@@ -218,6 +232,21 @@ export default function ProfilePage() {
           onClose={() => setShowAvatarEdit(false)}
           onSave={handleAvatarSave}
           currentUrl={profile.avatar_url}
+        />
+      )}
+
+      {showReviewModal && selectedReservationForReview && (
+        <ReviewModal
+          reservation={selectedReservationForReview}
+          onClose={() => {
+            setShowReviewModal(false)
+            setSelectedReservationForReview(null)
+          }}
+          onSuccess={() => {
+            setShowReviewModal(false)
+            setSelectedReservationForReview(null)
+            loadReservations()
+          }}
         />
       )}
     </div>

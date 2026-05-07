@@ -217,7 +217,7 @@ export default function SellerDashboardPage() {
       .from('reservations')
       .select('*')
       .eq('shop_id', shop.id)
-      .in('status', ['PENDING', 'CONFIRMED'])
+      .in('status', ['PENDING', 'READY', 'COMPLETED'])
       .order('created_at', { ascending: false })
     setReservations((data as Reservation[]) ?? [])
   }, [shop?.id])
@@ -756,48 +756,109 @@ export default function SellerDashboardPage() {
             )}
 
             {reservations.length > 0 ? (
-              reservations.map((r) => (
-                <div key={r.id} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1">
-                      <p className="font-bold text-gray-900">{r.user_nickname || '고객'}님</p>
-                      <p className="text-sm text-gray-600 mt-1">📦 {r.product_name}</p>
-                      <p className="text-xs text-gray-400 mt-2">{new Date(r.created_at).toLocaleString('ko-KR')}</p>
+              <div className="space-y-6">
+                {/* ── 신규 예약 (PENDING) ── */}
+                {reservations.filter(r => r.status === 'PENDING').length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <Clock size={16} className="text-red-500" />
+                      신규 예약 ({reservations.filter(r => r.status === 'PENDING').length})
+                    </h3>
+                    <div className="space-y-3">
+                      {reservations.filter(r => r.status === 'PENDING').map((r) => (
+                        <div key={r.id} className="bg-red-50 border border-red-200 rounded-xl p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <p className="font-bold text-gray-900">{r.user_nickname || '고객'}님</p>
+                              <p className="text-sm text-gray-700 mt-1">📦 {r.product_name}</p>
+                              <p className="text-xs text-gray-500 mt-2">수량: {r.quantity}개</p>
+                              <p className="text-xs text-gray-400 mt-1">{new Date(r.created_at).toLocaleString('ko-KR')}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => supabase.from('reservations').update({ status: 'READY' }).eq('id', r.id).then(() => fetchReservations())}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                          >
+                            📦 제품 준비 완료
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    {r.status === 'PENDING' && (
-                      <button
-                        onClick={() => supabase.from('reservations').update({ status: 'READY' }).eq('id', r.id).then(() => fetchReservations())}
-                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
-                      >
-                        📦 제품 준비 완료
-                      </button>
-                    )}
-                    {r.status === 'READY' && (
-                      <button
-                        onClick={() => handleCompletePickup(r.id)}
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
-                      >
-                        ✓ 수령 완료
-                      </button>
-                    )}
-                    <button
-                      className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-all"
-                      onClick={() => {
-                        if (confirm('이 예약을 취소하시겠습니까?')) {
-                          supabase.from('reservations').update({ status: 'CANCELLED' }).eq('id', r.id).then(() => fetchReservations())
-                        }
-                      }}
-                    >
-                      취소
-                    </button>
+                )}
+
+                {/* ── 준비 완료 (READY) ── */}
+                {reservations.filter(r => r.status === 'READY').length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <Package size={16} className="text-blue-500" />
+                      준비 완료 - 수령 대기 ({reservations.filter(r => r.status === 'READY').length})
+                    </h3>
+                    <div className="space-y-3">
+                      {reservations.filter(r => r.status === 'READY').map((r) => (
+                        <div key={r.id} className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <p className="font-bold text-gray-900">{r.user_nickname || '고객'}님</p>
+                              <p className="text-sm text-gray-700 mt-1">📦 {r.product_name}</p>
+                              <p className="text-xs text-gray-500 mt-2">수량: {r.quantity}개 | 예약: {new Date(r.created_at).toLocaleDateString('ko-KR')}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleCompletePickup(r.id)}
+                            className="w-full bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                          >
+                            ✓ 수령 완료
+                          </button>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))
+                )}
+
+                {/* ── 완료된 거래 (COMPLETED) ── */}
+                {reservations.filter(r => r.status === 'COMPLETED').length > 0 && (
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <CheckCircle2 size={16} className="text-green-500" />
+                      완료된 거래 기록 ({reservations.filter(r => r.status === 'COMPLETED').length})
+                    </h3>
+                    <div className="space-y-3">
+                      {reservations.filter(r => r.status === 'COMPLETED').map((r) => (
+                        <div key={r.id} className="bg-green-50 border border-green-200 rounded-xl p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <p className="font-bold text-gray-900">{r.user_nickname || '고객'}님</p>
+                              <p className="text-sm text-gray-700 mt-1">📦 {r.product_name}</p>
+                              <div className="grid grid-cols-2 gap-3 mt-2 text-xs">
+                                <div className="bg-white/60 p-2 rounded-lg">
+                                  <p className="text-gray-500">수량</p>
+                                  <p className="font-bold text-gray-900">{r.quantity}개</p>
+                                </div>
+                                <div className="bg-white/60 p-2 rounded-lg">
+                                  <p className="text-gray-500">예약일</p>
+                                  <p className="font-bold text-gray-900">{new Date(r.created_at).toLocaleDateString('ko-KR')}</p>
+                                </div>
+                                <div className="bg-white/60 p-2 rounded-lg">
+                                  <p className="text-gray-500">픽업완료</p>
+                                  <p className="font-bold text-gray-900">{r.pickup_completed_at ? new Date(r.pickup_completed_at).toLocaleDateString('ko-KR') : '-'}</p>
+                                </div>
+                                <div className="bg-white/60 p-2 rounded-lg">
+                                  <p className="text-gray-500">상태</p>
+                                  <p className="font-bold text-green-600">구조완료 ✓</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="text-center py-12 text-gray-500">
-                <p className="text-sm">현재 대기 중인 예약이 없습니다</p>
+                <p className="text-sm">현재 예약이 없습니다</p>
               </div>
             )}
           </div>
