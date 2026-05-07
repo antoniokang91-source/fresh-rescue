@@ -316,27 +316,6 @@ export default function MapPage() {
     const currentMap = targetMap || map;
     if (!currentMap || !window.kakao?.maps?.event) return;
 
-    products.forEach((product) => {
-      if (!product.lat || !product.lng) return;
-      try {
-        const el = document.createElement('div');
-        el.style.cssText = `
-          background: #10B981; color: white; padding: 2px 4px;
-          border-radius: 4px; font-size: 9px; font-weight: bold;
-          border: 1px solid white; box-shadow: 0 1px 4px rgba(0,0,0,0.15);
-          cursor: pointer; white-space: nowrap;
-        `;
-        el.textContent = `${product.discount}%`;
-        el.onclick = () => setSelectedProduct(product);
-
-        new window.kakao.maps.CustomOverlay({
-          position: new window.kakao.maps.LatLng(product.lat, product.lng),
-          content: el,
-          map: currentMap,
-          zIndex: 5,
-        });
-      } catch { }
-    });
 
     shops.forEach((shop) => {
       if (!shop.latitude || !shop.longitude) return;
