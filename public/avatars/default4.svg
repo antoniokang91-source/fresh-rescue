@@ -1,15 +1,33 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="grad4" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#A8E6CF;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#56AB91;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="48" fill="url(#grad4)"/>
-  <circle cx="32" cy="35" r="6" fill="#FFF"/>
-  <circle cx="68" cy="35" r="6" fill="#FFF"/>
-  <circle cx="32" cy="35" r="3" fill="#191F28"/>
-  <circle cx="68" cy="35" r="3" fill="#191F28"/>
-  <path d="M 38 52 Q 50 62 62 52" stroke="#FFF" stroke-width="3" fill="none" stroke-linecap="round"/>
-  <path d="M 45 68 Q 50 75 55 68" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="100" cy="220" rx="70" ry="15" fill="#d0d0d0" opacity="0.5"/>
+  <!-- Meat body -->
+  <ellipse cx="100" cy="130" rx="58" ry="60" fill="#E87080"/>
+  <!-- Meat texture/marbling -->
+  <path d="M 60 100 Q 80 90 100 95 Q 120 90 140 100" stroke="#F5B8BD" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M 55 130 Q 75 125 100 130 Q 125 125 145 130" stroke="#F5B8BD" stroke-width="2" fill="none" opacity="0.6"/>
+  <path d="M 65 160 Q 85 155 100 160 Q 115 155 135 160" stroke="#F5B8BD" stroke-width="2" fill="none" opacity="0.6"/>
+  <!-- Lighter shading -->
+  <ellipse cx="75" cy="105" rx="28" ry="25" fill="#F5A8A8" opacity="0.5"/>
+  
+  <!-- Eye white left -->
+  <circle cx="75" cy="120" r="8" fill="#fff"/>
+  <!-- Eye pupil left -->
+  <circle cx="75" cy="120" r="5" fill="#000"/>
+  <!-- Eye shine left -->
+  <circle cx="77" cy="117" r="2" fill="#fff"/>
+  
+  <!-- Eye white right -->
+  <circle cx="125" cy="120" r="8" fill="#fff"/>
+  <!-- Eye pupil right -->
+  <circle cx="125" cy="120" r="5" fill="#000"/>
+  <!-- Eye shine right -->
+  <circle cx="127" cy="117" r="2" fill="#fff"/>
+  
+  <!-- Cheek left -->
+  <ellipse cx="55" cy="135" rx="7" ry="5" fill="#FFB3BE" opacity="0.8"/>
+  <!-- Cheek right -->
+  <ellipse cx="145" cy="135" rx="7" ry="5" fill="#FFB3BE" opacity="0.8"/>
+  
+  <!-- Smile -->
+  <path d="M 85 150 Q 100 160 115 150" stroke="#000" stroke-width="2.5" fill="none" stroke-linecap="round"/>
 </svg>

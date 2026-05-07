@@ -1,17 +1,17 @@
-<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="grad3" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#FFE66D;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#FFC94C;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="48" fill="url(#grad3)"/>
-  <g id="eyes">
-    <ellipse cx="35" cy="38" rx="6" ry="8" fill="#191F28"/>
-    <ellipse cx="65" cy="38" rx="6" ry="8" fill="#191F28"/>
-    <circle cx="37" cy="36" r="2" fill="#FFF"/>
-    <circle cx="67" cy="36" r="2" fill="#FFF"/>
-  </g>
-  <path d="M 40 50 L 45 58 L 50 55 L 55 58 L 60 50" fill="#191F28"/>
-  <path d="M 35 62 Q 50 72 65 62" stroke="#191F28" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg">
+  <ellipse cx="100" cy="220" rx="70" ry="15" fill="#d0d0d0" opacity="0.5"/>
+  <ellipse cx="100" cy="120" rx="60" ry="55" fill="#6BDD5F"/>
+  <path d="M 50 100 Q 40 85 55 70 Q 65 60 75 75 Q 70 65 80 55" fill="none" stroke="#5BB84D" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 150 100 Q 160 85 145 70 Q 135 60 125 75 Q 130 65 120 55" fill="none" stroke="#5BB84D" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 60 140 Q 45 150 50 165 Q 55 155 70 160" fill="none" stroke="#5BB84D" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 140 140 Q 155 150 150 165 Q 145 155 130 160" fill="none" stroke="#5BB84D" stroke-width="3" stroke-linecap="round"/>
+  <circle cx="75" cy="110" r="8" fill="#fff"/>
+  <circle cx="75" cy="110" r="5" fill="#000"/>
+  <circle cx="77" cy="107" r="2" fill="#fff"/>
+  <circle cx="125" cy="110" r="8" fill="#fff"/>
+  <circle cx="125" cy="110" r="5" fill="#000"/>
+  <circle cx="127" cy="107" r="2" fill="#fff"/>
+  <ellipse cx="55" cy="125" rx="7" ry="5" fill="#C4A8A8" opacity="0.7"/>
+  <ellipse cx="145" cy="125" rx="7" ry="5" fill="#C4A8A8" opacity="0.7"/>
+  <ellipse cx="100" cy="140" rx="8" ry="10" fill="#000"/>
 </svg>
