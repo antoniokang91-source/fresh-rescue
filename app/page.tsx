@@ -332,11 +332,10 @@ export default function MapPage() {
       try {
         const emoji = CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️';
         const isOperating = shop.is_operating !== false;
-        const displayEmoji = isOperating ? emoji : emoji + '😴';
 
         const canvas = document.createElement('canvas');
-        canvas.width = 50;
-        canvas.height = 55;
+        canvas.width = 60;
+        canvas.height = 60;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
 
@@ -352,23 +351,29 @@ export default function MapPage() {
         ctx.stroke();
 
         ctx.fillStyle = '#000';
-        ctx.font = `${isOperating ? '28' : '20'}px Arial`;
+        ctx.font = '28px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(displayEmoji, 25, 28);
+        ctx.fillText(emoji, 25, 28);
+
+        if (!isOperating) {
+          ctx.fillStyle = '#FF6B6B';
+          ctx.font = 'bold 14px Arial';
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'top';
+          ctx.fillText('Zzz', 38, 8);
+        }
 
         const markerImage = canvas.toDataURL();
         const marker = new window.kakao.maps.Marker({
           position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
-          map: currentMap, title: shop.shop_name,
-          image: new window.kakao.maps.MarkerImage(
-            markerImage,
-            new window.kakao.maps.Size(50, 55),
-            { offset: new window.kakao.maps.Point(25, 27) }
-          ),
+          map: currentMap,
+          title: shop.shop_name,
+          image: new window.kakao.maps.MarkerImage(markerImage, new window.kakao.maps.Size(60, 60), { offset: new window.kakao.maps.Point(30, 30) }),
+          zIndex: 10,
         });
         window.kakao.maps.event.addListener(marker, 'click', () => setSelectedShop(shop));
-      } catch { }
+      } catch (e) { console.error('Marker error:', e); }
 
       // 핀 광고 말풍선
       const pinAd = pinAds.find(pa => pa.shop_id === shop.id && pa.is_active);
