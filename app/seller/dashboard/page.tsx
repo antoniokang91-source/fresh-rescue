@@ -766,12 +766,22 @@ export default function SellerDashboardPage() {
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={() => handleCompletePickup(r.id)}
-                      className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
-                    >
-                      ✓ 수령 완료
-                    </button>
+                    {r.status === 'PENDING' && (
+                      <button
+                        onClick={() => supabase.from('reservations').update({ status: 'READY' }).eq('id', r.id).then(() => fetchReservations())}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
+                      >
+                        📦 제품 준비 완료
+                      </button>
+                    )}
+                    {r.status === 'READY' && (
+                      <button
+                        onClick={() => handleCompletePickup(r.id)}
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all"
+                      >
+                        ✓ 수령 완료
+                      </button>
+                    )}
                     <button
                       className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-2.5 rounded-xl text-sm font-bold transition-all"
                       onClick={() => {

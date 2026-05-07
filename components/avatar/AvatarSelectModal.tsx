@@ -13,11 +13,11 @@ interface AvatarSelectModalProps {
 }
 
 const DEFAULT_AVATARS = [
-  '/avatars/default1.svg',
-  '/avatars/default2.svg',
-  '/avatars/default3.svg',
-  '/avatars/default4.svg',
-  '/avatars/default5.svg',
+  '/avatars/default1.png',
+  '/avatars/default2.png',
+  '/avatars/default3.png',
+  '/avatars/default4.png',
+  '/avatars/default5.png',
 ]
 
 export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip = false }: AvatarSelectModalProps) {
