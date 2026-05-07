@@ -333,15 +333,36 @@ export default function MapPage() {
         const emoji = CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️';
         const isOperating = shop.is_operating !== false;
         const displayEmoji = isOperating ? emoji : emoji + '😴';
-        const svg = `<svg width="50" height="55" viewBox="0 0 50 55" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="25" cy="25" r="18" fill="${isOperating ? '#0064FF' : '#999'}" stroke="white" stroke-width="3" opacity="${isOperating ? '1' : '0.5'}"/>
-          <text x="25" y="28" dominant-baseline="middle" text-anchor="middle" font-size="${isOperating ? '24' : '18'}">${displayEmoji}</text>
-        </svg>`;
+
+        const canvas = document.createElement('canvas');
+        canvas.width = 50;
+        canvas.height = 55;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        ctx.fillStyle = isOperating ? '#0064FF' : '#999';
+        ctx.globalAlpha = isOperating ? 1 : 0.5;
+        ctx.beginPath();
+        ctx.arc(25, 25, 18, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 1;
+        ctx.stroke();
+
+        ctx.fillStyle = '#000';
+        ctx.font = `${isOperating ? '28' : '20'}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(displayEmoji, 25, 28);
+
+        const markerImage = canvas.toDataURL();
         const marker = new window.kakao.maps.Marker({
           position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
           map: currentMap, title: shop.shop_name,
           image: new window.kakao.maps.MarkerImage(
-            'data:image/svg+xml;base64,' + window.btoa(unescape(encodeURIComponent(svg))),
+            markerImage,
             new window.kakao.maps.Size(50, 55),
             { offset: new window.kakao.maps.Point(25, 27) }
           ),
