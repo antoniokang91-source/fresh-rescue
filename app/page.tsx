@@ -236,6 +236,17 @@ export default function MapPage() {
     );
   }, []);
 
+  // ── 저장된 위치에서 자동 마커 생성 ──────────────────────────────────────────
+  useEffect(() => {
+    if (!mapLoaded || !profile) return;
+    const savedLocation = localStorage.getItem('fr_location');
+    if (savedLocation) {
+      const loc = JSON.parse(savedLocation);
+      setUserLocation(loc);
+      createUserMarker(loc.lat, loc.lng);
+    }
+  }, [mapLoaded, profile?.avatar_url]);
+
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!mapLoaded) return;
@@ -517,6 +528,19 @@ export default function MapPage() {
     setShowAuthModal(true);
   };
 
+  const createUserMarker = (lat: number, lng: number) => {
+    if (!map) return;
+    const latlng = new window.kakao.maps.LatLng(lat, lng);
+    map.setCenter(latlng); map.setLevel(4);
+    if (userMarkerRef.current) userMarkerRef.current.setMap(null);
+
+    const markerUrl = profile?.avatar_url || (window.location.origin + `/pin-${selectedPin}.svg`);
+    const markerSize = profile?.avatar_url ? new window.kakao.maps.Size(50, 50) : new window.kakao.maps.Size(50, 55);
+    const markerOffset = profile?.avatar_url ? new window.kakao.maps.Point(25, 25) : new window.kakao.maps.Point(25, 27);
+    const markerImage = new window.kakao.maps.MarkerImage(markerUrl, markerSize, { offset: markerOffset });
+    userMarkerRef.current = new window.kakao.maps.Marker({ position: latlng, map, image: markerImage, title: '내 위치', zIndex: 10 });
+  };
+
   const handleLocate = () => {
     if (!navigator.geolocation) { alert('이 브라우저는 위치 서비스를 지원하지 않습니다.'); return; }
     navigator.geolocation.getCurrentPosition(
@@ -524,16 +548,7 @@ export default function MapPage() {
         const { latitude, longitude } = coords;
         setUserLocation({ lat: latitude, lng: longitude });
         localStorage.setItem('fr_location', JSON.stringify({ lat: latitude, lng: longitude }));
-        if (!map) return;
-        const latlng = new window.kakao.maps.LatLng(latitude, longitude);
-        map.setCenter(latlng); map.setLevel(4);
-        if (userMarkerRef.current) userMarkerRef.current.setMap(null);
-
-        const markerUrl = profile?.avatar_url || (window.location.origin + `/pin-${selectedPin}.svg`);
-        const markerSize = profile?.avatar_url ? new window.kakao.maps.Size(50, 50) : new window.kakao.maps.Size(50, 55);
-        const markerOffset = profile?.avatar_url ? new window.kakao.maps.Point(25, 25) : new window.kakao.maps.Point(25, 27);
-        const markerImage = new window.kakao.maps.MarkerImage(markerUrl, markerSize, { offset: markerOffset });
-        userMarkerRef.current = new window.kakao.maps.Marker({ position: latlng, map, image: markerImage, title: '내 위치', zIndex: 10 });
+        createUserMarker(latitude, longitude);
       },
       (err) => {
         if (err.code === 1) alert('위치 권한이 차단되어 있습니다.\n브라우저 설정에서 위치를 허용해주세요.');
