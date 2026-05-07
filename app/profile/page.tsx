@@ -80,7 +80,7 @@ export default function ProfilePage() {
   const handleAvatarSave = async (url: string) => {
     await refreshProfile()
     setShowAvatarEdit(false)
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 500))
     router.push('/')
   }
 
@@ -243,6 +243,7 @@ export default function ProfilePage() {
             <LogOut size={18} />
             로그아웃
           </button>
+        </div>
         </div>
       </div>
 
