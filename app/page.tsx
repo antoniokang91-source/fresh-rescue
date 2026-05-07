@@ -957,8 +957,8 @@ export default function MapPage() {
                   {shopRanking && (
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-bold text-blue-700">현재 순위</span>
-                        <span className="text-2xl font-bold text-blue-600">#{shopRanking.rank_position || '-'}</span>
+                        <span className="text-sm font-bold text-blue-700">현재 순위(지역내)</span>
+                        <span className="text-2xl font-bold text-blue-600">{shopRanking.rank_position ? `${shopRanking.rank_position}등` : '-'}</span>
                       </div>
                       <div className="grid grid-cols-2 gap-3 text-xs">
                         <div>
