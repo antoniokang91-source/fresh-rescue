@@ -857,7 +857,7 @@ export default function SellerDashboardPage() {
                   <div>
                     <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                       <CheckCircle2 size={16} className="text-green-500" />
-                      완료된 거래 기록 ({reservations.filter(r => r.status === 'COMPLETED').length})
+                      구조 완료 내역 ({reservations.filter(r => r.status === 'COMPLETED').length})
                     </h3>
                     <div className="space-y-3">
                       {reservations.filter(r => r.status === 'COMPLETED').map((r) => (
