@@ -333,46 +333,58 @@ export default function MapPage() {
         const emoji = CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️';
         const isOperating = shop.is_operating !== false;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 60;
-        canvas.height = 60;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        if (isOperating) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 50;
+          canvas.height = 55;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
 
-        ctx.fillStyle = isOperating ? '#0064FF' : '#999';
-        ctx.globalAlpha = isOperating ? 1 : 0.5;
-        ctx.beginPath();
-        ctx.arc(25, 25, 18, 0, Math.PI * 2);
-        ctx.fill();
+          ctx.fillStyle = '#0064FF';
+          ctx.beginPath();
+          ctx.arc(25, 25, 18, 0, Math.PI * 2);
+          ctx.fill();
 
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 3;
-        ctx.globalAlpha = 1;
-        ctx.stroke();
+          ctx.strokeStyle = 'white';
+          ctx.lineWidth = 3;
+          ctx.stroke();
 
-        ctx.fillStyle = '#000';
-        ctx.font = '28px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(emoji, 25, 28);
+          ctx.fillStyle = '#000';
+          ctx.font = '28px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(emoji, 25, 28);
 
-        if (!isOperating) {
+          const markerImage = canvas.toDataURL();
+          const marker = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
+            map: currentMap,
+            title: shop.shop_name,
+            image: new window.kakao.maps.MarkerImage(markerImage, new window.kakao.maps.Size(50, 55), { offset: new window.kakao.maps.Point(25, 27) }),
+          });
+          window.kakao.maps.event.addListener(marker, 'click', () => setSelectedShop(shop));
+        } else {
+          const canvas = document.createElement('canvas');
+          canvas.width = 40;
+          canvas.height = 30;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) return;
+
           ctx.fillStyle = '#FF6B6B';
-          ctx.font = 'bold 14px Arial';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          ctx.fillText('Zzz', 38, 8);
-        }
+          ctx.font = 'bold 18px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('Zzz', 20, 15);
 
-        const markerImage = canvas.toDataURL();
-        const marker = new window.kakao.maps.Marker({
-          position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
-          map: currentMap,
-          title: shop.shop_name,
-          image: new window.kakao.maps.MarkerImage(markerImage, new window.kakao.maps.Size(60, 60), { offset: new window.kakao.maps.Point(30, 30) }),
-          zIndex: 10,
-        });
-        window.kakao.maps.event.addListener(marker, 'click', () => setSelectedShop(shop));
+          const markerImage = canvas.toDataURL();
+          const marker = new window.kakao.maps.Marker({
+            position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
+            map: currentMap,
+            title: shop.shop_name,
+            image: new window.kakao.maps.MarkerImage(markerImage, new window.kakao.maps.Size(40, 30), { offset: new window.kakao.maps.Point(20, 15) }),
+          });
+          window.kakao.maps.event.addListener(marker, 'click', () => setSelectedShop(shop));
+        }
       } catch (e) { console.error('Marker error:', e); }
 
       // 핀 광고 말풍선
