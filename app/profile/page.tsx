@@ -38,7 +38,17 @@ export default function ProfilePage() {
         .order('created_at', { ascending: false })
 
       if (!error && data) {
-        setReservations(data as Reservation[])
+        const withReviewStatus = await Promise.all(
+          data.map(async (res: any) => {
+            const { data: review } = await supabase
+              .from('reviews')
+              .select('id')
+              .eq('reservation_id', res.id)
+              .maybeSingle()
+            return { ...res, hasReviewed: !!review }
+          })
+        )
+        setReservations(withReviewStatus as Reservation[])
       }
     } catch (e) {
       console.error('Error loading reservations:', e)
@@ -139,7 +149,7 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">역할</p>
                 <p className="text-base font-semibold text-gray-900">
-                  {profile.role === 'user' ? '구조대' : profile.role === 'seller' ? '사장님' : '관리자'}
+                  {profile.role === 'user' ? '구조대원' : profile.role === 'seller' ? '사장님' : '관리자'}
                 </p>
               </div>
             )}
@@ -154,7 +164,7 @@ export default function ProfilePage() {
             <p className="text-center text-gray-500 py-8">로딩 중...</p>
           ) : reservations.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">완료된 구매 내역이 없습니다</p>
+              <p className="text-gray-500 text-sm">완료된 구조 내역이 없습니다</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -198,7 +208,7 @@ export default function ProfilePage() {
                         ✓ 픽업 완료
                       </button>
                     )}
-                    {isCompleted && (
+                    {isCompleted && !(reservation as any).hasReviewed && (
                       <button
                         onClick={() => {
                           setSelectedReservationForReview(reservation)
@@ -207,6 +217,14 @@ export default function ProfilePage() {
                         className="w-full py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors active:scale-95"
                       >
                         ✍️ 리뷰 작성
+                      </button>
+                    )}
+                    {isCompleted && (reservation as any).hasReviewed && (
+                      <button
+                        disabled
+                        className="w-full py-2 bg-gray-300 text-gray-600 text-sm font-semibold rounded-lg cursor-not-allowed"
+                      >
+                        ✓ 리뷰작성완료
                       </button>
                     )}
                   </div>
