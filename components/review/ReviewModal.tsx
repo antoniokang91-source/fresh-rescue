@@ -85,7 +85,7 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
       let photoUrl: string | null = null
       if (photoFile) {
         const compressed = await compressImage(photoFile)
-        const fileName = `${user.id}/${Date.now()}.jpg`
+        const fileName = `private/${user.id}/${Date.now()}.jpg`
         const { error: uploadError } = await supabase.storage
           .from('review-images')
           .upload(fileName, compressed)
