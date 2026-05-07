@@ -852,7 +852,7 @@ export default function SellerDashboardPage() {
                   </div>
                 )}
 
-                {/* ── 완료된 거래 (COMPLETED) ── */}
+                {/* ── 구조 완료 내역 (COMPLETED) ── */}
                 {reservations.filter(r => r.status === 'COMPLETED').length > 0 && (
                   <div>
                     <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
