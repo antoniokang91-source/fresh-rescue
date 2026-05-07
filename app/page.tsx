@@ -143,6 +143,8 @@ export default function MapPage() {
   const [reviewSuccess, setReviewSuccess] = useState<{ shopName: string; rank: number } | null>(null);
   const [shopReviews, setShopReviews] = useState<any[]>([]);
   const [shopRanking, setShopRanking] = useState<any>(null);
+  const [reservationQuantity, setReservationQuantity] = useState(1);
+  const [reservationLoading, setReservationLoading] = useState(false);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -991,12 +993,39 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* ── 길찾기 버튼 ────────────────────────────────────────────────────── */}
-            <div className="p-6 border-t border-gray-200">
+            {/* ── 수량 선택 ────────────────────────────────────────────────────── */}
+            <div className="p-6 border-t border-gray-200 space-y-4">
+              <div className="flex items-center gap-4">
+                <span className="text-sm font-semibold text-gray-700">수량:</span>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setReservationQuantity(Math.max(1, reservationQuantity - 1))}
+                    className="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                    −
+                  </button>
+                  <span className="w-8 text-center font-bold">{reservationQuantity}</span>
+                  <button
+                    onClick={() => setReservationQuantity(Math.min(selectedProduct?.stock || 10, reservationQuantity + 1))}
+                    className="w-8 h-8 rounded-lg bg-gray-200 hover:bg-gray-300 flex items-center justify-center">
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* ── 구조하러가기 버튼 ────────────────────────────────────────────────────── */}
+              <button
+                onClick={() => {
+                  if (!user) { setShowAuthModal(true); return; }
+                  handleReserve(selectedProduct!);
+                }}
+                disabled={reservationLoading}
+                className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
+                <Navigation className="w-5 h-5" /> {reservationLoading ? '예약 중...' : '구조하러가기'}
+              </button>
               <button
                 onClick={() => { const kakaoLink = `https://map.kakao.com/link/map/${encodeURIComponent(selectedShop.shop_name)},${selectedShop.latitude},${selectedShop.longitude}`; window.open(kakaoLink, '_blank'); }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
-                <Navigation className="w-5 h-5" /> 길 찾기
+                className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-semibold py-3 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+                🗺️ 카카오맵에서 길찾기
               </button>
             </div>
           </div>
