@@ -333,43 +333,43 @@ export default function MapPage() {
         const emoji = CATEGORY_EMOJI_MAP[shop.category] ?? '🛍️';
         const isOperating = shop.is_operating !== false;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = 60;
-        canvas.height = 60;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+        const el = document.createElement('div');
+        el.style.cssText = 'position: relative; cursor: pointer;';
 
-        ctx.fillStyle = '#0064FF';
-        ctx.beginPath();
-        ctx.arc(25, 25, 18, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-
-        ctx.fillStyle = '#000';
-        ctx.font = '28px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(emoji, 25, 28);
+        const circle = document.createElement('div');
+        circle.style.cssText = `
+          width: 50px; height: 50px;
+          background: #0064FF; border: 3px solid white;
+          border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 28px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          transition: all 0.2s;
+        `;
+        circle.innerHTML = emoji;
+        circle.onmouseenter = () => circle.style.transform = 'scale(1.1)';
+        circle.onmouseleave = () => circle.style.transform = 'scale(1)';
+        el.appendChild(circle);
 
         if (!isOperating) {
-          ctx.fillStyle = '#FF6B6B';
-          ctx.font = 'bold 14px Arial';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'top';
-          ctx.fillText('Zzz', 40, 8);
+          const zzz = document.createElement('div');
+          zzz.style.cssText = `
+            position: absolute; top: 0; right: -8px;
+            color: #FF6B6B; font-weight: bold; font-size: 14px;
+            line-height: 1;
+          `;
+          zzz.textContent = 'Zzz';
+          el.appendChild(zzz);
         }
 
-        const markerImage = canvas.toDataURL();
-        const marker = new window.kakao.maps.Marker({
+        const overlay = new window.kakao.maps.CustomOverlay({
           position: new window.kakao.maps.LatLng(shop.latitude, shop.longitude),
+          content: el,
           map: currentMap,
-          title: shop.shop_name,
-          image: new window.kakao.maps.MarkerImage(markerImage, new window.kakao.maps.Size(60, 60), { offset: new window.kakao.maps.Point(30, 30) }),
+          zIndex: 10,
         });
-        window.kakao.maps.event.addListener(marker, 'click', () => setSelectedShop(shop));
+
+        el.onclick = () => setSelectedShop(shop);
       } catch (e) { console.error('Marker error:', e); }
 
       // 핀 광고 말풍선
