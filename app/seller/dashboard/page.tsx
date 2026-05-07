@@ -569,13 +569,13 @@ export default function SellerDashboardPage() {
               <div className="grid grid-cols-3 gap-2 mt-3">
                 <div className="bg-white/20 rounded-2xl p-2.5 text-center">
                   <div className="font-black text-lg leading-none">
-                    {products.filter(p => p.status === 'active').length}<span className="text-xs font-normal ml-0.5">건</span>
+                    {reservations.filter(r => r.status === 'PENDING').length}<span className="text-xs font-normal ml-0.5">건</span>
                   </div>
                   <div className="text-[10px] text-green-200 mt-0.5">구조 대기</div>
                 </div>
                 <div className="bg-white/20 rounded-2xl p-2.5 text-center">
                   <div className="font-black text-lg leading-none">
-                    {products.filter(p => p.status !== 'active').length}<span className="text-xs font-normal ml-0.5">개</span>
+                    {reservations.filter(r => r.status === 'COMPLETED').length}<span className="text-xs font-normal ml-0.5">개</span>
                   </div>
                   <div className="text-[10px] text-green-200 mt-0.5">구조 완료</div>
                 </div>

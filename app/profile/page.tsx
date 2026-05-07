@@ -198,9 +198,9 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* 구조 내역 */}
+        {/* 구조 완료 내역 */}
         <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">구조내역</h2>
+          <h2 className="text-lg font-bold text-gray-900">구조완료내역 ({reservations.length})</h2>
 
           {loading ? (
             <p className="text-center text-gray-500 py-8">로딩 중...</p>
