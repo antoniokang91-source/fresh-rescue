@@ -79,9 +79,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
+    <div className="w-full h-screen bg-gray-50 flex flex-col">
       {/* 헤더 */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between">
+      <div className="bg-white border-b border-gray-200 px-4 py-4 flex items-center justify-between flex-shrink-0">
         <button
           onClick={() => router.back()}
           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -92,7 +92,8 @@ export default function ProfilePage() {
         <div className="w-10" />
       </div>
 
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-2xl mx-auto p-4 space-y-6">
         {/* 사용자 정보 */}
         <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
           <h2 className="text-lg font-bold text-gray-900">내 정보</h2>
@@ -138,16 +139,16 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">역할</p>
                 <p className="text-base font-semibold text-gray-900">
-                  {profile.role === 'user' ? '고객' : profile.role === 'seller' ? '사장님' : '관리자'}
+                  {profile.role === 'user' ? '구조대' : profile.role === 'seller' ? '사장님' : '관리자'}
                 </p>
               </div>
             )}
           </div>
         </div>
 
-        {/* 구매 내역 */}
+        {/* 구조 내역 */}
         <div className="bg-white rounded-2xl p-6 shadow-sm space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">구매 내역</h2>
+          <h2 className="text-lg font-bold text-gray-900">구조내역</h2>
 
           {loading ? (
             <p className="text-center text-gray-500 py-8">로딩 중...</p>
