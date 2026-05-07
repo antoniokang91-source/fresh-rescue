@@ -244,7 +244,7 @@ export default function MapPage() {
     const loc = savedLocation ? JSON.parse(savedLocation) : { lat: 37.5665, lng: 126.978 };
     setUserLocation(loc);
     createUserMarker(loc.lat, loc.lng);
-  }, [mapLoaded, profile?.avatar_url]);
+  }, [mapLoaded, profile]);
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
