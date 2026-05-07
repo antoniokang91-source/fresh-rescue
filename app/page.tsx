@@ -528,8 +528,11 @@ export default function MapPage() {
         const latlng = new window.kakao.maps.LatLng(latitude, longitude);
         map.setCenter(latlng); map.setLevel(4);
         if (userMarkerRef.current) userMarkerRef.current.setMap(null);
-        const pinUrl = window.location.origin + `/pin-${selectedPin}.svg`;
-        const markerImage = new window.kakao.maps.MarkerImage(pinUrl, new window.kakao.maps.Size(50, 55), { offset: new window.kakao.maps.Point(25, 27) });
+
+        const markerUrl = profile?.avatar_url || (window.location.origin + `/pin-${selectedPin}.svg`);
+        const markerSize = profile?.avatar_url ? new window.kakao.maps.Size(50, 50) : new window.kakao.maps.Size(50, 55);
+        const markerOffset = profile?.avatar_url ? new window.kakao.maps.Point(25, 25) : new window.kakao.maps.Point(25, 27);
+        const markerImage = new window.kakao.maps.MarkerImage(markerUrl, markerSize, { offset: markerOffset });
         userMarkerRef.current = new window.kakao.maps.Marker({ position: latlng, map, image: markerImage, title: '내 위치', zIndex: 10 });
       },
       (err) => {
