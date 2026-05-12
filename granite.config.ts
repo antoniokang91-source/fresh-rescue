@@ -1,7 +1,7 @@
 import { defineConfig } from '@apps-in-toss/web-framework/config'
 
 export default defineConfig({
-  appName: 'fruit-rescue',
+  appName: 'freshrescue',
   brand: {
     displayName: 'Fruit Rescue',
     primaryColor: '#0064FF',
