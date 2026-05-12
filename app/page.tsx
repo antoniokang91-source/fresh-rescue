@@ -149,48 +149,42 @@ export default function MapPage() {
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
-    setIsLoading(true);
+    setProducts(DUMMY_PRODUCTS);
+    setIsLoading(false);
+
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+      const [productResult, shopResult] = await Promise.allSettled([
+        supabase.from('rescue_products').select('*').eq('status', 'active')
+          .order('created_at', { ascending: false }).limit(50),
+        supabase.from('shops').select('*').eq('is_active', true).limit(50),
+      ]);
 
-      try {
-        const { data: productData, error: productError } = await supabase
-          .from('rescue_products').select('*').eq('status', 'active')
-          .order('created_at', { ascending: false }).limit(50);
+      const productData = productResult.status === 'fulfilled' ? productResult.value.data : null;
+      const productError = productResult.status === 'fulfilled' ? productResult.value.error : null;
+      const shopData = shopResult.status === 'fulfilled' ? shopResult.value.data : null;
 
-        clearTimeout(timeout);
-
-        if (productError) { setProducts(DUMMY_PRODUCTS); setIsLoading(false); return; }
-
-        const { data: shopData } = await supabase.from('shops').select('*').eq('is_active', true).limit(50);
+      if (productData && productData.length > 0 && !productError) {
         const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
-
-        if (productData && productData.length > 0) {
-          const formatted: Product[] = productData.map((item: any) => {
-            const shop = shopMap.get(item.shop_id);
-            const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
-            const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
-            return {
-              id: item.id, name: item.product_name, price: item.rescue_price,
-              originalPrice: item.original_price,
-              discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
-              timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
-              shopId: item.shop_id, category: item.category || shop?.category || '기타',
-              description: item.description || '', stock: item.stock_quantity ?? 0,
-              shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
-              shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
-              distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
-            };
-          });
-          setProducts(formatted);
-        }
-        if (shopData && shopData.length > 0) setShops(shopData);
-      } catch (timeout_err) {
-        console.error('데이터 로드 타임아웃:', timeout_err);
-        setProducts(DUMMY_PRODUCTS);
+        const formatted: Product[] = productData.map((item: any) => {
+          const shop = shopMap.get(item.shop_id);
+          const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
+          const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
+          return {
+            id: item.id, name: item.product_name, price: item.rescue_price,
+            originalPrice: item.original_price,
+            discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
+            timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
+            shopId: item.shop_id, category: item.category || shop?.category || '기타',
+            description: item.description || '', stock: item.stock_quantity ?? 0,
+            shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
+            shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
+            distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
+          };
+        });
+        setProducts(formatted);
       }
-    } catch (e) { console.error(e); } finally { setIsLoading(false); }
+      if (shopData && shopData.length > 0) setShops(shopData);
+    } catch (e) { console.error('데이터 로드 오류:', e); }
   };
 
   const loadBanners = async () => {
