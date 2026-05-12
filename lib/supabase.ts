@@ -10,9 +10,14 @@ export const supabase =
   globalForSupabase.supabase ??
   createClient(supabaseUrl, supabaseAnonKey, {
     auth: {
-      storageKey: 'fruit-rescue-auth', // 고유 키로 락 충돌 방지
+      storageKey: 'fruit-rescue-auth',
       autoRefreshToken: true,
       persistSession: true,
+    },
+    global: {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
     },
   })
 
