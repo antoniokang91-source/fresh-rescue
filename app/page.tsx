@@ -151,49 +151,69 @@ export default function MapPage() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const { data: productData, error: productError } = await supabase
-        .from('rescue_products').select('*').eq('status', 'active')
-        .order('created_at', { ascending: false }).limit(50);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
 
-      if (productError) { setProducts(DUMMY_PRODUCTS); setIsLoading(false); return; }
+      try {
+        const { data: productData, error: productError } = await supabase
+          .from('rescue_products').select('*').eq('status', 'active')
+          .order('created_at', { ascending: false }).limit(50);
 
-      const { data: shopData } = await supabase.from('shops').select('*').eq('is_active', true).limit(50);
-      const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
+        clearTimeout(timeout);
 
-      if (productData && productData.length > 0) {
-        const formatted: Product[] = productData.map((item: any) => {
-          const shop = shopMap.get(item.shop_id);
-          const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
-          const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
-          return {
-            id: item.id, name: item.product_name, price: item.rescue_price,
-            originalPrice: item.original_price,
-            discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
-            timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
-            shopId: item.shop_id, category: item.category || shop?.category || '기타',
-            description: item.description || '', stock: item.stock_quantity ?? 0,
-            shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
-            shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
-            distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
-          };
-        });
-        setProducts(formatted);
+        if (productError) { setProducts(DUMMY_PRODUCTS); setIsLoading(false); return; }
+
+        const { data: shopData } = await supabase.from('shops').select('*').eq('is_active', true).limit(50);
+        const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
+
+        if (productData && productData.length > 0) {
+          const formatted: Product[] = productData.map((item: any) => {
+            const shop = shopMap.get(item.shop_id);
+            const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
+            const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
+            return {
+              id: item.id, name: item.product_name, price: item.rescue_price,
+              originalPrice: item.original_price,
+              discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
+              timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
+              shopId: item.shop_id, category: item.category || shop?.category || '기타',
+              description: item.description || '', stock: item.stock_quantity ?? 0,
+              shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
+              shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
+              distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
+            };
+          });
+          setProducts(formatted);
+        }
+        if (shopData && shopData.length > 0) setShops(shopData);
+      } catch (timeout_err) {
+        console.error('데이터 로드 타임아웃:', timeout_err);
+        setProducts(DUMMY_PRODUCTS);
       }
-      if (shopData && shopData.length > 0) setShops(shopData);
     } catch (e) { console.error(e); } finally { setIsLoading(false); }
   };
 
   const loadBanners = async () => {
-    const { data } = await supabase.from('banners').select('*').eq('is_active', true)
-      .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
-    if (data) setBanners(data);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const { data } = await supabase.from('banners').select('*').eq('is_active', true)
+        .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+      clearTimeout(timeout);
+      if (data) setBanners(data);
+    } catch (e) { console.error('배너 로드 실패:', e); }
   };
 
   const loadPinAds = async () => {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data } = await supabase.from('pin_ads').select('*')
-      .eq('is_active', true).or(`end_date.is.null,end_date.gte.${today}`);
-    if (data) setPinAds(data as PinAd[]);
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const today = new Date().toISOString().slice(0, 10);
+      const { data } = await supabase.from('pin_ads').select('*')
+        .eq('is_active', true).or(`end_date.is.null,end_date.gte.${today}`);
+      clearTimeout(timeout);
+      if (data) setPinAds(data as PinAd[]);
+    } catch (e) { console.error('핀광고 로드 실패:', e); }
   };
 
   // ── Kakao 지도 스크립트 로드 ──────────────────────────────────────────────────
