@@ -3,7 +3,7 @@ import { defineConfig } from '@apps-in-toss/web-framework/config'
 export default defineConfig({
   appName: 'freshrescue',
   brand: {
-    displayName: 'Fruit Rescue',
+    displayName: '신선구조대',
     primaryColor: '#0064FF',
     icon: 'https://fruit-rescue.app/icon.png',
   },

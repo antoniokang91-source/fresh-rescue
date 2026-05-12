@@ -268,15 +268,24 @@ export default function MapPage() {
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!mapLoaded && products.length === 0) return;
     const elapsed = Date.now() - mountTime.current;
     const delay = Math.max(0, 2000 - elapsed);
     const t = setTimeout(() => {
       setSplashFading(true);
       setTimeout(() => setSplashVisible(false), 700);
     }, delay);
-    return () => clearTimeout(t);
-  }, [mapLoaded, products.length]);
+
+    // 최대 3초 후 무조건 스플래시 사라짐 (로딩 실패 방지)
+    const maxWait = setTimeout(() => {
+      setSplashFading(true);
+      setTimeout(() => setSplashVisible(false), 700);
+    }, 3000);
+
+    return () => {
+      clearTimeout(t);
+      clearTimeout(maxWait);
+    };
+  }, []);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
