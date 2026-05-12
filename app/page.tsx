@@ -268,7 +268,7 @@ export default function MapPage() {
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!mapLoaded) return;
+    if (!mapLoaded && products.length === 0) return;
     const elapsed = Date.now() - mountTime.current;
     const delay = Math.max(0, 2000 - elapsed);
     const t = setTimeout(() => {
@@ -276,7 +276,7 @@ export default function MapPage() {
       setTimeout(() => setSplashVisible(false), 700);
     }, delay);
     return () => clearTimeout(t);
-  }, [mapLoaded]);
+  }, [mapLoaded, products.length]);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
