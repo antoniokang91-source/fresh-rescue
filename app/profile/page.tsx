@@ -276,6 +276,22 @@ export default function ProfilePage() {
           )}
         </div>
 
+        {/* 약관 및 정책 */}
+        <div className="space-y-2 pb-4 border-t border-gray-200 pt-4">
+          <button
+            onClick={() => window.location.href = '/terms'}
+            className="w-full py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            서비스 이용약관
+          </button>
+          <button
+            onClick={() => window.location.href = '/privacy'}
+            className="w-full py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+          >
+            개인정보 처리방침
+          </button>
+        </div>
+
         {/* 로그아웃 */}
         <div className="pb-4">
           <button
