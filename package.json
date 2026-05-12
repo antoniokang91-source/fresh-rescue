@@ -4,12 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && node scripts/export.js",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
-    "@apps-in-toss/web-framework": "^2.4.7",
+    "@apps-in-toss/web-framework": "^2.5.0",
     "@supabase/supabase-js": "^2.45.0",
     "@toss/tds-colors": "^0.1.0",
     "clsx": "^2.1.1",

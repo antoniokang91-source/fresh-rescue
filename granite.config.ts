@@ -1,23 +1,20 @@
 import { defineConfig } from '@apps-in-toss/web-framework/config'
 
 export default defineConfig({
-  appName: 'freshrescue',
+  appName: 'fruit-rescue',
   brand: {
-    displayName: '신선구조대',
-    primaryColor: '#FF5733',
-    icon: 'https://www.toss.im/static/images/icon.png',
+    displayName: 'Fruit Rescue',
+    primaryColor: '#0064FF',
+    icon: 'https://fruit-rescue.app/icon.png',
   },
   web: {
     host: 'localhost',
     port: 3000,
     commands: {
       dev: 'next dev',
-      build: 'next build',
+      build: 'npm run build',
     },
   },
   permissions: [],
-  outdir: 'out',
-  webViewProps: {
-    type: 'partner',
-  },
+  outdir: 'dist',
 })
