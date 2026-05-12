@@ -1,0 +1,16 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- 바나나 캐릭터 -->
+  <circle cx="100" cy="100" r="90" fill="#FFFDE7" stroke="#FDD835" stroke-width="2"/>
+  <!-- 바나나 모양 -->
+  <path d="M 60 130 Q 80 60 140 70" fill="#FDD835" stroke="#FBC02D" stroke-width="2"/>
+  <path d="M 65 135 Q 85 65 145 75" fill="#FFEB3B"/>
+  <!-- 눈 -->
+  <circle cx="85" cy="85" r="6" fill="#333"/>
+  <circle cx="115" cy="90" r="6" fill="#333"/>
+  <!-- 입 (O 모양 - 놀란 표정) -->
+  <circle cx="100" cy="115" r="8" fill="none" stroke="#333" stroke-width="2"/>
+  <!-- 반점 -->
+  <ellipse cx="95" cy="105" rx="2" ry="4" fill="#8B7500"/>
+  <ellipse cx="110" cy="110" rx="2" ry="4" fill="#8B7500"/>
+  <ellipse cx="120" cy="95" rx="2" ry="4" fill="#8B7500"/>
+</svg>

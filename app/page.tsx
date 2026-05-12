@@ -6,6 +6,7 @@ import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "
 import AuthModal from "@/components/auth/AuthModal";
 import ReviewModal from "@/components/review/ReviewModal";
 import ReviewSuccessPopup from "@/components/review/ReviewSuccessPopup";
+import AvatarSelectModal from "@/components/avatar/AvatarSelectModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase";
 import type { Reservation, Review, ShopRanking } from '@/types';
@@ -147,6 +148,9 @@ export default function MapPage() {
   const [shopRanking, setShopRanking] = useState<any>(null);
   const [reservationLoading, setReservationLoading] = useState(false);
 
+  // ── 아바타 선택 ────────────────────────────────────────────────────
+  const [showAvatarSelect, setShowAvatarSelect] = useState(false);
+
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
     setProducts(DUMMY_PRODUCTS);
@@ -284,6 +288,20 @@ export default function MapPage() {
       loadShopReviews(selectedShop.id);
     }
   }, [shopDetailTab, selectedShop?.id]);
+
+  // ── 가입 직후 아바타 미설정 시 모달 표시 ──────────────────────────────────
+  useEffect(() => {
+    if (!profile) return;
+    if (profile.role !== 'user') return;
+    if (profile.avatar_url) return;
+    if (typeof window === 'undefined') return;
+
+    const hasPrompted = sessionStorage.getItem('avatarPrompted');
+    if (!hasPrompted) {
+      setShowAvatarSelect(true);
+      sessionStorage.setItem('avatarPrompted', 'true');
+    }
+  }, [profile]);
 
   // ── 예약 완료 Realtime 수신 (고객용) ────────────────────────────────────────
   useEffect(() => {
@@ -1076,6 +1094,16 @@ export default function MapPage() {
           shopName={reviewSuccess.shopName}
           rankPosition={reviewSuccess.rank}
           onClose={() => setReviewSuccess(null)}
+        />
+      )}
+
+      {/* ── 아바타 선택 모달 ────────────────────────────────────────────────────── */}
+      {showAvatarSelect && (
+        <AvatarSelectModal
+          onClose={() => setShowAvatarSelect(false)}
+          onSave={() => setShowAvatarSelect(false)}
+          currentUrl={profile?.avatar_url}
+          canSkip
         />
       )}
 
