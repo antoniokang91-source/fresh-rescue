@@ -287,8 +287,11 @@ export default function MapPage() {
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
-    if (selectedShop) setShopDetailTab(1);
-  }, [selectedShop]);
+    if (selectedShop) {
+      setShopDetailTab(1);
+      loadShopProducts(selectedShop.id);
+    }
+  }, [selectedShop?.id]);
 
   useEffect(() => {
     if (shopDetailTab === 3 && selectedShop) {
@@ -525,6 +528,46 @@ export default function MapPage() {
       setShopRanking(ranking as ShopRanking | null);
     } catch (err: any) {
       console.error('Review load error:', err);
+    }
+  };
+
+  // ── 가게 상품 로드 (가게별) ────────────────────────────────────────────────
+  const loadShopProducts = async (shopId: string) => {
+    try {
+      const { data: shopProducts } = await supabase
+        .from('rescue_products')
+        .select('*')
+        .eq('shop_id', shopId)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
+
+      if (shopProducts && shopProducts.length > 0) {
+        const formatted: Product[] = shopProducts.map((item: any) => {
+          const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
+          const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
+          return {
+            id: item.id,
+            name: item.product_name,
+            price: item.rescue_price,
+            originalPrice: item.original_price,
+            discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
+            timeLeft: hoursLeft,
+            shop: item.shop_name || selectedShop?.shop_name || '알 수 없음',
+            shopId: item.shop_id,
+            category: item.category,
+            distance: 0,
+            lat: selectedShop?.latitude ?? 37.5665,
+            lng: selectedShop?.longitude ?? 126.978,
+          };
+        });
+        // 해당 가게의 상품이 있으면 기존 상품 목록에 추가
+        setProducts(prev => {
+          const existing = prev.filter(p => p.shopId !== shopId);
+          return [...existing, ...formatted];
+        });
+      }
+    } catch (err: any) {
+      console.error('Shop products load error:', err);
     }
   };
 
