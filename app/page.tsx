@@ -159,8 +159,8 @@ export default function MapPage() {
     try {
       const [productResult, shopResult] = await Promise.allSettled([
         supabase.from('rescue_products').select('*').eq('status', 'active')
-          .order('created_at', { ascending: false }).limit(50),
-        supabase.from('shops').select('*').eq('is_active', true).limit(50),
+          .order('created_at', { ascending: false }).limit(100),
+        supabase.from('shops').select('*').eq('is_active', true),
       ]);
 
       const productData = productResult.status === 'fulfilled' ? productResult.value.data : null;
