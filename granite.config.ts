@@ -8,7 +8,7 @@ export default defineConfig({
     icon: 'https://fruit-rescue.app/icon.png',
   },
   web: {
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 3000,
     commands: {
       dev: 'next dev',

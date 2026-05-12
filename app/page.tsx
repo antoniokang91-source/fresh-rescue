@@ -268,24 +268,22 @@ export default function MapPage() {
 
   // ── 스플래시 ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const elapsed = Date.now() - mountTime.current;
-    const delay = Math.max(0, 2000 - elapsed);
-    const t = setTimeout(() => {
+    // 지도 로드 완료 또는 1초 후 splash 사라짐 (setTimeout은 AppsInToss에서 신뢰 불가)
+    const showSplash = () => {
       setSplashFading(true);
       setTimeout(() => setSplashVisible(false), 700);
-    }, delay);
-
-    // 최대 3초 후 무조건 스플래시 사라짐 (로딩 실패 방지)
-    const maxWait = setTimeout(() => {
-      setSplashFading(true);
-      setTimeout(() => setSplashVisible(false), 700);
-    }, 3000);
-
-    return () => {
-      clearTimeout(t);
-      clearTimeout(maxWait);
     };
-  }, []);
+
+    // 지도 로드되면 splash 사라짐
+    if (mapLoaded) {
+      showSplash();
+      return;
+    }
+
+    // 지도 로드 안 되면 1초 후 무조건 사라짐
+    const fallbackTimer = setTimeout(showSplash, 1000);
+    return () => clearTimeout(fallbackTimer);
+  }, [mapLoaded]);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
@@ -764,8 +762,8 @@ export default function MapPage() {
         </a>
       </div>
 
-      {/* ── Splash (TDS) ────────────────────────────────────────────────────── */}
-      {splashVisible && (
+      {/* ── Splash (TDS) - 임시 비활성화 진단용 ────────────────────────────────────── */}
+      {false && (
         <div className="fixed inset-0 z-[999] flex flex-col items-center justify-center bg-white"
           style={{ transition: 'opacity 0.7s ease', opacity: splashFading ? 0 : 1 }}>
           <img src="/logo.png" alt="신선구조대" className="w-20 h-20 object-contain mb-6" />
