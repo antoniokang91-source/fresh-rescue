@@ -921,8 +921,13 @@ export default function MapPage() {
                     }
                     handleReserve(selectedProduct);
                   }}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg">
-                  🎫 구조 예약하기
+                  disabled={selectedProduct.timeLeft <= 0}
+                  className={`w-full text-white text-base font-semibold py-4 rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2 shadow-lg ${
+                    selectedProduct.timeLeft <= 0
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}>
+                  {selectedProduct.timeLeft <= 0 ? '⏰ 마감됨' : '🎫 구조 예약하기'}
                 </button>
                 <button
                   onClick={() => {
