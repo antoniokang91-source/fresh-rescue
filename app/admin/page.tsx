@@ -10,7 +10,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 
-type Tab = 'approval' | 'ads' | 'stats'
+type Tab = 'approval' | 'ads' | 'stats' | 'messages'
 type AdsSubTab = 'banner' | 'pin' | 'search'
 
 const SUPABASE_URL = 'https://utcqwesokcvlvwahomjj.supabase.co'
@@ -115,6 +115,21 @@ interface ShopQualityStat {
   shop_name: string | null
   avg_rating: number | null
   review_count: number | null
+}
+
+interface AdminMessage {
+  id: string
+  title: string
+  body: string
+  image_url: string | null
+  target_type: 'all' | 'user' | 'shop'
+  target_ids: string[]
+  status: 'draft' | 'scheduled' | 'sent' | 'failed'
+  scheduled_at: string | null
+  sent_at: string | null
+  total_recipients: number
+  total_read: number
+  created_at: string
 }
 
 // ── 관리자 전용 로그인 폼 ─────────────────────────────────────────────────────
@@ -280,6 +295,21 @@ export default function AdminPage() {
   const [lowRatedReviews, setLowRatedReviews] = useState<LowRatedReview[]>([])
   const [shopQualityStats, setShopQualityStats] = useState<ShopQualityStat[]>([])
 
+  // 메시지 전송 탭
+  const [msgTitle, setMsgTitle] = useState('')
+  const [msgBody, setMsgBody] = useState('')
+  const [msgImageUrl, setMsgImageUrl] = useState('')
+  const [msgTargetType, setMsgTargetType] = useState<'all' | 'user' | 'shop'>('all')
+  const [msgTargetIds, setMsgTargetIds] = useState<string[]>([])
+  const [msgScheduledAt, setMsgScheduledAt] = useState('')
+  const [msgSending, setMsgSending] = useState(false)
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([])
+  const [msgLoading, setMsgLoading] = useState(false)
+  const [memberSearchQuery, setMemberSearchQuery] = useState('')
+  const [memberSearchResults, setMemberSearchResults] = useState<{ id: string; nickname: string; email: string }[]>([])
+  const [shopList, setShopList] = useState<{ id: string; shop_name: string }[]>([])
+  const msgImageFileInputRef = useRef<HTMLInputElement>(null)
+
   // ── fetch 함수들 ─────────────────────────────────────────────────────────────
 
   const fetchPendingShops = async () => {
@@ -402,6 +432,99 @@ export default function AdminPage() {
   }, [tab, adsSubTab, user])
 
   useEffect(() => { if (tab === 'stats' && user) fetchDashboard() }, [tab, user])
+
+  // ── 메시지 전송 함수 ─────────────────────────────────────────────────────────
+
+  const fetchAdminMessages = async () => {
+    setMsgLoading(true)
+    const { data } = await supabase.from('admin_messages').select('*').order('created_at', { ascending: false }).limit(50)
+    setAdminMessages((data || []) as AdminMessage[])
+    setMsgLoading(false)
+  }
+
+  const searchMembers = async (q: string) => {
+    if (!q.trim()) { setMemberSearchResults([]); return }
+    const { data } = await supabase.from('members')
+      .select('id, nickname, email').ilike('nickname', `%${q}%`).limit(10)
+    setMemberSearchResults((data || []) as any)
+  }
+
+  const uploadMsgImage = async (file: File): Promise<string | null> => {
+    try {
+      const ext = file.name.split('.').pop()
+      const path = `msg_${Date.now()}.${ext}`
+      const { error } = await supabase.storage.from('message-images').upload(path, file, { upsert: true })
+      if (error) throw error
+      return `${SUPABASE_URL}/storage/v1/object/public/message-images/${path}`
+    } catch {
+      alert('이미지 업로드 실패')
+      return null
+    }
+  }
+
+  const resetMsgForm = () => {
+    setMsgTitle('')
+    setMsgBody('')
+    setMsgImageUrl('')
+    setMsgTargetType('all')
+    setMsgTargetIds([])
+    setMsgScheduledAt('')
+    setMemberSearchQuery('')
+    setMemberSearchResults([])
+  }
+
+  const handleSendMessage = async () => {
+    if (!msgTitle.trim() || !msgBody.trim()) return alert('제목과 내용을 입력해주세요')
+    if (msgTargetType !== 'all' && msgTargetIds.length === 0) return alert('대상을 선택해주세요')
+    setMsgSending(true)
+    try {
+      const { data: msg, error } = await supabase.from('admin_messages')
+        .insert({
+          title: msgTitle, body: msgBody, image_url: msgImageUrl || null,
+          target_type: msgTargetType, target_ids: msgTargetIds, status: 'draft'
+        })
+        .select().single()
+      if (error || !msg) throw error
+      await supabase.functions.invoke('admin-send-message', { body: { message_id: msg.id } })
+      resetMsgForm()
+      fetchAdminMessages()
+    } catch (e) {
+      alert('전송 실패: ' + String(e))
+    } finally { setMsgSending(false) }
+  }
+
+  const handleScheduleMessage = async () => {
+    if (!msgTitle.trim() || !msgBody.trim() || !msgScheduledAt) return alert('제목, 내용, 예약시간을 입력해주세요')
+    if (msgTargetType !== 'all' && msgTargetIds.length === 0) return alert('대상을 선택해주세요')
+    try {
+      await supabase.from('admin_messages').insert({
+        title: msgTitle, body: msgBody, image_url: msgImageUrl || null,
+        target_type: msgTargetType, target_ids: msgTargetIds,
+        status: 'scheduled', scheduled_at: new Date(msgScheduledAt).toISOString()
+      })
+      resetMsgForm()
+      fetchAdminMessages()
+    } catch (e) {
+      alert('저장 실패: ' + String(e))
+    }
+  }
+
+  const handleSendScheduled = async (msgId: string) => {
+    try {
+      await supabase.functions.invoke('admin-send-message', { body: { message_id: msgId } })
+      fetchAdminMessages()
+    } catch (e) {
+      alert('전송 실패: ' + String(e))
+    }
+  }
+
+  useEffect(() => {
+    if (tab === 'messages' && user) {
+      fetchAdminMessages()
+      supabase.from('shops').select('id, shop_name').eq('is_active', true)
+        .then(({ data }) => setShopList((data || []) as any))
+    }
+  }, [tab, user])
 
   // ── 배너 광고 CRUD ───────────────────────────────────────────────────────────
 
@@ -566,6 +689,7 @@ export default function AdminPage() {
   const TABS: { id: Tab; icon: React.ReactNode; label: string; count?: number }[] = [
     { id: 'approval', icon: <Store size={15} />, label: '입점 승인', count: pendingShops.length },
     { id: 'ads', icon: <Megaphone size={15} />, label: '광고 관리' },
+    { id: 'messages', icon: <Megaphone size={15} />, label: '메시지' },
     { id: 'stats', icon: <BarChart3 size={15} />, label: '대시보드' },
   ]
 
@@ -1194,6 +1318,185 @@ export default function AdminPage() {
                 </div>
               </>
             )}
+          </div>
+        )}
+
+        {/* ── 탭 4: 메시지 전송 ───────────────────────────────────── */}
+        {tab === 'messages' && (
+          <div>
+            <p className="text-xs text-gray-400 mb-4">Firebase FCM으로 고객들에게 푸시 메시지 전송</p>
+
+            {/* 작성 폼 */}
+            <div className="bg-white rounded-lg p-4 mb-6 border border-gray-200">
+              <h3 className="font-bold text-sm mb-3">📝 메시지 작성</h3>
+
+              <div className="space-y-3">
+                {/* 제목 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">제목 *</label>
+                  <input type="text" value={msgTitle} onChange={e => setMsgTitle(e.target.value)}
+                    placeholder="제목 입력" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rescue-orange/20" />
+                </div>
+
+                {/* 본문 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">내용 *</label>
+                  <textarea value={msgBody} onChange={e => setMsgBody(e.target.value)}
+                    placeholder="메시지 본문" rows={3} className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-rescue-orange/20" />
+                </div>
+
+                {/* 이미지 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">이미지 (선택)</label>
+                  <div className="flex gap-2">
+                    <button onClick={() => msgImageFileInputRef.current?.click()}
+                      className="px-3 py-2 text-xs bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded-lg transition-colors">
+                      파일 선택
+                    </button>
+                    {msgImageUrl && (
+                      <button onClick={() => setMsgImageUrl('')}
+                        className="px-3 py-2 text-xs bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition-colors">
+                        초기화
+                      </button>
+                    )}
+                  </div>
+                  <input ref={msgImageFileInputRef} type="file" accept="image/*" hidden
+                    onChange={async e => { const f = e.target.files?.[0]; if (f) { const url = await uploadMsgImage(f); if (url) setMsgImageUrl(url) } }} />
+                  {msgImageUrl && (
+                    <div className="mt-2"><img src={msgImageUrl} alt="preview" className="h-20 w-auto rounded-lg" /></div>
+                  )}
+                </div>
+
+                {/* 발송 대상 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-2">발송 대상 *</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" checked={msgTargetType === 'all'} onChange={() => { setMsgTargetType('all'); setMsgTargetIds([]) }}
+                        className="accent-rescue-orange" />
+                      <span className="text-sm">전체 사용자</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" checked={msgTargetType === 'user'} onChange={() => setMsgTargetType('user')}
+                        className="accent-rescue-orange" />
+                      <span className="text-sm">특정 사용자</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" checked={msgTargetType === 'shop'} onChange={() => { setMsgTargetType('shop'); setMsgTargetIds([]) }}
+                        className="accent-rescue-orange" />
+                      <span className="text-sm">가게 구독자</span>
+                    </label>
+                  </div>
+
+                  {/* 특정 사용자 선택 */}
+                  {msgTargetType === 'user' && (
+                    <div className="mt-3">
+                      <input type="text" value={memberSearchQuery} onChange={e => { setMemberSearchQuery(e.target.value); searchMembers(e.target.value) }}
+                        placeholder="사용자 검색 (닉네임)" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+                      {memberSearchResults.length > 0 && (
+                        <div className="mt-2 max-h-32 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg">
+                          {memberSearchResults.map(m => (
+                            <button key={m.id} onClick={() => { setMsgTargetIds(prev => prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id]) }}
+                              className={`w-full px-3 py-2 text-left text-xs border-b border-gray-200 hover:bg-gray-100 ${msgTargetIds.includes(m.id) ? 'bg-blue-50 font-semibold' : ''}`}>
+                              {m.nickname} {msgTargetIds.includes(m.id) ? '✓' : ''}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      {memberSearchQuery && memberSearchResults.length === 0 && (
+                        <p className="text-xs text-gray-400 mt-2">검색 결과가 없습니다</p>
+                      )}
+                      {msgTargetIds.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {msgTargetIds.map(id => {
+                            const member = memberSearchResults.find(m => m.id === id)
+                            return <span key={id} className="bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                              {member?.nickname} ✕
+                            </span>
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 가게 선택 */}
+                  {msgTargetType === 'shop' && (
+                    <div className="mt-3 max-h-40 overflow-y-auto space-y-1 bg-gray-50 p-2 border border-gray-200 rounded-lg">
+                      {shopList.map(shop => (
+                        <label key={shop.id} className="flex items-center gap-2 cursor-pointer p-1 hover:bg-white rounded">
+                          <input type="checkbox" checked={msgTargetIds.includes(shop.id)}
+                            onChange={e => setMsgTargetIds(e.target.checked ? [...msgTargetIds, shop.id] : msgTargetIds.filter(id => id !== shop.id))}
+                            className="accent-rescue-orange" />
+                          <span className="text-xs">{shop.shop_name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* 예약 시간 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-1">예약 시간 (선택)</label>
+                  <input type="datetime-local" value={msgScheduledAt} onChange={e => setMsgScheduledAt(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
+                </div>
+
+                {/* 버튼 */}
+                <div className="flex gap-2 pt-2">
+                  <button onClick={handleSendMessage} disabled={msgSending}
+                    className="flex-1 px-3 py-2.5 bg-rescue-orange hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50">
+                    {msgSending ? '전송 중...' : '즉시 전송'}
+                  </button>
+                  <button onClick={handleScheduleMessage}
+                    className="flex-1 px-3 py-2.5 bg-gray-400 hover:bg-gray-500 text-white text-sm font-bold rounded-lg transition-colors">
+                    예약 저장
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* 전송 이력 */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h3 className="font-bold text-sm mb-3">📬 전송 이력</h3>
+              {msgLoading && <div className="flex justify-center py-6"><div className="w-5 h-5 border-2 border-rescue-orange border-t-transparent rounded-full animate-spin" /></div>}
+              {!msgLoading && adminMessages.length === 0 && (
+                <p className="text-xs text-gray-400 text-center py-6">전송한 메시지가 없습니다</p>
+              )}
+              {!msgLoading && adminMessages.length > 0 && (
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {adminMessages.map(msg => (
+                    <div key={msg.id} className="border border-gray-200 p-3 rounded-lg hover:bg-gray-50">
+                      <div className="flex items-start justify-between mb-1">
+                        <div className="flex-1">
+                          <p className="text-xs font-bold text-gray-900 line-clamp-1">{msg.title}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {msg.target_type === 'all' ? '전체' : msg.target_type === 'user' ? '특정사용자' : '가게구독자'}
+                          </p>
+                        </div>
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${
+                          msg.status === 'sent' ? 'bg-green-100 text-green-700' :
+                          msg.status === 'scheduled' ? 'bg-yellow-100 text-yellow-700' :
+                          msg.status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                        }`}>
+                          {msg.status === 'sent' ? '✅' : msg.status === 'scheduled' ? '⏰' : '❌'} {msg.status}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-600 mt-2 pt-2 border-t border-gray-100">
+                        <span>발송: {msg.total_recipients}명</span>
+                        <span>읽음: {msg.total_read}명</span>
+                        <span>{new Date(msg.created_at).toLocaleDateString('ko-KR')}</span>
+                        {msg.status === 'scheduled' && (
+                          <button onClick={() => handleSendScheduled(msg.id)}
+                            className="text-rescue-orange hover:underline font-semibold">
+                            지금 전송
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

@@ -359,6 +359,20 @@ export default function MapPage() {
     return () => clearTimeout(timer);
   }, [toast.visible]);
 
+  // ── 메시지 읽음 추적 ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    const msgId = params.get('msg');
+    if (!msgId) return;
+    supabase.from('message_receipts')
+      .update({ read_at: new Date().toISOString() })
+      .eq('message_id', msgId).eq('user_id', user.id).is('read_at', null)
+      .then(() => {})
+      .catch(() => {});
+    window.history.replaceState({}, '', '/');
+  }, [user]);
+
   // ── 자동 위치 감지 ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return;
