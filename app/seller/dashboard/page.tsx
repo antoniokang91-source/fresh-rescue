@@ -513,6 +513,10 @@ export default function SellerDashboardPage() {
           status: 'active',
         })
         if (error) throw error
+        // 신규 등록 시에만 구독자에게 FCM 푸시 발송 (비동기, 실패 무시)
+        supabase.functions.invoke('send-push-notification', {
+          body: { shop_id: shop.id, product_name: productForm.product_name, shop_name: shop.shop_name }
+        }).catch(() => {})
       }
 
       await fetchProducts()

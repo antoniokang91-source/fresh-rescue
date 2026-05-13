@@ -8,7 +8,8 @@ import ReviewModal from "@/components/review/ReviewModal";
 import ReviewSuccessPopup from "@/components/review/ReviewSuccessPopup";
 import AvatarSelectModal from "@/components/avatar/AvatarSelectModal";
 import { useAuth } from '@/lib/auth-context'
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase"
+import { requestFCMToken } from '@/lib/firebase';
 import type { Reservation, Review, ShopRanking } from '@/types';
 
 declare global {
@@ -157,6 +158,22 @@ export default function MapPage() {
   const [weather, setWeather] = useState<{ temp: number; desc: string; humidity: number; icon: string } | null>(null);
   const [airQuality, setAirQuality] = useState<{ pm10: number; pm25: number; aqi: number } | null>(null);
 
+  // ── 실시간 알림 ────────────────────────────────────────────────────
+  interface RealtimeNotification {
+    id: string;
+    type: 'pickup' | 'request'; // pickup: 픽업완료, request: 구조요청
+    nickname: string;
+    shop: string;
+    product: string;
+    timestamp: number;
+  }
+  const [realtimeNotifications, setRealtimeNotifications] = useState<RealtimeNotification[]>([]);
+  const [currentNotificationIdx, setCurrentNotificationIdx] = useState(0);
+
+  // ── 가게 알림 구독 ────────────────────────────────────────────────
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [subscribeLoading, setSubscribeLoading] = useState(false);
+
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
     setProducts(DUMMY_PRODUCTS);
@@ -220,6 +237,29 @@ export default function MapPage() {
       clearTimeout(timeout);
       if (data) setPinAds(data as PinAd[]);
     } catch (e) { console.error('핀광고 로드 실패:', e); }
+  };
+
+  const loadRealtimeNotifications = async () => {
+    try {
+      const { data: reservations } = await supabase
+        .from('reservations')
+        .select('id, user_nickname, product_name, pickup_completed_at')
+        .eq('status', 'COMPLETED')
+        .order('pickup_completed_at', { ascending: false })
+        .limit(5);
+
+      if (reservations && reservations.length > 0) {
+        const notifications: RealtimeNotification[] = reservations.map((res: any) => ({
+          id: res.id,
+          type: 'pickup',
+          nickname: res.user_nickname || '구조대원',
+          shop: '신선마트',
+          product: res.product_name || '상품',
+          timestamp: new Date(res.pickup_completed_at).getTime(),
+        }));
+        setRealtimeNotifications(notifications);
+      }
+    } catch (e) { console.error('실시간 알림 로드 실패:', e); }
   };
 
   const getWeatherEmoji = (code: number): string => {
@@ -420,6 +460,37 @@ export default function MapPage() {
     if (slot2.length > 1) off = setTimeout(() => { t2 = setInterval(() => setBannerIdx(p => [p[0], (p[1] + 1) % slot2.length]), 3000); }, 500);
     return () => { if (t1) clearInterval(t1); if (t2) clearInterval(t2); if (off) clearTimeout(off); };
   }, [banners]);
+
+  // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
+  useEffect(() => {
+    loadRealtimeNotifications();
+    const interval = setInterval(loadRealtimeNotifications, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // ── 실시간 알림 자동 스크롤 ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (realtimeNotifications.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentNotificationIdx(p => (p + 1) % realtimeNotifications.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [realtimeNotifications.length]);
+
+  // ── 가게 구독 상태 조회 ───────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!selectedShop || !user) { setIsSubscribed(false); return; }
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('shop_subscriptions')
+          .select('id').eq('user_id', user.id).eq('shop_id', selectedShop.id).maybeSingle();
+        setIsSubscribed(!!data);
+      } catch (err) {
+        console.error('구독 상태 조회 실패:', err);
+      }
+    })();
+  }, [selectedShop?.id, user?.id]);
 
   // ── 마커 업데이트 ─────────────────────────────────────────────────────────────
   const updateMarkers = (targetMap?: any) => {
@@ -730,6 +801,30 @@ export default function MapPage() {
     );
   };
 
+  const handleToggleSubscription = async () => {
+    if (!user) { setShowAuthModal(true); return; }
+    setSubscribeLoading(true);
+    try {
+      const token = await requestFCMToken();
+      if (token) {
+        await supabase.from('fcm_tokens')
+          .upsert({ user_id: user.id, token, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+      }
+      if (isSubscribed) {
+        await supabase.from('shop_subscriptions').delete()
+          .eq('user_id', user.id).eq('shop_id', selectedShop!.id);
+        setIsSubscribed(false);
+      } else {
+        await supabase.from('shop_subscriptions').insert({ user_id: user.id, shop_id: selectedShop!.id });
+        setIsSubscribed(true);
+      }
+    } catch (e) {
+      console.error('구독 토글 실패:', e);
+    } finally {
+      setSubscribeLoading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col bg-gray-50" style={{ height: '100dvh' }}>
 
@@ -778,6 +873,46 @@ export default function MapPage() {
         </div>
       </div>
 
+      {/* ── 실시간 알림 배너 ────────────────────────────────────────────────── */}
+      {realtimeNotifications.length > 0 && (
+        <div className="bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0 shadow-sm overflow-hidden" style={{ height: '70px' }}>
+          <div className="flex items-center justify-between gap-2 h-full">
+            <div className="text-xs font-bold text-blue-600 whitespace-nowrap">🚀 실시간</div>
+            <div className="flex-1 overflow-hidden">
+              <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${currentNotificationIdx * 100}%)` }}>
+                {realtimeNotifications.map((notif) => (
+                  <div key={notif.id} className="min-w-full flex items-center gap-2 px-2">
+                    <div className="flex-shrink-0">
+                      <span className={`text-lg ${notif.type === 'pickup' ? '✅' : '🆘'}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-semibold text-gray-900 truncate">
+                        {notif.type === 'pickup'
+                          ? `${notif.nickname}님이 ${notif.product}을 구조하셨습니다!`
+                          : `${notif.shop}에서 ${notif.product} 구조요청!`
+                        }
+                      </p>
+                      <p className="text-[10px] text-gray-500">
+                        {notif.type === 'pickup' ? notif.shop : '구조요청 발생'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-1 flex-shrink-0">
+              {realtimeNotifications.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setCurrentNotificationIdx(i)}
+                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentNotificationIdx ? 'bg-blue-600' : 'bg-gray-300'}`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── 지도 + 플로팅 검색 ────────────────────────────────────────────────── */}
       <div className="flex-1 relative overflow-hidden">
         {/* 지도 (채도 낮춤으로 핀 강조) */}
@@ -788,7 +923,7 @@ export default function MapPage() {
           }} />
 
         {/* 플로팅 검색바 (TDS) */}
-        <div className="absolute top-4 left-4 right-4 z-[100]">
+        <div className="absolute left-4 right-4 z-[100]" style={{ top: realtimeNotifications.length > 0 ? '86px' : '4px' }}>
           <div className="relative bg-white rounded-xl shadow-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
             <input
@@ -1068,9 +1203,19 @@ export default function MapPage() {
                     <p className="text-sm text-white/80">{selectedShop.category}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedShop(null)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                  {user && (
+                    <button onClick={handleToggleSubscription} className="p-2 hover:bg-white/20 rounded-lg transition-colors" title={isSubscribed ? '알림 해제' : '신상품 알림 받기'}>
+                      {subscribeLoading
+                        ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        : <span className="text-xl">{isSubscribed ? '🔔' : '🔕'}</span>
+                      }
+                    </button>
+                  )}
+                  <button onClick={() => setSelectedShop(null)} className="p-2 hover:bg-white/20 rounded-lg transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
             {/* ── 탭 버튼 ────────────────────────────────────────────────────────── */}
