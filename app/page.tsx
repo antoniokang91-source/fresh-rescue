@@ -884,11 +884,12 @@ export default function MapPage() {
 
       {/* ── 실시간 알림 배너 (기차처럼 좌우 스크롤) ────────────────────────────────────────────────── */}
       {realtimeNotifications.length > 0 && (
-        <div className="bg-white border-b border-gray-100 px-3 py-2 flex-shrink-0 shadow-sm overflow-hidden" style={{ height: '52px' }}>
-          <div className="overflow-x-auto scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
-            <div className="flex gap-3 pb-1 min-w-min">
+        <div className="bg-white border-b border-gray-100 px-3 py-2 flex-shrink-0 shadow-sm" style={{ height: '52px', overflow: 'hidden' }}>
+          <div className="h-full overflow-x-auto" style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
+            <div className="flex gap-3 h-full min-w-min scrollbar-hide">
               {realtimeNotifications.map((notif) => (
-                <div key={notif.id} className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0 min-w-max">
+                <div key={notif.id} className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0 min-w-max h-fit my-auto">
                   <div className="flex-shrink-0">
                     <span className={`text-base ${notif.type === 'pickup' ? '✅' : '🆘'}`} />
                   </div>
