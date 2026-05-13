@@ -156,6 +156,23 @@ export default function AuthModal({ onClose }: AuthModalProps) {
     setNickname('')
   }
 
+  // ── 전화번호 입력 시 DB에서 role 자동 조회 ────────────────────────────────────
+  const fetchUserRoleByPhone = async (phoneNumber: string) => {
+    try {
+      const { data } = await supabase
+        .from('members')
+        .select('role')
+        .eq('phone', phoneNumber)
+        .single()
+
+      if (data?.role) {
+        setLoginRole(data.role as UserRole)
+      }
+    } catch (err) {
+      // 사용자 정보 없음 (신규 가입자) - loginRole은 기본값 유지
+    }
+  }
+
   // ── 로그인 ──────────────────────────────────────────────────────────────────
   const handleLogin = async () => {
     if (rawPhone.length < 10) { setError('올바른 휴대폰 번호를 입력해주세요.'); return }
@@ -473,7 +490,14 @@ export default function AuthModal({ onClose }: AuthModalProps) {
               type="tel"
               inputMode="numeric"
               value={phone}
-              onChange={(e) => setPhone(formatPhone(e.target.value))}
+              onChange={(e) => {
+                const formatted = formatPhone(e.target.value)
+                setPhone(formatted)
+                const cleanPhone = formatted.replace(/-/g, '')
+                if (cleanPhone.length === 11) {
+                  fetchUserRoleByPhone(cleanPhone)
+                }
+              }}
               placeholder="010-0000-0000"
               className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-3"
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
