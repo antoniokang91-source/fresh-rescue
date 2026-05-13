@@ -882,26 +882,31 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* ── 실시간 알림 배너 (기차처럼 좌우 스크롤) ────────────────────────────────────────────────── */}
+      {/* ── 전광판 배너 (무한 스크롤) ────────────────────────────────────────────────── */}
       {realtimeNotifications.length > 0 && (
-        <div className="bg-white border-b border-gray-100 px-3 py-2 flex-shrink-0 shadow-sm" style={{ height: '52px', overflow: 'hidden' }}>
-          <div className="h-full overflow-x-auto" style={{ scrollBehavior: 'smooth', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-            <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
-            <div className="flex gap-3 h-full min-w-min scrollbar-hide">
+        <div className="bg-white border-b border-gray-100 flex-shrink-0" style={{ height: '28px', overflow: 'hidden' }}>
+          <style>{`
+            @keyframes ticker {
+              0% { transform: translateX(100%); }
+              100% { transform: translateX(-100%); }
+            }
+            .ticker-text {
+              animation: ticker 40s linear infinite;
+              white-space: nowrap;
+              display: inline-block;
+            }
+          `}</style>
+          <div className="h-full flex items-center px-2 text-xs text-gray-700 font-medium">
+            <div className="ticker-text">
               {realtimeNotifications.map((notif) => (
-                <div key={notif.id} className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0 min-w-max h-fit my-auto">
-                  <div className="flex-shrink-0">
-                    <span className={`text-base ${notif.type === 'pickup' ? '✅' : '🆘'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-semibold text-gray-900 whitespace-nowrap">
-                      {notif.type === 'pickup'
-                        ? `${notif.nickname}님 ${notif.product} 구조`
-                        : `${notif.shop} ${notif.product} 구조요청`
-                      }
-                    </p>
-                  </div>
-                </div>
+                <span key={notif.id} className="inline-block mr-8">
+                  {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
+                </span>
+              ))}
+              {realtimeNotifications.map((notif, idx) => (
+                <span key={`repeat-${idx}`} className="inline-block mr-8">
+                  {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
+                </span>
               ))}
             </div>
           </div>
@@ -918,7 +923,13 @@ export default function MapPage() {
           }} />
 
         {/* 플로팅 검색바 (TDS) */}
-        <div className="absolute left-3 right-3 z-[100]" style={{ top: realtimeNotifications.length > 0 ? '60px' : '10px' }}>
+        <div className="absolute z-[100]" style={{
+          top: realtimeNotifications.length > 0 ? '34px' : '10px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '85%',
+          maxWidth: '320px'
+        }}>
           <div className="relative bg-white rounded-md shadow-sm" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
             <input
