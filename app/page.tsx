@@ -873,40 +873,25 @@ export default function MapPage() {
         </div>
       </div>
 
-      {/* ── 실시간 알림 배너 ────────────────────────────────────────────────── */}
+      {/* ── 실시간 알림 배너 (기차처럼 좌우 스크롤) ────────────────────────────────────────────────── */}
       {realtimeNotifications.length > 0 && (
-        <div className="bg-white border-b border-gray-100 px-4 py-3 flex-shrink-0 shadow-sm overflow-hidden" style={{ height: '70px' }}>
-          <div className="flex items-center justify-between gap-2 h-full">
-            <div className="text-xs font-bold text-blue-600 whitespace-nowrap">🚀 실시간</div>
-            <div className="flex-1 overflow-hidden">
-              <div className="flex transition-transform duration-700 ease-in-out" style={{ transform: `translateX(-${currentNotificationIdx * 100}%)` }}>
-                {realtimeNotifications.map((notif) => (
-                  <div key={notif.id} className="min-w-full flex items-center gap-2 px-2">
-                    <div className="flex-shrink-0">
-                      <span className={`text-lg ${notif.type === 'pickup' ? '✅' : '🆘'}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-semibold text-gray-900 truncate">
-                        {notif.type === 'pickup'
-                          ? `${notif.nickname}님이 ${notif.product}을 구조하셨습니다!`
-                          : `${notif.shop}에서 ${notif.product} 구조요청!`
-                        }
-                      </p>
-                      <p className="text-[10px] text-gray-500">
-                        {notif.type === 'pickup' ? notif.shop : '구조요청 발생'}
-                      </p>
-                    </div>
+        <div className="bg-white border-b border-gray-100 px-3 py-2 flex-shrink-0 shadow-sm overflow-hidden" style={{ height: '52px' }}>
+          <div className="overflow-x-auto scrollbar-hide" style={{ scrollBehavior: 'smooth' }}>
+            <div className="flex gap-3 pb-1 min-w-min">
+              {realtimeNotifications.map((notif) => (
+                <div key={notif.id} className="flex items-center gap-2 px-3 py-2 bg-blue-50 rounded-lg border border-blue-200 flex-shrink-0 min-w-max">
+                  <div className="flex-shrink-0">
+                    <span className={`text-base ${notif.type === 'pickup' ? '✅' : '🆘'}`} />
                   </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-1 flex-shrink-0">
-              {realtimeNotifications.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setCurrentNotificationIdx(i)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${i === currentNotificationIdx ? 'bg-blue-600' : 'bg-gray-300'}`}
-                />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 whitespace-nowrap">
+                      {notif.type === 'pickup'
+                        ? `${notif.nickname}님 ${notif.product} 구조`
+                        : `${notif.shop} ${notif.product} 구조요청`
+                      }
+                    </p>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
@@ -923,9 +908,9 @@ export default function MapPage() {
           }} />
 
         {/* 플로팅 검색바 (TDS) */}
-        <div className="absolute left-4 right-4 z-[100]" style={{ top: realtimeNotifications.length > 0 ? '86px' : '4px' }}>
-          <div className="relative bg-white rounded-xl shadow-lg" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        <div className="absolute left-3 right-3 z-[100]" style={{ top: realtimeNotifications.length > 0 ? '58px' : '8px' }}>
+          <div className="relative bg-white rounded-lg shadow-md" style={{ boxShadow: '0 2px 6px rgba(0,0,0,0.06)' }}>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
@@ -937,8 +922,8 @@ export default function MapPage() {
                   await performSearch('');
                 }
               }}
-              placeholder="가게명, 상품명 검색 (3km 이내)"
-              className="w-full bg-transparent rounded-xl pl-10 pr-10 py-3.5 text-sm outline-none text-gray-900 placeholder-gray-400 font-medium"
+              placeholder="가게명, 상품명 검색"
+              className="w-full bg-transparent rounded-lg pl-9 pr-9 py-2.5 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
             {searchQuery && (
               <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
