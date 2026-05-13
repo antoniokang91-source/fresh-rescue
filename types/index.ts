@@ -71,7 +71,7 @@ export interface Profile {
 }
 
 // ── 예약 / 리뷰 / 랭킹 ────────────────────────────────────────
-export type ReservationStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
+export type ReservationStatus = 'PENDING' | 'READY' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
 
 export interface Reservation {
   id: string

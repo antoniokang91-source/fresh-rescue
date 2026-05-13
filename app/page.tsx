@@ -48,6 +48,8 @@ interface Shop {
   description?: string;
   operating_hours?: string;
   is_search_ad?: boolean;
+  search_ad_end_date?: string | null;
+  is_operating?: boolean;
 }
 
 interface Banner {
@@ -58,6 +60,7 @@ interface Banner {
   active: boolean;
   is_active: boolean;
   sort_order: number;
+  end_date?: string | null;
 }
 
 interface PinAd {
@@ -151,6 +154,9 @@ export default function MapPage() {
   // ── 아바타 선택 ────────────────────────────────────────────────────
   const [showAvatarSelect, setShowAvatarSelect] = useState(false);
 
+  const [weather, setWeather] = useState<{ temp: number; desc: string; humidity: number; icon: string } | null>(null);
+  const [airQuality, setAirQuality] = useState<{ pm10: number; pm25: number; aqi: number } | null>(null);
+
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
     setProducts(DUMMY_PRODUCTS);
@@ -195,7 +201,9 @@ export default function MapPage() {
     try {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
+      const today = new Date().toISOString().slice(0, 10);
       const { data } = await supabase.from('banners').select('*').eq('is_active', true)
+        .or(`end_date.is.null,end_date.gte.${today}`)
         .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
       clearTimeout(timeout);
       if (data) setBanners(data);
@@ -212,6 +220,59 @@ export default function MapPage() {
       clearTimeout(timeout);
       if (data) setPinAds(data as PinAd[]);
     } catch (e) { console.error('핀광고 로드 실패:', e); }
+  };
+
+  const getWeatherEmoji = (code: number): string => {
+    if (code < 300) return '⛈️';
+    if (code < 400) return '🌧️';
+    if (code < 500) return '⛅';
+    if (code < 600) return '☁️';
+    if (code < 700) return '🌧️';
+    if (code < 800) return '🌫️';
+    if (code === 800) return '☀️';
+    if (code === 801) return '🌤️';
+    if (code === 802) return '⛅';
+    if (code === 803 || code === 804) return '☁️';
+    return '🌤️';
+  };
+
+  const getAQIColor = (aqi: number): { bg: string; emoji: string; label: string } => {
+    if (aqi <= 20) return { bg: 'from-green-100 to-green-200', emoji: '😊', label: '좋음' };
+    if (aqi <= 40) return { bg: 'from-blue-100 to-blue-200', emoji: '🙂', label: '보통' };
+    if (aqi <= 60) return { bg: 'from-yellow-100 to-yellow-200', emoji: '😐', label: '나쁨' };
+    return { bg: 'from-red-100 to-red-200', emoji: '😤', label: '매우나쁨' };
+  };
+
+  const loadWeather = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(`https://wttr.in/${lat},${lng}?format=j1`);
+      const data = await res.json();
+      const c = data.current_condition[0];
+      setWeather({
+        temp: Number(c.temp_C),
+        desc: c.weatherDesc[0].value,
+        humidity: Number(c.humidity),
+        icon: getWeatherEmoji(Number(c.weatherCode))
+      });
+    } catch (e) {
+      console.error('날씨 로드 실패:', e);
+    }
+  };
+
+  const loadAirQuality = async (lat: number, lng: number) => {
+    try {
+      const res = await fetch(
+        `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lng}&current=pm10,pm2_5,european_aqi`
+      );
+      const data = await res.json();
+      setAirQuality({
+        pm10: Math.round(data.current.pm10),
+        pm25: Math.round(data.current.pm2_5),
+        aqi: Math.round(data.current.european_aqi)
+      });
+    } catch (e) {
+      console.error('대기질 로드 실패:', e);
+    }
   };
 
   // ── Kakao 지도 스크립트 로드 ──────────────────────────────────────────────────
@@ -284,6 +345,13 @@ export default function MapPage() {
     const fallbackTimer = setTimeout(showSplash, 1000);
     return () => clearTimeout(fallbackTimer);
   }, [mapLoaded]);
+
+  // ── 날씨 및 대기질 로드 ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!userLocation) return;
+    loadWeather(userLocation.lat, userLocation.lng);
+    loadAirQuality(userLocation.lat, userLocation.lng);
+  }, [userLocation]);
 
   // ── 가게 상세 모달 탭 초기화 ──────────────────────────────────────────────────
   useEffect(() => {
@@ -608,8 +676,13 @@ export default function MapPage() {
     const merged = new Map<string, Shop>();
     [...(shopData ?? []), ...extraShops].forEach((s: any) => merged.set(s.id, s));
 
+    const today = new Date().toISOString().slice(0, 10);
     const results = Array.from(merged.values())
       .filter(s => s.latitude && s.longitude && haversineKm(baseLat, baseLng, s.latitude, s.longitude) <= 3)
+      .map(s => ({
+        ...s,
+        is_search_ad: s.is_search_ad && (!s.search_ad_end_date || s.search_ad_end_date >= today)
+      }))
       .sort((a, b) => Number(b.is_search_ad ?? false) - Number(a.is_search_ad ?? false));
 
     setDbSearchResults(results);
@@ -826,35 +899,64 @@ export default function MapPage() {
         const slot1 = banners.filter(b => b.sort_order === 1);
         const slot2 = banners.filter(b => b.sort_order === 2);
         const BANNER_H = 88;
-        const BannerSlot = ({ items, idx, placeholder }: { items: Banner[]; idx: number; placeholder: string }) => (
-          <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 relative shadow-sm" style={{ height: BANNER_H }}>
-            {items.length > 0 ? (
-              <>
-                <div className="transition-transform duration-500 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
-                  {items.map(b => (
-                    <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block' }}>
-                      <img src={b.image_url} alt={b.title} className="w-full object-cover" style={{ height: BANNER_H }} />
-                    </a>
-                  ))}
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent px-3 py-2.5 pointer-events-none">
-                  <p className="text-white text-xs font-semibold truncate">{items[idx]?.title}</p>
-                </div>
-                {items.length > 1 && (
-                  <div className="absolute top-2.5 right-2.5 flex gap-1 pointer-events-none">
-                    {items.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/50'}`} />)}
+        const BannerSlot = ({ items, idx, placeholder, slotNum }: { items: Banner[]; idx: number; placeholder: string; slotNum: number }) => {
+          const isEmpty = items.length === 0;
+          const isWeatherSlot = isEmpty && slotNum === 1 && weather;
+          const isAQISlot = isEmpty && slotNum === 2 && airQuality;
+
+          return (
+            <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 relative shadow-sm" style={{ height: BANNER_H }}>
+              {items.length > 0 ? (
+                <>
+                  <div className="transition-transform duration-500 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
+                    {items.map(b => (
+                      <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block' }}>
+                        <img src={b.image_url} alt={b.title} className="w-full object-cover" style={{ height: BANNER_H }} />
+                      </a>
+                    ))}
                   </div>
-                )}
-              </>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 rounded-xl">{placeholder}</div>
-            )}
-          </div>
-        );
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent px-3 py-2.5 pointer-events-none">
+                    <p className="text-white text-xs font-semibold truncate">{items[idx]?.title}</p>
+                  </div>
+                  {items.length > 1 && (
+                    <div className="absolute top-2.5 right-2.5 flex gap-1 pointer-events-none">
+                      {items.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/50'}`} />)}
+                    </div>
+                  )}
+                </>
+              ) : isWeatherSlot ? (
+                <div className="w-full h-full bg-gradient-to-br from-sky-100 to-blue-200 rounded-xl flex items-center px-3 gap-3">
+                  <span className="text-3xl flex-shrink-0">{weather.icon}</span>
+                  <div className="min-w-0">
+                    <p className="text-base font-black text-blue-900">{weather.temp}°C</p>
+                    <p className="text-[10px] text-blue-700 truncate">{weather.desc}</p>
+                    <p className="text-[10px] text-blue-600">습도 {weather.humidity}%</p>
+                  </div>
+                </div>
+              ) : isAQISlot ? (
+                (() => {
+                  const aqiInfo = getAQIColor(airQuality.aqi);
+                  return (
+                    <div className={`w-full h-full bg-gradient-to-br ${aqiInfo.bg} rounded-xl flex items-center px-3 gap-3`}>
+                      <span className="text-2xl flex-shrink-0">{aqiInfo.emoji}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs font-black text-gray-900">{aqiInfo.label}</p>
+                        <p className="text-[10px] text-gray-700">PM10 {airQuality.pm10}㎍</p>
+                        <p className="text-[10px] text-gray-700">PM2.5 {airQuality.pm25}㎍</p>
+                      </div>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 rounded-xl">{placeholder}</div>
+              )}
+            </div>
+          );
+        };
         return (
           <div className="bg-white px-3 py-3 flex gap-2 flex-shrink-0 shadow-sm" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' }}>
-            <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" />
-            <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" />
+            <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" slotNum={1} />
+            <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" slotNum={2} />
           </div>
         );
       })()}

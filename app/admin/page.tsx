@@ -68,6 +68,7 @@ interface ShopRow {
   shop_name: string
   category: string
   is_search_ad: boolean
+  search_ad_end_date?: string | null
   address: string | null
 }
 
@@ -269,7 +270,7 @@ export default function AdminPage() {
 
   const fetchSearchAdShops = async () => {
     setSearchAdLoading(true)
-    const { data } = await supabase.from('shops').select('id, shop_name, category, is_search_ad, address')
+    const { data } = await supabase.from('shops').select('id, shop_name, category, is_search_ad, search_ad_end_date, address')
       .eq('is_search_ad', true).order('shop_name')
     if (data) setSearchAdShops(data as ShopRow[])
     setSearchAdLoading(false)
@@ -403,10 +404,13 @@ export default function AdminPage() {
 
   // ── 검색광고 (shops.is_search_ad 토글) ───────────────────────────────────────
 
+  const [searchAdDateInput, setSearchAdDateInput] = useState<string>('')
+  const [selectedAdShop, setSelectedAdShop] = useState<ShopRow | null>(null)
+
   const searchShopsForAd = async (q: string) => {
     if (!q.trim()) { setSearchAdResults([]); return }
     setSearchAdSearching(true)
-    const { data } = await supabase.from('shops').select('id, shop_name, category, is_search_ad, address')
+    const { data } = await supabase.from('shops').select('id, shop_name, category, is_search_ad, search_ad_end_date, address')
       .ilike('shop_name', `%${q}%`).limit(10)
     setSearchAdResults((data ?? []) as ShopRow[])
     setSearchAdSearching(false)
@@ -414,12 +418,24 @@ export default function AdminPage() {
 
   const toggleSearchAd = async (shop: ShopRow) => {
     const newVal = !shop.is_search_ad
-    await supabase.from('shops').update({ is_search_ad: newVal }).eq('id', shop.id)
-    setSearchAdShops(prev => newVal
-      ? [...prev, { ...shop, is_search_ad: true }]
-      : prev.filter(s => s.id !== shop.id)
-    )
-    setSearchAdResults(prev => prev.map(s => s.id === shop.id ? { ...s, is_search_ad: newVal } : s))
+    if (newVal) {
+      setSelectedAdShop(shop)
+      setSearchAdDateInput('')
+    } else {
+      await supabase.from('shops').update({ is_search_ad: false, search_ad_end_date: null }).eq('id', shop.id)
+      setSearchAdShops(prev => prev.filter(s => s.id !== shop.id))
+      setSearchAdResults(prev => prev.map(s => s.id === shop.id ? { ...s, is_search_ad: false, search_ad_end_date: null } : s))
+    }
+  }
+
+  const saveSearchAdWithDate = async () => {
+    if (!selectedAdShop || !searchAdDateInput) return
+    await supabase.from('shops').update({ is_search_ad: true, search_ad_end_date: searchAdDateInput }).eq('id', selectedAdShop.id)
+    const updatedShop = { ...selectedAdShop, is_search_ad: true, search_ad_end_date: searchAdDateInput }
+    setSearchAdShops(prev => prev.some(s => s.id === selectedAdShop.id) ? prev : [...prev, updatedShop])
+    setSearchAdResults(prev => prev.map(s => s.id === selectedAdShop.id ? updatedShop : s))
+    setSelectedAdShop(null)
+    setSearchAdDateInput('')
   }
 
   // ── 회원 검색 ────────────────────────────────────────────────────────────────
@@ -785,17 +801,26 @@ export default function AdminPage() {
                 {searchAdResults.length > 0 && (
                   <div className="bg-white rounded-2xl shadow-sm overflow-hidden mb-4">
                     <p className="text-xs font-bold text-gray-400 px-4 pt-3 pb-1">검색 결과</p>
-                    {searchAdResults.map(s => (
-                      <div key={s.id} className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{s.shop_name}</p>
-                          <p className="text-xs text-gray-400">{s.category}</p>
+                    {searchAdResults.map(s => {
+                      const isExpired = s.is_search_ad && s.search_ad_end_date && new Date(s.search_ad_end_date) < new Date();
+                      return (
+                        <div key={s.id} className="flex items-center justify-between px-4 py-3 border-b border-gray-100 last:border-0">
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-gray-900">{s.shop_name}</p>
+                            <p className="text-xs text-gray-400">{s.category}</p>
+                            {s.is_search_ad && s.search_ad_end_date && (
+                              <p className={`text-xs mt-1 ${isExpired ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                종료: {new Date(s.search_ad_end_date).toLocaleDateString('ko-KR')}
+                                {isExpired && ' (만료됨)'}
+                              </p>
+                            )}
+                          </div>
+                          <button onClick={() => toggleSearchAd(s)}>
+                            {s.is_search_ad ? <ToggleRight size={26} className="text-rescue-orange" /> : <ToggleLeft size={26} className="text-gray-300" />}
+                          </button>
                         </div>
-                        <button onClick={() => toggleSearchAd(s)}>
-                          {s.is_search_ad ? <ToggleRight size={26} className="text-rescue-orange" /> : <ToggleLeft size={26} className="text-gray-300" />}
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
 
@@ -809,17 +834,49 @@ export default function AdminPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    {searchAdShops.map(s => (
-                      <div key={s.id} className="bg-white rounded-xl shadow-sm px-4 py-3 flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{s.shop_name}</p>
-                          <p className="text-xs text-gray-400">{s.category} · {s.address ?? ''}</p>
+                    {searchAdShops.map(s => {
+                      const isExpired = s.search_ad_end_date && new Date(s.search_ad_end_date) < new Date();
+                      return (
+                        <div key={s.id} className="bg-white rounded-xl shadow-sm px-4 py-3 flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="text-sm font-bold text-gray-900">{s.shop_name}</p>
+                            <p className="text-xs text-gray-400">{s.category} · {s.address ?? ''}</p>
+                            {s.search_ad_end_date && (
+                              <p className={`text-xs mt-1 ${isExpired ? 'text-red-500 font-bold' : 'text-gray-500'}`}>
+                                종료: {new Date(s.search_ad_end_date).toLocaleDateString('ko-KR')}
+                                {isExpired && ' (만료됨)'}
+                              </p>
+                            )}
+                          </div>
+                          <button onClick={() => toggleSearchAd(s)}>
+                            <ToggleRight size={26} className="text-rescue-orange" />
+                          </button>
                         </div>
-                        <button onClick={() => toggleSearchAd(s)}>
-                          <ToggleRight size={26} className="text-rescue-orange" />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* 검색광고 종료일 설정 모달 */}
+                {selectedAdShop && (
+                  <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center z-50 backdrop-blur-sm">
+                    <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md p-6 shadow-2xl">
+                      <h3 className="text-lg font-black text-gray-900 mb-4">검색광고 종료일 설정</h3>
+                      <p className="text-sm text-gray-600 mb-4">{selectedAdShop.shop_name}</p>
+                      <input type="date" value={searchAdDateInput}
+                        onChange={e => setSearchAdDateInput(e.target.value)}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-rescue-orange mb-4" />
+                      <div className="flex gap-3">
+                        <button onClick={() => { setSelectedAdShop(null); setSearchAdDateInput('') }}
+                          className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+                          취소
+                        </button>
+                        <button onClick={saveSearchAdWithDate} disabled={!searchAdDateInput}
+                          className="flex-1 px-4 py-3 rounded-xl text-sm font-bold text-white bg-rescue-orange hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                          저장
                         </button>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 )}
               </div>

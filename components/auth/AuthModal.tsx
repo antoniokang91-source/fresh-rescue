@@ -12,6 +12,8 @@ type JoinStep = 'form' | 'consent'
 
 interface AuthModalProps {
   onClose: () => void
+  initialRole?: string
+  initialTab?: 'login' | 'join'
 }
 
 const ROLE_OPTIONS: { value: UserRole; emoji: string; label: string; sub: string }[] = [
@@ -93,7 +95,7 @@ AI 기반 개인화 추천 서비스를 제공하기 위해 활용됩니다.
   },
 }
 
-export default function AuthModal({ onClose }: AuthModalProps) {
+export default function AuthModal({ onClose, initialRole, initialTab }: AuthModalProps) {
   const router = useRouter()
   const { refreshProfile } = useAuth()
   const [visible, setVisible] = useState(false)
