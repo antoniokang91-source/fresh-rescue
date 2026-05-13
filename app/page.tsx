@@ -243,22 +243,31 @@ export default function MapPage() {
     try {
       const { data: reservations } = await supabase
         .from('reservations')
-        .select('id, user_nickname, product_name, pickup_completed_at')
+        .select('id, user_nickname, product_name, pickup_completed_at, shops(shop_name)')
         .eq('status', 'COMPLETED')
         .order('pickup_completed_at', { ascending: false })
-        .limit(5);
+        .limit(10);
+
+      let notifications: RealtimeNotification[] = [];
 
       if (reservations && reservations.length > 0) {
-        const notifications: RealtimeNotification[] = reservations.map((res: any) => ({
+        notifications = reservations.map((res: any) => ({
           id: res.id,
           type: 'pickup',
           nickname: res.user_nickname || '구조대원',
-          shop: '신선마트',
+          shop: res.shops?.shop_name || '신선마트',
           product: res.product_name || '상품',
           timestamp: new Date(res.pickup_completed_at).getTime(),
         }));
-        setRealtimeNotifications(notifications);
+      } else {
+        // 테스트 데이터 (실제 데이터 없을 때)
+        notifications = [
+          { id: '1', type: 'pickup', nickname: '민준님', shop: '신선마트', product: '딸기', timestamp: Date.now() },
+          { id: '2', type: 'pickup', nickname: '지은님', shop: '강남채소', product: '브로콜리', timestamp: Date.now() - 60000 },
+        ];
       }
+
+      setRealtimeNotifications(notifications);
     } catch (e) { console.error('실시간 알림 로드 실패:', e); }
   };
 
