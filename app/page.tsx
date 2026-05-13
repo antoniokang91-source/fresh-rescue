@@ -173,6 +173,7 @@ export default function MapPage() {
   // ── 가게 알림 구독 ────────────────────────────────────────────────
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({ message: '', type: 'success', visible: false });
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
@@ -350,6 +351,13 @@ export default function MapPage() {
   }, []);
 
   useEffect(() => { loadData(); loadBanners(); loadPinAds(); }, []);
+
+  // ── 토스트 자동 숨김 ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!toast.visible) return;
+    const timer = setTimeout(() => setToast(prev => ({ ...prev, visible: false })), 3000);
+    return () => clearTimeout(timer);
+  }, [toast.visible]);
 
   // ── 자동 위치 감지 ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -823,12 +831,15 @@ export default function MapPage() {
         await supabase.from('shop_subscriptions').delete()
           .eq('user_id', user.id).eq('shop_id', selectedShop!.id);
         setIsSubscribed(false);
+        setToast({ message: `${selectedShop!.shop_name} 신상품 알림이 해제되었습니다`, type: 'success', visible: true });
       } else {
         await supabase.from('shop_subscriptions').insert({ user_id: user.id, shop_id: selectedShop!.id });
         setIsSubscribed(true);
+        setToast({ message: `${selectedShop!.shop_name} 신상품 알림이 설정되었습니다`, type: 'success', visible: true });
       }
     } catch (e) {
       console.error('구독 토글 실패:', e);
+      setToast({ message: '알림 설정에 실패했습니다. 다시 시도해주세요.', type: 'error', visible: true });
     } finally {
       setSubscribeLoading(false);
     }
@@ -1413,6 +1424,15 @@ export default function MapPage() {
           currentUrl={profile?.avatar_url}
           canSkip
         />
+      )}
+
+      {/* ── 토스트 알림 ────────────────────────────────────────────────────────── */}
+      {toast.visible && (
+        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-xl shadow-lg text-white text-sm font-medium z-50 animate-fadeInUp ${
+          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        }`}>
+          {toast.message}
+        </div>
       )}
 
     </div>
