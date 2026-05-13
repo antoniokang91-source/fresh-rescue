@@ -924,7 +924,7 @@ export default function MapPage() {
 
         {/* 플로팅 검색바 (TDS) */}
         <div className="absolute z-[100]" style={{
-          top: realtimeNotifications.length > 0 ? '34px' : '10px',
+          top: realtimeNotifications.length > 0 ? '30px' : '10px',
           left: '50%',
           transform: 'translateX(-50%)',
           width: '85%',
