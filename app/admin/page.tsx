@@ -391,7 +391,7 @@ export default function AdminPage() {
     }
 
     // 지역별 핫플레이스
-    const { data: regionData } = await supabase.from('shop_rankings').select('region, review_count, id').not('region', 'is', null).order('review_count', { ascending: false }).limit(10)
+    const { data: regionData } = await supabase.from('shop_rankings').select('region, review_count, id').neq('region', null).order('review_count', { ascending: false }).limit(10)
     if (regionData) {
       const stats = regionData.map((r: any) => ({
         region: r.region,
