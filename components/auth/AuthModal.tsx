@@ -525,6 +525,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             <button onClick={handleClose} className="w-full py-3 text-sm text-gray-400 border border-gray-200 rounded-2xl">
               둘러보기 모드로 계속
             </button>
+
+            {/* ── 사업자 정보 ───────────────────────────────────────── */}
+            <div className="text-center text-[10px] text-gray-400 mt-5 space-y-0.5">
+              <p>(주)송강물산</p>
+              <p>대구광역시 북구 매천로 163-6</p>
+              <p>사업자등록번호: 308-88-02822</p>
+            </div>
           </div>
         )}
 
@@ -600,6 +607,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             <button onClick={handleClose} className="w-full py-3 text-sm text-gray-400 border border-gray-200 rounded-2xl">
               둘러보기 모드로 계속
             </button>
+
+            {/* ── 사업자 정보 ───────────────────────────────────────── */}
+            <div className="text-center text-[10px] text-gray-400 mt-5 space-y-0.5">
+              <p>(주)송강물산</p>
+              <p>대구광역시 북구 매천로 163-6</p>
+              <p>사업자등록번호: 308-88-02822</p>
+            </div>
           </div>
         )}
 
@@ -652,6 +666,13 @@ export default function AuthModal({ onClose }: AuthModalProps) {
             >
               {loading ? '처리 중...' : '동의하고 구조대 합류하기'}
             </button>
+
+            {/* ── 사업자 정보 ───────────────────────────────────────── */}
+            <div className="text-center text-[10px] text-gray-400 mt-5 space-y-0.5">
+              <p>(주)송강물산</p>
+              <p>대구광역시 북구 매천로 163-6</p>
+              <p>사업자등록번호: 308-88-02822</p>
+            </div>
           </div>
         )}
         </>
