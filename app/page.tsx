@@ -943,7 +943,7 @@ export default function MapPage() {
                   await performSearch('');
                 }
               }}
-              placeholder="검색"
+              placeholder="가게명, 상품명 검색"
               className="w-full bg-transparent rounded-md pl-8 pr-8 py-1.5 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
             {searchQuery && (
