@@ -18,6 +18,8 @@ export default function ProfilePage() {
   const [showAvatarEdit, setShowAvatarEdit] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
   const [selectedReservationForReview, setSelectedReservationForReview] = useState<Reservation | null>(null)
+  const [userRank, setUserRank] = useState<number | null>(null)
+  const [userCity, setUserCity] = useState<string>('')
 
   useEffect(() => {
     if (!user) {
@@ -62,10 +64,68 @@ export default function ProfilePage() {
         )
         setReservations(withReviewStatus as Reservation[])
       }
+
+      // 지역 순위 로드
+      if (!confirmedData || confirmedData.length === 0) {
+        await loadLocalRanking()
+      }
     } catch (e) {
       console.error('Error loading reservations:', e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadLocalRanking = async () => {
+    if (!user || !profile) return
+    try {
+      // 사용자 위치 정보에서 시 추출
+      const location = profile.location || ''
+      const city = location.split(' ')[0] // 첫 번째 부분이 시
+      setUserCity(city)
+
+      // 같은 시에 속한 모든 사용자 조회
+      const { data: usersInCity } = await supabase
+        .from('members')
+        .select('id, nickname, location')
+        .ilike('location', `${city}%`)
+
+      if (!usersInCity || usersInCity.length === 0) {
+        setUserRank(null)
+        return
+      }
+
+      // 각 사용자별 CONFIRMED 예약 수 계산
+      const userScores = await Promise.all(
+        usersInCity.map(async (member: any) => {
+          const { count } = await supabase
+            .from('reservations')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', member.id)
+            .eq('status', 'CONFIRMED')
+          return { userId: member.id, count: count || 0, nickname: member.nickname }
+        })
+      )
+
+      // 점수 기준 내림차순 정렬 후 순위 계산
+      const ranked = userScores.sort((a, b) => b.count - a.count)
+      const userIndex = ranked.findIndex(r => r.userId === user.id)
+
+      // 같은 점수로 같은 순위를 가지는 경우 처리
+      if (userIndex === -1) {
+        setUserRank(null)
+      } else {
+        let rank = 1
+        for (let i = 0; i < userIndex; i++) {
+          if (ranked[i].count !== ranked[userIndex].count) {
+            rank = i + 1
+          }
+        }
+        setUserRank(rank)
+      }
+    } catch (e) {
+      console.error('Error loading local ranking:', e)
+      setUserRank(null)
     }
   }
 
@@ -205,8 +265,29 @@ export default function ProfilePage() {
           {loading ? (
             <p className="text-center text-gray-500 py-8">로딩 중...</p>
           ) : reservations.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-sm">완료된 구조 내역이 없습니다</p>
+            <div className="space-y-6">
+              <div className="text-center py-12">
+                <p className="text-gray-500 text-sm">완료된 구조 내역이 없습니다</p>
+              </div>
+
+              {/* 우리동네 구조대원 순위 */}
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                <h3 className="text-base font-bold text-gray-900 mb-4">우리동네 구조대원 순위는?</h3>
+                {userRank ? (
+                  <div className="text-center">
+                    <div className="inline-flex items-center justify-center">
+                      <div className="text-5xl font-black text-blue-600">{userRank}</div>
+                      <div className="text-2xl font-black text-blue-600 ml-2">등</div>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-3">{userCity} 지역 구조대원 중</p>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-gray-600 font-semibold mb-2">당신의 '구조력'을 보여주세요!</p>
+                    <p className="text-sm text-gray-500">첫 구조를 완료하면 순위가 계산됩니다</p>
+                  </div>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-3">

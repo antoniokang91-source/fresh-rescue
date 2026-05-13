@@ -66,6 +66,7 @@ export interface Profile {
   marketing_agreed_at: string | null  // ISO timestamp — 개인정보법 법적 증빙용
   rescue_count?: number
   is_registered?: boolean
+  location?: string | null
   created_at: string
   updated_at: string
 }
