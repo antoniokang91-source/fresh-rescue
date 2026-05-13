@@ -89,6 +89,34 @@ interface MemberRow {
   created_at: string
 }
 
+interface RescueLog {
+  user_nickname: string | null
+  shop_name: string | null
+  product_name: string | null
+  pickup_completed_at: string | null
+}
+
+interface RegionStat {
+  region: string
+  rescue_count: number
+  shop_count: number
+}
+
+interface LowRatedReview {
+  id: string
+  rating: number
+  comment: string | null
+  shop_name: string | null
+  user_id: string
+  created_at: string
+}
+
+interface ShopQualityStat {
+  shop_name: string | null
+  avg_rating: number | null
+  review_count: number | null
+}
+
 // ── 관리자 전용 로그인 폼 ─────────────────────────────────────────────────────
 function AdminLoginForm() {
   const { refreshProfile } = useAuth()
@@ -240,6 +268,18 @@ export default function AdminPage() {
   const [memberResults, setMemberResults] = useState<MemberRow[]>([])
   const [memberSearching, setMemberSearching] = useState(false)
 
+  // 실시간 구조 상황판
+  const [todayRescueCount, setTodayRescueCount] = useState(0)
+  const [pendingReservationsCount, setPendingReservationsCount] = useState(0)
+  const [recentRescueLogs, setRecentRescueLogs] = useState<RescueLog[]>([])
+
+  // 지역별 핫플레이스
+  const [regionStats, setRegionStats] = useState<RegionStat[]>([])
+
+  // 신뢰도 관리
+  const [lowRatedReviews, setLowRatedReviews] = useState<LowRatedReview[]>([])
+  const [shopQualityStats, setShopQualityStats] = useState<ShopQualityStat[]>([])
+
   // ── fetch 함수들 ─────────────────────────────────────────────────────────────
 
   const fetchPendingShops = async () => {
@@ -300,6 +340,54 @@ export default function AdminPage() {
       search_ad_shops: searchAdRes.count ?? 0,
     })
     if (mktRes.data) setStats(mktRes.data as MarketingStats)
+
+    // 실시간 구조 상황판 데이터
+    const today = new Date().toISOString().split('T')[0]
+    const [todayRes, pendingRes, logsRes] = await Promise.all([
+      supabase.from('rescue_products').select('id', { count: 'exact', head: true }).eq('status', 'rescued').gte('rescued_at', `${today}T00:00:00`),
+      supabase.from('reservations').select('id', { count: 'exact', head: true }).eq('status', 'PENDING'),
+      supabase.from('reservations').select('user_nickname, product_name, pickup_completed_at, shops!inner(shop_name)').eq('status', 'COMPLETED').order('pickup_completed_at', { ascending: false }).limit(10)
+    ])
+    setTodayRescueCount(todayRes.count ?? 0)
+    setPendingReservationsCount(pendingRes.count ?? 0)
+    if (logsRes.data) {
+      const logs = logsRes.data.map((item: any) => ({
+        user_nickname: item.user_nickname,
+        product_name: item.product_name,
+        pickup_completed_at: item.pickup_completed_at,
+        shop_name: item.shops?.shop_name || null
+      }))
+      setRecentRescueLogs(logs)
+    }
+
+    // 지역별 핫플레이스
+    const { data: regionData } = await supabase.from('shop_rankings').select('region, review_count, id').not('region', 'is', null).order('review_count', { ascending: false }).limit(10)
+    if (regionData) {
+      const stats = regionData.map((r: any) => ({
+        region: r.region,
+        rescue_count: r.review_count || 0,
+        shop_count: 0
+      }))
+      setRegionStats(stats)
+    }
+
+    // 신뢰도 관리
+    const { data: reviewsData } = await supabase.from('reviews').select('id, rating, comment, user_id, created_at, shops!inner(shop_name)').lte('rating', 2).order('created_at', { ascending: false }).limit(10)
+    if (reviewsData) {
+      const reviews = reviewsData.map((r: any) => ({
+        id: r.id,
+        rating: r.rating,
+        comment: r.comment,
+        shop_name: r.shops?.shop_name || null,
+        user_id: r.user_id,
+        created_at: r.created_at
+      }))
+      setLowRatedReviews(reviews)
+    }
+
+    const { data: qualityData } = await supabase.from('shop_rankings').select('shop_name, avg_rating, review_count').order('avg_rating', { ascending: true }).limit(10)
+    if (qualityData) setShopQualityStats(qualityData as any)
+
     setStatsLoading(false)
   }
 
@@ -978,6 +1066,131 @@ export default function AdminPage() {
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* 1️⃣ 실시간 구조 상황판 */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm mt-5 mb-5">
+                  <h3 className="font-black text-gray-700 text-sm mb-4 flex items-center gap-2">
+                    <span>🔴 실시간 구조 상황판</span>
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-emerald-200">
+                      <p className="text-xs text-gray-500 font-bold mb-1">오늘의 구조 건수</p>
+                      <p className="text-2xl font-black text-emerald-700">{todayRescueCount}</p>
+                      <p className="text-xs text-gray-400 mt-1">건</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-3 border border-cyan-200">
+                      <p className="text-xs text-gray-500 font-bold mb-1">현재 예약 대기</p>
+                      <p className="text-2xl font-black text-cyan-700">{pendingReservationsCount}</p>
+                      <p className="text-xs text-gray-400 mt-1">건</p>
+                    </div>
+                  </div>
+                  {recentRescueLogs.length > 0 && (
+                    <div>
+                      <p className="text-xs font-bold text-gray-400 mb-2">최근 구조 로그</p>
+                      <div className="space-y-2">
+                        {recentRescueLogs.slice(0, 5).map((log, idx) => (
+                          <div key={idx} className="bg-gray-50 rounded-lg px-3 py-2 text-xs">
+                            <p className="text-gray-700">
+                              <span className="font-bold">🥕 {log.user_nickname}</span>님이
+                              <span className="font-bold"> {log.shop_name}</span>에서
+                              <span className="text-emerald-600 font-bold"> {log.product_name}</span> 구조 성공!
+                            </p>
+                            <p className="text-gray-400 mt-0.5 text-xs">
+                              {log.pickup_completed_at ? new Date(log.pickup_completed_at).toLocaleTimeString('ko-KR') : '-'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2️⃣ 지역별 핫플레이스 */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
+                  <h3 className="font-black text-gray-700 text-sm mb-4 flex items-center gap-2">
+                    <span>📍 지역별 핫플레이스</span>
+                  </h3>
+                  {regionStats.length > 0 ? (
+                    <div className="space-y-2">
+                      {regionStats.slice(0, 10).map((region, idx) => (
+                        <div key={idx} className="flex items-center justify-between px-3 py-2 bg-gray-50 rounded-lg">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-900">{region.region || '기타'}</p>
+                            <p className="text-xs text-gray-400">{region.shop_count || 0}개 가게 · 리뷰 {region.rescue_count || 0}개</p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="w-12 h-6 bg-rescue-orange/10 rounded-lg flex items-center justify-center">
+                              <span className="text-xs font-black text-rescue-orange">{region.rescue_count || 0}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-gray-400 text-center py-4">지역별 데이터가 없습니다</p>
+                  )}
+                </div>
+
+                {/* 3️⃣ 신뢰도 관리 */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm mb-5">
+                  <h3 className="font-black text-gray-700 text-sm mb-3 flex items-center gap-2">
+                    <span>⭐ 신뢰도 관리</span>
+                  </h3>
+
+                  {/* 저평가 리뷰 */}
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <p className="text-xs font-bold text-gray-500 mb-2">최근 저평가 리뷰</p>
+                    {lowRatedReviews.length > 0 ? (
+                      <div className="space-y-2">
+                        {lowRatedReviews.slice(0, 5).map(review => (
+                          <div key={review.id} className="bg-red-50 rounded-lg px-3 py-2 border border-red-200">
+                            <div className="flex items-start justify-between mb-1">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-gray-900 truncate">{review.shop_name || '알 수 없음'}</p>
+                                <p className="text-xs text-red-700 font-bold flex items-center gap-1 mt-0.5">
+                                  {'⭐'.repeat(review.rating || 0)} {review.rating}/5
+                                </p>
+                              </div>
+                            </div>
+                            {review.comment && <p className="text-xs text-gray-700 mt-1">"{review.comment}"</p>}
+                            <p className="text-xs text-gray-400 mt-1">
+                              {review.created_at ? new Date(review.created_at).toLocaleDateString('ko-KR') : '-'}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">저평가 리뷰가 없습니다</p>
+                    )}
+                  </div>
+
+                  {/* 가게별 평가 현황 */}
+                  <div>
+                    <p className="text-xs font-bold text-gray-500 mb-2">평가 낮은 가게 TOP 10</p>
+                    {shopQualityStats.length > 0 ? (
+                      <div className="space-y-1.5">
+                        {shopQualityStats.map((shop, idx) => (
+                          <div key={idx} className="flex items-center justify-between px-3 py-2 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-gray-900 truncate">{shop.shop_name}</p>
+                              <p className="text-xs text-gray-400 mt-0.5">리뷰 {shop.review_count || 0}개</p>
+                            </div>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-xs text-yellow-700 font-black">
+                                {'⭐'.repeat(Math.round(shop.avg_rating || 0))}
+                              </span>
+                              <span className="text-xs font-bold text-yellow-700 w-8 text-right">
+                                {(shop.avg_rating || 0).toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-400">평가 데이터가 없습니다</p>
+                    )}
+                  </div>
                 </div>
               </>
             )}
