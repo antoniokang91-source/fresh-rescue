@@ -884,7 +884,7 @@ export default function MapPage() {
 
       {/* ── 전광판 배너 (무한 스크롤) ────────────────────────────────────────────────── */}
       {realtimeNotifications.length > 0 && (
-        <div className="bg-white border-b border-gray-100 flex-shrink-0" style={{ height: '28px', overflow: 'hidden' }}>
+        <div className="bg-white/40 border-b border-gray-100/30 flex-shrink-0" style={{ height: '28px', overflow: 'hidden' }}>
           <style>{`
             @keyframes ticker {
               0% { transform: translateX(100%); }
