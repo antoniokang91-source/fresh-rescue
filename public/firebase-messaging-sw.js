@@ -1,13 +1,13 @@
 importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js')
 
-// Firebase 설정값 (다음 값들을 Firebase Console에서 복사한 값으로 교체)
+// Firebase 설정값
 firebase.initializeApp({
-  apiKey: "NEXT_PUBLIC_FIREBASE_API_KEY",
-  authDomain: "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-  projectId: "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  messagingSenderId: "NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID",
-  appId: "NEXT_PUBLIC_FIREBASE_APP_ID"
+  apiKey: "AIzaSyBJusLt5QpexpSilrDEjmUM8DhI4pZUXbs",
+  authDomain: "fresh-rescue-4a51f.firebaseapp.com",
+  projectId: "fresh-rescue-4a51f",
+  messagingSenderId: "973005911537",
+  appId: "1:973005911537:web:61ad66e4ee2cc113528050"
 })
 
 const messaging = firebase.messaging()
