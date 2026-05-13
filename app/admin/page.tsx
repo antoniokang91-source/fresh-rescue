@@ -442,7 +442,7 @@ export default function AdminPage() {
     setMsgLoading(false)
   }
 
-  const searchMembers = async (q: string) => {
+  const searchMembersForMsg = async (q: string) => {
     if (!q.trim()) { setMemberSearchResults([]); return }
     const { data } = await supabase.from('members')
       .select('id, nickname, email').ilike('nickname', `%${q}%`).limit(10)
@@ -1391,7 +1391,7 @@ export default function AdminPage() {
                   {/* 특정 사용자 선택 */}
                   {msgTargetType === 'user' && (
                     <div className="mt-3">
-                      <input type="text" value={memberSearchQuery} onChange={e => { setMemberSearchQuery(e.target.value); searchMembers(e.target.value) }}
+                      <input type="text" value={memberSearchQuery} onChange={e => { setMemberSearchQuery(e.target.value); searchMembersForMsg(e.target.value) }}
                         placeholder="사용자 검색 (닉네임)" className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg" />
                       {memberSearchResults.length > 0 && (
                         <div className="mt-2 max-h-32 overflow-y-auto bg-gray-50 border border-gray-200 rounded-lg">
