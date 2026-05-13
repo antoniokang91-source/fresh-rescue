@@ -927,11 +927,11 @@ export default function MapPage() {
           top: realtimeNotifications.length > 0 ? '30px' : '10px',
           left: '50%',
           transform: 'translateX(-50%)',
-          width: '85%',
-          maxWidth: '320px'
+          width: '70%',
+          maxWidth: '260px'
         }}>
-          <div className="relative bg-white rounded-md shadow-sm" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
+          <div className="relative bg-white rounded-full shadow-sm" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
             <input
               ref={searchInputRef}
               type="text"
@@ -944,7 +944,7 @@ export default function MapPage() {
                 }
               }}
               placeholder="가게명, 상품명 검색"
-              className="w-full bg-transparent rounded-md pl-8 pr-8 py-1.5 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium"
+              className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium"
             />
             {searchQuery && (
               <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
