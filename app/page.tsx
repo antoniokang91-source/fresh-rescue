@@ -1000,7 +1000,8 @@ export default function MapPage() {
                 }
               }}
               placeholder="가게명, 상품명 검색"
-              className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium"
+              disabled={!!(selectedShop || selectedProduct || showReviewModal || showAvatarSelect)}
+              className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             />
             {searchQuery && (
               <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
