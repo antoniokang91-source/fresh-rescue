@@ -247,10 +247,7 @@ export default function ProfilePage() {
     }
     setLocationSearchLoading(true)
     try {
-      const response = await fetch(
-        `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(query)}`,
-        { headers: { Authorization: `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_API_KEY}` } }
-      )
+      const response = await fetch(`/api/kakao/search?query=${encodeURIComponent(query)}`)
       const data = await response.json()
       setLocationSearchResults((data.documents || []).slice(0, 5))
     } catch (e) {
