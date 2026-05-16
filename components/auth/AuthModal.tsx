@@ -572,12 +572,12 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         {/* ── 회원가입 탭 — 폼 ─────────────────────────────────────────── */}
         {tab === 'join' && joinStep === 'form' && (
           <div className="px-6 pb-8">
-            {/* 역할 선택 — 항상 표시 (같은 번호로 여러 역할 가입 지원) */}
+            {/* 역할 선택 — 항상 표시 (선택된 역할 변경 가능) */}
             <div className="grid grid-cols-2 gap-2 mb-5">
               {ROLE_OPTIONS.map((r) => (
                 <button
                   key={r.value}
-                  onClick={() => setJoinRole(r.value)}
+                  onClick={() => { setSelectedRole(r.value); setJoinRole(r.value); }}
                   className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                     joinRole === r.value
                       ? 'border-rescue-orange bg-green-50'
