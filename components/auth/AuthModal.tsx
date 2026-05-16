@@ -120,6 +120,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
   const [marketingAgree, setMarketingAgree] = useState(false)
   const [postSignupState, setPostSignupState] = useState<'none' | 'user' | 'seller'>('none')
   const [expandedTerm, setExpandedTerm] = useState<string | null>(null)
+  const [location, setLocation] = useState('')
 
   const allRequired = termsAgree && privacyAgree
   const allChecked = allRequired && marketingAgree
@@ -156,6 +157,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
     setJoinStep('form')
     setPassword('')
     setNickname('')
+    setLocation('')
   }
 
   // ── 전화번호 입력 시 DB에서 role 자동 조회 ────────────────────────────────────
@@ -306,10 +308,12 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         setPhone('')
         setPassword('')
         setNickname('')
+        setLocation('')
         setJoinStep('form')
         setLoading(false)
       } else {
         // 고객: members 테이블에 저장
+        const city = location.split(' ')[0] || ''
         const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,
           phone: rawPhone,
@@ -318,6 +322,8 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
           is_registered: true,
           marketing_agree: marketingAgree,
           marketing_agreed_at: marketingAgree ? now : null,
+          location: location,
+          city: city,
         })
         if (rescuerError) {
           console.error('Members insert error:', rescuerError)
@@ -617,6 +623,16 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   placeholder="2자리 이상 입력"
+                  className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-3"
+                  onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
+                />
+
+                <label className="block text-xs font-bold text-gray-500 mb-2">📍 위치 정보</label>
+                <input
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="예) 서울시 강남구 또는 부산광역시"
                   className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3.5 text-base font-bold outline-none focus:border-rescue-orange transition-colors mb-5"
                   onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
                 />

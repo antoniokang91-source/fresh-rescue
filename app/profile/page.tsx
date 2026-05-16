@@ -38,6 +38,8 @@ export default function ProfilePage() {
   const [selectedReservationForReview, setSelectedReservationForReview] = useState<Reservation | null>(null)
   const [userRank, setUserRank] = useState<number | null>(null)
   const [userCity, setUserCity] = useState<string>('')
+  const [isEditingLocation, setIsEditingLocation] = useState(false)
+  const [editingLocation, setEditingLocation] = useState('')
 
   // 신선구조 시스템
   const [rescueStats, setRescueStats] = useState<RescueStats | null>(null)
@@ -117,6 +119,7 @@ export default function ProfilePage() {
       const location = profile.location || ''
       const city = location.split(' ')[0] // 첫 번째 부분이 시
       setUserCity(city)
+      setEditingLocation(location)
 
       // 같은 시에 속한 모든 사용자 조회
       const { data: usersInCity } = await supabase
@@ -235,6 +238,23 @@ export default function ProfilePage() {
     router.back()
   }
 
+  const handleLocationSave = async () => {
+    if (!user || !editingLocation.trim()) return
+    try {
+      const city = editingLocation.split(' ')[0] || ''
+      const { error } = await supabase
+        .from('members')
+        .update({ location: editingLocation, city: city })
+        .eq('id', user.id)
+      if (error) throw error
+      await refreshProfile()
+      setIsEditingLocation(false)
+    } catch (e) {
+      console.error('Error saving location:', e)
+      alert('위치 정보 저장에 실패했습니다.')
+    }
+  }
+
   if (!user || !profile) {
     return <div className="w-full h-screen flex items-center justify-center">로딩 중...</div>
   }
@@ -296,6 +316,44 @@ export default function ProfilePage() {
               <p className="text-sm text-gray-600 mb-1">전화번호</p>
               <p className="text-base font-semibold text-gray-900">{profile.phone ?? '미설정'}</p>
             </div>
+            {profile.role === 'user' && (
+              <div>
+                <p className="text-sm text-gray-600 mb-1">📍 위치 정보</p>
+                {isEditingLocation ? (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={editingLocation}
+                      onChange={(e) => setEditingLocation(e.target.value)}
+                      placeholder="예) 서울시 강남구"
+                      className="flex-1 border-2 border-rescue-orange rounded-lg px-3 py-2 text-base font-semibold outline-none"
+                    />
+                    <button
+                      onClick={handleLocationSave}
+                      className="px-4 py-2 bg-rescue-orange text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors active:scale-95"
+                    >
+                      저장
+                    </button>
+                    <button
+                      onClick={() => setIsEditingLocation(false)}
+                      className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors active:scale-95"
+                    >
+                      취소
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <p className="text-base font-semibold text-gray-900">{profile.location ?? '미설정'}</p>
+                    <button
+                      onClick={() => setIsEditingLocation(true)}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors active:scale-95"
+                    >
+                      변경
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
             {profile.role && (
               <div>
                 <p className="text-sm text-gray-600 mb-1">역할</p>
