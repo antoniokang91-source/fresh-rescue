@@ -838,6 +838,7 @@ export default function AdminPage() {
     { id: 'approval', icon: <Store size={15} />, label: '입점 승인', count: pendingShops.length },
     { id: 'ads', icon: <Megaphone size={15} />, label: '광고 관리' },
     { id: 'messages', icon: <Megaphone size={15} />, label: '메시지' },
+    { id: 'ranking', icon: <BarChart3 size={15} />, label: '🏆 랭킹 정산' },
     { id: 'stats', icon: <BarChart3 size={15} />, label: '대시보드' },
   ]
 
@@ -1671,6 +1672,102 @@ export default function AdminPage() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ── 랭킹 정산 탭 ── */}
+        {tab === 'ranking' && (
+          <div className="space-y-4 pb-6">
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span>🏆</span> 월간 랭킹 정산
+              </h2>
+
+              {rankingLoading ? (
+                <div className="flex justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-rescue-orange border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : monthlyRankings.length === 0 ? (
+                <div className="text-center py-8 text-gray-400">
+                  <BarChart3 size={32} className="mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">아직 랭킹 데이터가 없습니다</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* 지역 선택 */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">📍 지역 선택</label>
+                    <select
+                      value={selectedRegionForRanking}
+                      onChange={(e) => setSelectedRegionForRanking(e.target.value)}
+                      className="w-full p-3 border border-gray-200 rounded-lg outline-none focus:border-rescue-orange text-sm"
+                    >
+                      {monthlyRankings.map(r => (
+                        <option key={r.region} value={r.region}>{r.region}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 상위 3명 테이블 */}
+                  {selectedRegionForRanking && (
+                    <div>
+                      <h3 className="font-bold text-gray-900 mb-3">월간 상위 3명</h3>
+                      <div className="bg-gray-50 rounded-lg overflow-hidden">
+                        {monthlyRankings
+                          .find(r => r.region === selectedRegionForRanking)
+                          ?.users.map((user, idx) => (
+                            <div key={user.user_id} className="flex items-center gap-4 px-4 py-4 border-b border-gray-200 last:border-0">
+                              <div className="flex items-center justify-center w-10 h-10 rounded-full font-bold text-white"
+                                style={{
+                                  backgroundColor: idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'
+                                }}>
+                                {idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉'}
+                              </div>
+                              <div className="flex-1">
+                                <p className="font-bold text-gray-900">{user.nickname}</p>
+                                <p className="text-xs text-gray-500">{user.location}</p>
+                              </div>
+                              <div className="text-right">
+                                <p className="font-bold text-rescue-orange text-lg">{user.this_month_points}P</p>
+                                <p className="text-xs text-gray-400">총: {user.total_points}P</p>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+
+                      {/* 보상 정산 */}
+                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <h4 className="font-bold text-blue-900 mb-2">🎁 보상 정책</h4>
+                        <ul className="text-xs text-blue-800 space-y-1">
+                          <li>🥇 1위: 제철 과일 1박스 배송</li>
+                          <li>🥈 2위: 500포인트 추가</li>
+                          <li>🥉 3위: 300포인트 추가</li>
+                        </ul>
+                      </div>
+
+                      <button
+                        onClick={() => sendRewards(selectedRegionForRanking)}
+                        disabled={rewardSending}
+                        className="w-full mt-4 py-3 bg-rescue-orange text-white font-bold rounded-lg hover:bg-orange-600 disabled:opacity-50 transition-colors"
+                      >
+                        {rewardSending ? '보상 지급 중...' : '✓ 보상 지급하기'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* 안내 메시지 */}
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+              <h3 className="font-black text-amber-800 text-sm mb-2">📋 정산 안내</h3>
+              <ul className="space-y-1.5 text-xs text-amber-700">
+                <li>✓ 매월 1일 00:00 자동으로 포인트가 리셋됩니다</li>
+                <li>✓ 평생 포인트(total_points)는 초기화되지 않습니다</li>
+                <li>✓ 1위는 배송 주소를 확인하고 상품을 배송해주세요</li>
+                <li>✓ 보상 지급 후 다음 달 경쟁이 시작됩니다</li>
+              </ul>
             </div>
           </div>
         )}
