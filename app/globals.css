@@ -131,10 +131,104 @@ body {
   animation: fadeInUp 0.3s ease-out;
 }
 
+/* ── 컴포넌트 디자인 토큰 ──────────────────────────────── */
+
+/* Primary Button */
+.btn-primary {
+  @apply px-4 py-3 bg-rescue-orange text-white font-semibold rounded-lg
+    hover:bg-orange-700 active:scale-95 transition-all
+    shadow-md hover:shadow-lg;
+}
+
+/* Secondary Button */
+.btn-secondary {
+  @apply px-4 py-3 bg-toss-grey text-toss-dark font-semibold rounded-lg
+    hover:bg-gray-300 active:scale-95 transition-all;
+}
+
+/* Danger Button */
+.btn-danger {
+  @apply px-4 py-3 bg-siren-red text-white font-semibold rounded-lg
+    hover:bg-red-700 active:scale-95 transition-all
+    shadow-md hover:shadow-lg;
+}
+
+/* Success Button */
+.btn-success {
+  @apply px-4 py-3 bg-safe-green text-white font-semibold rounded-lg
+    hover:bg-green-700 active:scale-95 transition-all
+    shadow-md hover:shadow-lg;
+}
+
+/* Card Styles */
+.card-base {
+  @apply bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow;
+}
+
+.card-elevated {
+  @apply bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition-shadow;
+}
+
+/* Badge Styles */
+.badge-primary {
+  @apply px-2.5 py-1 bg-rescue-orange text-white text-xs font-semibold rounded-full;
+}
+
+.badge-success {
+  @apply px-2.5 py-1 bg-safe-green text-white text-xs font-semibold rounded-full;
+}
+
+.badge-alert {
+  @apply px-2.5 py-1 bg-siren-red text-white text-xs font-semibold rounded-full;
+}
+
+.badge-info {
+  @apply px-2.5 py-1 bg-toss-blue text-white text-xs font-semibold rounded-full;
+}
+
+/* Input Field */
+.input-base {
+  @apply w-full px-3 py-2 border border-toss-grey rounded-lg text-sm
+    focus:outline-none focus:border-rescue-orange focus:ring-2 focus:ring-orange-200
+    transition-all;
+}
+
 /* 스크롤바 숨기기 (모바일 느낌) */
 * {
   scrollbar-width: none;
 }
 *::-webkit-scrollbar {
   display: none;
+}
+
+/* 부드러운 그림자 */
+@layer utilities {
+  .shadow-soft {
+    @apply shadow-sm;
+  }
+
+  .shadow-lifted {
+    @apply shadow-md;
+  }
+
+  /* Text utilities */
+  .text-heading-lg {
+    @apply text-2xl font-bold leading-tight tracking-tight;
+  }
+
+  .text-heading-md {
+    @apply text-xl font-bold leading-tight tracking-tight;
+  }
+
+  .text-body-lg {
+    @apply text-base font-normal;
+  }
+
+  .text-body-md {
+    @apply text-sm font-normal;
+  }
+
+  .text-body-sm {
+    @apply text-xs font-normal;
+  }
 }

@@ -1304,7 +1304,7 @@ export default function MapPage() {
                     return shopProducts.length > 0 ? (
                       <div className="space-y-2 max-h-96 overflow-y-auto">
                         {shopProducts.map((p) => (
-                          <div key={p.id} className="border border-gray-200 rounded-xl p-3 hover:bg-gray-50 active:bg-gray-100 transition-colors">
+                          <div key={p.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md active:shadow-sm transition-all bg-white">
                             {/* top row */}
                             <div className="flex items-start gap-3 mb-3">
                               <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-lg shrink-0">
@@ -1371,7 +1371,7 @@ export default function MapPage() {
                   <div className="space-y-3">
                     {shopReviews.length > 0 ? (
                       shopReviews.map((r: Review) => (
-                        <div key={r.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <div key={r.id} className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                           <div className="flex items-start justify-between mb-2">
                             <div>
                               <p className="text-sm font-semibold text-gray-900">⭐ {r.rating}점</p>
