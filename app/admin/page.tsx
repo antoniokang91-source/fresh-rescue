@@ -122,6 +122,7 @@ interface AdminMessage {
   title: string
   body: string
   image_url: string | null
+  message_type: 'fcm' | 'sms' | 'kakao'
   target_type: 'all' | 'user' | 'shop'
   target_ids: string[]
   status: 'draft' | 'scheduled' | 'sent' | 'failed'
@@ -299,6 +300,7 @@ export default function AdminPage() {
   const [msgTitle, setMsgTitle] = useState('')
   const [msgBody, setMsgBody] = useState('')
   const [msgImageUrl, setMsgImageUrl] = useState('')
+  const [msgType, setMsgType] = useState<'fcm' | 'sms' | 'kakao'>('fcm')
   const [msgTargetType, setMsgTargetType] = useState<'all' | 'user' | 'shop'>('all')
   const [msgTargetIds, setMsgTargetIds] = useState<string[]>([])
   const [msgScheduledAt, setMsgScheduledAt] = useState('')
@@ -466,6 +468,7 @@ export default function AdminPage() {
     setMsgTitle('')
     setMsgBody('')
     setMsgImageUrl('')
+    setMsgType('fcm')
     setMsgTargetType('all')
     setMsgTargetIds([])
     setMsgScheduledAt('')
@@ -481,11 +484,17 @@ export default function AdminPage() {
       const { data: msg, error } = await supabase.from('admin_messages')
         .insert({
           title: msgTitle, body: msgBody, image_url: msgImageUrl || null,
+          message_type: msgType,
           target_type: msgTargetType, target_ids: msgTargetIds, status: 'draft'
         })
         .select().single()
       if (error || !msg) throw error
-      await supabase.functions.invoke('admin-send-message', { body: { message_id: msg.id } })
+      // 메시지 유형에 따라 다른 Edge Function 호출
+      if (msgType === 'fcm') {
+        await supabase.functions.invoke('admin-send-message', { body: { message_id: msg.id } })
+      } else if (msgType === 'sms' || msgType === 'kakao') {
+        await supabase.functions.invoke('admin-send-message-solapi', { body: { message_id: msg.id } })
+      }
       resetMsgForm()
       fetchAdminMessages()
     } catch (e) {
@@ -499,6 +508,7 @@ export default function AdminPage() {
     try {
       await supabase.from('admin_messages').insert({
         title: msgTitle, body: msgBody, image_url: msgImageUrl || null,
+        message_type: msgType,
         target_type: msgTargetType, target_ids: msgTargetIds,
         status: 'scheduled', scheduled_at: new Date(msgScheduledAt).toISOString()
       })
@@ -1367,6 +1377,28 @@ export default function AdminPage() {
                   )}
                 </div>
 
+                {/* 메시지 유형 */}
+                <div>
+                  <label className="text-xs font-semibold text-gray-700 block mb-2">메시지 유형</label>
+                  <div className="flex gap-2">
+                    {[
+                      { value: 'fcm', label: '📱 FCM 푸시' },
+                      { value: 'sms', label: '💬 SMS' },
+                      { value: 'kakao', label: '🎵 카톡' }
+                    ].map(type => (
+                      <label key={type.value} className="flex-1 flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          checked={msgType === type.value}
+                          onChange={() => setMsgType(type.value as 'fcm' | 'sms' | 'kakao')}
+                          className="rounded"
+                        />
+                        <span className="text-xs">{type.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 {/* 발송 대상 */}
                 <div>
                   <label className="text-xs font-semibold text-gray-700 block mb-2">발송 대상 *</label>
@@ -1469,9 +1501,14 @@ export default function AdminPage() {
                       <div className="flex items-start justify-between mb-1">
                         <div className="flex-1">
                           <p className="text-xs font-bold text-gray-900 line-clamp-1">{msg.title}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {msg.target_type === 'all' ? '전체' : msg.target_type === 'user' ? '특정사용자' : '가게구독자'}
-                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <p className="text-xs text-gray-500">
+                              {msg.target_type === 'all' ? '전체' : msg.target_type === 'user' ? '특정사용자' : '가게구독자'}
+                            </p>
+                            <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded">
+                              {msg.message_type === 'fcm' ? '📱 FCM' : msg.message_type === 'sms' ? '💬 SMS' : '🎵 카톡'}
+                            </span>
+                          </div>
                         </div>
                         <span className={`text-xs font-bold px-2 py-1 rounded ${
                           msg.status === 'sent' ? 'bg-green-100 text-green-700' :
