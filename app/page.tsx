@@ -128,7 +128,7 @@ export default function MapPage() {
   const [selectedShop, setSelectedShop] = useState<Shop | null>(null);
   const [shopDetailTab, setShopDetailTab] = useState<1 | 2 | 3>(1);
   const [map, setMap] = useState<any>(null);
-  const { user, profile, signOut, setShowAuthModal } = useAuth();
+  const { user, profile, signOut, setShowAuthModal, showAuthModal } = useAuth();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [bannerIdx, setBannerIdx] = useState([0, 0]);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
@@ -1016,7 +1016,8 @@ export default function MapPage() {
           left: '50%',
           transform: 'translateX(-50%)',
           width: '70%',
-          maxWidth: '260px'
+          maxWidth: '260px',
+          display: (showAuthModal || showMissionsModal) ? 'none' : 'block'
         }}>
           <div className="relative bg-white rounded-full shadow-sm" style={{ boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none" />
