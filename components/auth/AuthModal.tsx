@@ -475,28 +475,26 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         {/* ── 로그인 탭 ────────────────────────────────────────────────── */}
         {tab === 'login' && (
           <div className="px-6 pb-8">
-            {/* 역할 선택 — selectedRole 없을 때만 표시 */}
-            {!selectedRole && (
-              <div className="grid grid-cols-2 gap-2 mb-5">
-                {ROLE_OPTIONS.map((r) => (
-                  <button
-                    key={r.value}
-                    onClick={() => setLoginRole(r.value)}
-                    className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
-                      loginRole === r.value
-                        ? 'border-rescue-orange bg-green-50'
-                        : 'border-gray-200 bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-2xl mb-1">{r.emoji}</span>
-                    <span className={`text-sm font-black ${loginRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
-                      {r.label}
-                    </span>
-                    <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* 역할 선택 — 항상 표시 (같은 번호로 여러 역할 로그인 지원) */}
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {ROLE_OPTIONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setLoginRole(r.value)}
+                  className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
+                    loginRole === r.value
+                      ? 'border-rescue-orange bg-green-50'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <span className="text-2xl mb-1">{r.emoji}</span>
+                  <span className={`text-sm font-black ${loginRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
+                    {r.label}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
+                </button>
+              ))}
+            </div>
 
             <label className="block text-xs font-bold text-gray-500 mb-2">📱 휴대폰 번호</label>
             <input
@@ -575,28 +573,26 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         {/* ── 회원가입 탭 — 폼 ─────────────────────────────────────────── */}
         {tab === 'join' && joinStep === 'form' && (
           <div className="px-6 pb-8">
-            {/* 역할 선택 — selectedRole 없을 때만 표시 */}
-            {!selectedRole && (
-              <div className="grid grid-cols-2 gap-2 mb-5">
-                {ROLE_OPTIONS.map((r) => (
-                  <button
-                    key={r.value}
-                    onClick={() => setJoinRole(r.value)}
-                    className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
-                      joinRole === r.value
-                        ? 'border-rescue-orange bg-green-50'
-                        : 'border-gray-200 bg-gray-50'
-                    }`}
-                  >
-                    <span className="text-2xl mb-1">{r.emoji}</span>
-                    <span className={`text-sm font-black ${joinRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
-                      {r.label}
-                    </span>
-                    <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* 역할 선택 — 항상 표시 (같은 번호로 여러 역할 가입 지원) */}
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {ROLE_OPTIONS.map((r) => (
+                <button
+                  key={r.value}
+                  onClick={() => setJoinRole(r.value)}
+                  className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
+                    joinRole === r.value
+                      ? 'border-rescue-orange bg-green-50'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <span className="text-2xl mb-1">{r.emoji}</span>
+                  <span className={`text-sm font-black ${joinRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
+                    {r.label}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
+                </button>
+              ))}
+            </div>
 
             <label className="block text-xs font-bold text-gray-500 mb-2">📱 휴대폰 번호</label>
             <input
