@@ -203,7 +203,7 @@ export default function ProfilePage() {
         .select('rank_position, activity_score')
         .eq('user_id', user.id)
         .eq('year_month', yearMonth)
-        .single()
+        .maybeSingle()
 
       if (ranking) {
         setMonthlyRanking(ranking as MonthlyRanking)
