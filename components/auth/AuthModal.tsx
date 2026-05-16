@@ -185,7 +185,8 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
     setLoading(true)
     setError('')
     try {
-      const email = `${rawPhone}@rescue.app`
+      const role = loginRole
+      const email = `${rawPhone}_${role}@rescue.app`
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
         setError('전화번호 또는 비밀번호가 올바르지 않습니다.')
@@ -256,12 +257,13 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
   // ── 회원가입 Step 2: 가입 완료 ───────────────────────────────────────────
   const completeSignup = async () => {
     if (!allRequired) { setError('필수 항목에 동의해주세요.'); return }
+    if (location.trim().length === 0) { setError('위치 정보를 입력해주세요.'); return }
     setLoading(true)
     setError('')
     try {
-      const email = `${rawPhone}@rescue.app`
+      const role = selectedRole ?? 'user'
+      const email = `${rawPhone}_${role}@rescue.app`
       const now = new Date().toISOString()
-      const role = selectedRole ?? 'user'  // selectedRole 직접 사용 (joinRole 동기화 문제 방지)
 
       const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password })
 
@@ -332,7 +334,8 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
 
         // 고객은 바로 로그인
         setPostSignupState('user')
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        const userEmail = `${rawPhone}_user@rescue.app`
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email: userEmail, password })
         if (signInError) {
           console.error('Auto sign in failed:', signInError)
           setError('자동 로그인에 실패했습니다. 로그인을 다시 시도해주세요.')
