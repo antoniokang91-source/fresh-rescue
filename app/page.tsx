@@ -1500,12 +1500,12 @@ export default function MapPage() {
 
       {/* ── 구조 미션 모달 ────────────────────────────────────────────────────── */}
       {showMissionsModal && (
-        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl p-6 animate-slideUp">
-            <div className="flex items-center justify-between mb-4">
+        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl p-6 animate-slideUp my-auto sm:my-0">
+            <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🎯</span>
-                <h3 className="font-bold text-lg text-gray-900">오늘의 구조 미션</h3>
+                <h3 className="font-bold text-lg text-gray-900">신선구조 활동도</h3>
               </div>
               <button
                 onClick={() => setShowMissionsModal(false)}
@@ -1514,30 +1514,85 @@ export default function MapPage() {
                 ✕
               </button>
             </div>
-            <div className="space-y-3 mb-5">
-              {rescueMissions.map((mission, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                  <div className="flex items-center gap-3">
-                    <div className="text-lg">{mission.icon}</div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{mission.label}</p>
-                      <p className="text-xs text-gray-500">{mission.description}</p>
-                    </div>
-                  </div>
-                  {mission.completed && (
-                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                      <span className="text-xs font-bold text-green-700">✓</span>
-                    </div>
-                  )}
-                </div>
-              ))}
+
+            {/* 포인트 설명 */}
+            <div className="bg-orange-50 rounded-lg p-4 mb-5 border border-orange-100">
+              <p className="text-xs font-semibold text-gray-900 mb-2">📌 신선구조 포인트란?</p>
+              <p className="text-xs text-gray-700 leading-relaxed">
+                리뷰 작성, 사진 첨부 등 신선구조 활동으로 포인트를 적립합니다. 포인트는 랭킹을 결정하고 월간 최고 구조대원 선발에 사용됩니다.
+              </p>
             </div>
-            <p className="text-xs text-gray-500 mb-5 text-center">리뷰 작성으로 구조 미션을 완료하고 포인트를 얻어보세요!</p>
+
+            {/* 오늘의 미션 */}
+            <div className="mb-5">
+              <p className="text-xs font-semibold text-gray-900 mb-3">📋 오늘의 구조 미션</p>
+              <div className="space-y-2.5">
+                {rescueMissions.map((mission, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                    <div className="flex items-center gap-2.5">
+                      <div className="text-base">{mission.icon}</div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold text-gray-900">{mission.label}</p>
+                        <p className="text-[11px] text-gray-500">{mission.description}</p>
+                      </div>
+                    </div>
+                    {mission.completed && (
+                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                        <span className="text-xs font-bold text-green-700">✓</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 레벨/랭킹 정책 */}
+            <div className="bg-blue-50 rounded-lg p-4 mb-5 border border-blue-100">
+              <p className="text-xs font-semibold text-gray-900 mb-3">⭐ 레벨 & 랭킹</p>
+              <div className="space-y-2 text-xs text-gray-700">
+                <div className="flex justify-between">
+                  <span>🥇 Lv.1 구조대원</span>
+                  <span className="font-semibold">1~50점</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>🥈 Lv.2 구조 경력자</span>
+                  <span className="font-semibold">51~150점</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>🥉 Lv.3 구조 전문가</span>
+                  <span className="font-semibold">151점+</span>
+                </div>
+              </div>
+            </div>
+
+            {/* 월간 보상 */}
+            <div className="bg-purple-50 rounded-lg p-4 mb-5 border border-purple-100">
+              <p className="text-xs font-semibold text-gray-900 mb-2">🏆 월간 최고 구조대원</p>
+              <p className="text-xs text-gray-700 mb-3">매월 포인트가 가장 많은 구조대원을 선발합니다!</p>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <span>1위</span>
+                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                  <span className="font-semibold">상품 증정 🎁</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <span>2위</span>
+                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                  <span className="font-semibold">포인트 500P 🎁</span>
+                </div>
+                <div className="flex items-center gap-2 text-gray-700">
+                  <span>3위</span>
+                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                  <span className="font-semibold">포인트 300P 🎁</span>
+                </div>
+              </div>
+            </div>
+
             <button
               onClick={() => setShowMissionsModal(false)}
               className="w-full py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
             >
-              확인
+              확인했어요
             </button>
           </div>
         </div>
