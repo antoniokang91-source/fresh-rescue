@@ -175,6 +175,19 @@ export default function MapPage() {
   const [subscribeLoading, setSubscribeLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({ message: '', type: 'success', visible: false });
 
+  // ── 신선구조 미션 ────────────────────────────────────────────────────
+  interface RescueMission {
+    completed: boolean;
+    icon: string;
+    label: string;
+    description: string;
+  }
+  const [rescueMissions, setRescueMissions] = useState<RescueMission[]>([
+    { completed: false, icon: '📝', label: '신선도 평가', description: '하루 1회 (+10점)' },
+    { completed: false, icon: '📸', label: '사진 첨부', description: '추가 점수 (+5점)' },
+    { completed: false, icon: '✍️', label: '상세 리뷰', description: '5자 이상 (+5점)' },
+  ]);
+
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
   const loadData = async () => {
     setProducts(DUMMY_PRODUCTS);
@@ -493,6 +506,22 @@ export default function MapPage() {
     if (slot2.length > 1) off = setTimeout(() => { t2 = setInterval(() => setBannerIdx(p => [p[0], (p[1] + 1) % slot2.length]), 3000); }, 500);
     return () => { if (t1) clearInterval(t1); if (t2) clearInterval(t2); if (off) clearTimeout(off); };
   }, [banners]);
+
+  // ── 메시지 읽음 추적 (URL 파라미터로부터) ──────────────────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const params = new URLSearchParams(window.location.search);
+    const msgId = params.get('msg');
+    if (!msgId) return;
+    supabase.from('message_receipts')
+      .update({ read_at: new Date().toISOString() })
+      .eq('message_id', msgId)
+      .eq('user_id', user.id)
+      .is('read_at', null)
+      .then(() => {})
+      .catch(() => {});
+    window.history.replaceState({}, '', '/');
+  }, [user]);
 
   // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
   useEffect(() => {
@@ -981,7 +1010,7 @@ export default function MapPage() {
             )}
 
             {/* 검색 결과 드롭다운 (TDS) */}
-            {showSearchResults && (searchQuery.trim() || dbSearchResults.length > 0) && (
+            {showSearchResults && (searchQuery.trim() || dbSearchResults.length > 0) && !selectedShop && !selectedProduct && (
               <div className="absolute top-full left-0 right-0 bg-white rounded-xl shadow-2xl z-50 mt-2 overflow-hidden max-h-72 overflow-y-auto"
                 style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.12)' }}>
                 {searchLoading ? (
@@ -1128,6 +1157,35 @@ export default function MapPage() {
           </div>
         );
       })()}
+
+      {/* ── 오늘의 구조 미션 위젯 ──────────────────────────────────────────────── */}
+      <div className="bg-white px-4 py-4 flex-shrink-0 border-t border-gray-100">
+        <div className="bg-gradient-to-r from-rescue-orange/10 to-orange-50 rounded-2xl p-4 border border-rescue-orange/20">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xl">🎯</span>
+            <h3 className="font-bold text-sm text-gray-900">오늘의 구조 미션</h3>
+          </div>
+          <div className="space-y-2.5">
+            {rescueMissions.map((mission, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-100 hover:border-rescue-orange/30 transition-colors">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 flex items-center justify-center text-lg">{mission.icon}</div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-gray-900">{mission.label}</p>
+                    <p className="text-[11px] text-gray-500">{mission.description}</p>
+                  </div>
+                </div>
+                {mission.completed && (
+                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-xs font-bold text-green-700">✓</span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3 text-center">리뷰 작성으로 구조 미션을 완료하고 포인트를 얻어보세요!</p>
+        </div>
+      </div>
 
       {/* ── Product Detail Modal (TDS) ────────────────────────────────────── */}
       {selectedProduct && (

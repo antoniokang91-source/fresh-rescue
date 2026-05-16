@@ -380,7 +380,28 @@ export default function SellerDashboardPage() {
     }).open()
   }
 
-  // ── 수령 완료 처리 ────────────────────────────────────────────────────────────
+  // ── 제품 준비 완료 (PENDING → READY) + 알림톡 발송 ───────────────────────────
+  const handleMarkReady = async (reservationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'READY' })
+        .eq('id', reservationId)
+
+      if (error) throw error
+
+      // Edge Function 호출 → SOLAPI SMS/KakaoTalk 발송
+      await supabase.functions.invoke('reservation-notification', {
+        body: { reservation_id: reservationId, status: 'READY' }
+      })
+
+      fetchReservations()
+    } catch (err: any) {
+      alert('제품 준비 완료 처리 실패: ' + err.message)
+    }
+  }
+
+  // ── 수령 완료 처리 (READY → COMPLETED) + 알림톡 발송 ────────────────────────
   const handleCompletePickup = async (reservationId: string) => {
     try {
       const { error } = await supabase
@@ -389,6 +410,11 @@ export default function SellerDashboardPage() {
         .eq('id', reservationId)
 
       if (error) throw error
+
+      // Edge Function 호출 → SOLAPI SMS 발송
+      await supabase.functions.invoke('reservation-notification', {
+        body: { reservation_id: reservationId, status: 'COMPLETED' }
+      })
 
       fetchReservations()
     } catch (err: any) {
@@ -816,7 +842,7 @@ export default function SellerDashboardPage() {
                             </div>
                           </div>
                           <button
-                            onClick={() => supabase.from('reservations').update({ status: 'READY' }).eq('id', r.id).then(() => fetchReservations())}
+                            onClick={() => handleMarkReady(r.id)}
                             className="w-full bg-rescue-orange hover:bg-orange-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
                           >
                             📦 제품 준비 완료

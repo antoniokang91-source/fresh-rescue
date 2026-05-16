@@ -9,7 +9,7 @@ import type { Reservation } from '@/types'
 interface ReviewModalProps {
   reservation: Reservation
   onClose: () => void
-  onSuccess: (rankPosition: number, shopName: string) => void
+  onSuccess: (rankPosition: number, shopName: string, activityPoints?: number, hasPhoto?: boolean, hasDetailedText?: boolean) => void
 }
 
 const AUTO_COMMENT_EXAMPLES = [
@@ -108,6 +108,11 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
 
       if (insertError) throw insertError
 
+      // 구조 활동도 계산
+      const basePoints = 10 // 기본 리뷰 포인트 (신선도 평가)
+      const hasPhoto = photoUrl !== null
+      const hasDetailedText = finalComment && finalComment.length >= 5
+
       // Trigger 실행 후 랭킹 조회
       const { data: ranking } = await supabase
         .from('shop_rankings')
@@ -115,7 +120,7 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
         .eq('shop_id', reservation.shop_id)
         .single()
 
-      onSuccess(ranking?.rank_position ?? 1, ranking?.shop_name ?? '가게')
+      onSuccess(ranking?.rank_position ?? 1, ranking?.shop_name ?? '가게', basePoints, hasPhoto, hasDetailedText)
     } catch (err: any) {
       setError(err.message || '리뷰 작성 실패')
     } finally {

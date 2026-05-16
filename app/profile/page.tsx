@@ -7,7 +7,25 @@ import { useAuth } from '@/lib/auth-context'
 import { supabase } from '@/lib/supabase'
 import AvatarSelectModal from '@/components/avatar/AvatarSelectModal'
 import ReviewModal from '@/components/review/ReviewModal'
+import ReviewSuccessPopup from '@/components/review/ReviewSuccessPopup'
 import type { Reservation } from '@/types'
+
+interface RescueStats {
+  rescue_level: number
+  rescue_activity_score: number
+  rescue_badge_count: number
+}
+
+interface RescueBadge {
+  id: string
+  badge_type: string
+  badge_name: string
+}
+
+interface MonthlyRanking {
+  rank_position: number
+  activity_score: number
+}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -21,12 +39,28 @@ export default function ProfilePage() {
   const [userRank, setUserRank] = useState<number | null>(null)
   const [userCity, setUserCity] = useState<string>('')
 
+  // 신선구조 시스템
+  const [rescueStats, setRescueStats] = useState<RescueStats | null>(null)
+  const [rescueBadges, setRescueBadges] = useState<RescueBadge[]>([])
+  const [monthlyRanking, setMonthlyRanking] = useState<MonthlyRanking | null>(null)
+
+  // 리뷰 완료 팝업
+  const [showReviewSuccess, setShowReviewSuccess] = useState(false)
+  const [reviewSuccessData, setReviewSuccessData] = useState<{
+    rankPosition: number
+    shopName: string
+    activityPoints?: number
+    hasPhoto?: boolean
+    hasDetailedText?: boolean
+  } | null>(null)
+
   useEffect(() => {
     if (!user) {
       router.push('/')
       return
     }
     loadReservations()
+    loadRescueStats()
   }, [user, router])
 
   const loadReservations = async () => {
@@ -129,6 +163,51 @@ export default function ProfilePage() {
     }
   }
 
+  // 신선구조 레벨/뱃지/활동도 로드
+  const loadRescueStats = async () => {
+    if (!user) return
+    try {
+      // 1. 레벨 및 활동도 조회
+      const { data: stats } = await supabase
+        .from('members')
+        .select('rescue_level, rescue_activity_score, rescue_badge_count')
+        .eq('id', user.id)
+        .single()
+
+      if (stats) {
+        setRescueStats(stats as RescueStats)
+      }
+
+      // 2. 뱃지 조회
+      const { data: badges } = await supabase
+        .from('rescue_badges')
+        .select('id, badge_type, badge_name')
+        .eq('user_id', user.id)
+        .order('earned_at', { ascending: false })
+
+      if (badges) {
+        setRescueBadges(badges as RescueBadge[])
+      }
+
+      // 3. 월간 랭킹 조회
+      const now = new Date()
+      const yearMonth = now.toISOString().slice(0, 7)
+
+      const { data: ranking } = await supabase
+        .from('rescue_leaderboard')
+        .select('rank_position, activity_score')
+        .eq('user_id', user.id)
+        .eq('year_month', yearMonth)
+        .single()
+
+      if (ranking) {
+        setMonthlyRanking(ranking as MonthlyRanking)
+      }
+    } catch (e) {
+      console.error('Error loading rescue stats:', e)
+    }
+  }
+
   const handlePickupComplete = async (reservationId: string) => {
     try {
       const { error } = await supabase
@@ -152,8 +231,8 @@ export default function ProfilePage() {
   const handleAvatarSave = async (url: string) => {
     await refreshProfile()
     setShowAvatarEdit(false)
-    await new Promise(resolve => setTimeout(resolve, 500))
-    router.push('/')
+    await new Promise(resolve => setTimeout(resolve, 800))
+    router.back()
   }
 
   if (!user || !profile) {
@@ -187,10 +266,10 @@ export default function ProfilePage() {
                 <img
                   src={profile.avatar_url}
                   alt="avatar"
-                  className="w-16 h-16 rounded-xl object-cover"
+                  className="w-16 h-16 rounded-full object-cover"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-blue-600 text-white text-3xl font-bold flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-blue-600 text-white text-3xl font-bold flex items-center justify-center">
                   {profile.nickname?.charAt(0) ?? '👤'}
                 </div>
               )}
@@ -227,6 +306,81 @@ export default function ProfilePage() {
             )}
           </div>
         </div>
+
+        {/* 신선구조 레벨/뱃지/활동도 */}
+        {rescueStats && (
+          <div className="bg-gradient-to-br from-rescue-orange/10 to-orange-50 rounded-2xl p-6 shadow-sm space-y-5 border border-rescue-orange/20">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">🚨 신선구조 활동</h2>
+
+            {/* 레벨 + 진행도 */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">신선구조 레벨</p>
+                  <p className="text-2xl font-black text-rescue-orange">
+                    Level {rescueStats.rescue_level}
+                    <span className="text-sm text-gray-600 ml-2">
+                      {['', '신입', '구조원', '시니어', '구조대원', '구조대장'][rescueStats.rescue_level]}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-rescue-orange h-2 rounded-full transition-all duration-300"
+                  style={{ width: `${Math.min((rescueStats.rescue_level / 5) * 100, 100)}%` }}
+                />
+              </div>
+            </div>
+
+            {/* 활동도 */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white/60 rounded-xl p-4">
+                <p className="text-xs text-gray-600 mb-1">구조 활동도</p>
+                <p className="text-2xl font-bold text-rescue-orange">{rescueStats.rescue_activity_score}</p>
+                <p className="text-xs text-gray-500 mt-1">포인트</p>
+              </div>
+              <div className="bg-white/60 rounded-xl p-4">
+                <p className="text-xs text-gray-600 mb-1">수집 뱃지</p>
+                <p className="text-2xl font-bold text-rescue-orange">{rescueStats.rescue_badge_count}</p>
+                <p className="text-xs text-gray-500 mt-1">개</p>
+              </div>
+            </div>
+
+            {/* 월간 랭킹 */}
+            {monthlyRanking && (
+              <div className="bg-white/60 rounded-xl p-4 border border-orange-200">
+                <p className="text-xs text-gray-600 mb-2">이번 달 랭킹</p>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-black text-rescue-orange">{monthlyRanking.rank_position}</p>
+                  <p className="text-sm text-gray-600">위 (활동도 {monthlyRanking.activity_score}점)</p>
+                </div>
+              </div>
+            )}
+
+            {/* 뱃지 갤러리 */}
+            {rescueBadges.length > 0 && (
+              <div className="space-y-2">
+                <p className="text-sm font-semibold text-gray-900">🎖️ 획득 뱃지</p>
+                <div className="grid grid-cols-4 gap-2">
+                  {rescueBadges.slice(0, 8).map((badge) => (
+                    <div
+                      key={badge.id}
+                      className="bg-white rounded-lg p-2 text-center hover:shadow-md transition-shadow cursor-help"
+                      title={badge.badge_name}
+                    >
+                      <p className="text-2xl mb-1">🏅</p>
+                      <p className="text-xs text-gray-700 line-clamp-2">{badge.badge_name}</p>
+                    </div>
+                  ))}
+                </div>
+                {rescueBadges.length > 8 && (
+                  <p className="text-xs text-gray-500 text-center mt-2">+{rescueBadges.length - 8}개 더보기</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 예약 대기 중 */}
         {pendingReservations.length > 0 && (
@@ -401,10 +555,27 @@ export default function ProfilePage() {
             setShowReviewModal(false)
             setSelectedReservationForReview(null)
           }}
-          onSuccess={() => {
+          onSuccess={(rankPosition, shopName, activityPoints, hasPhoto, hasDetailedText) => {
             setShowReviewModal(false)
             setSelectedReservationForReview(null)
+            setReviewSuccessData({ rankPosition, shopName, activityPoints, hasPhoto, hasDetailedText })
+            setShowReviewSuccess(true)
             loadReservations()
+            loadRescueStats()
+          }}
+        />
+      )}
+
+      {showReviewSuccess && reviewSuccessData && (
+        <ReviewSuccessPopup
+          shopName={reviewSuccessData.shopName}
+          rankPosition={reviewSuccessData.rankPosition}
+          activityPoints={reviewSuccessData.activityPoints}
+          hasPhoto={reviewSuccessData.hasPhoto}
+          hasDetailedText={reviewSuccessData.hasDetailedText}
+          onClose={() => {
+            setShowReviewSuccess(false)
+            setReviewSuccessData(null)
           }}
         />
       )}
