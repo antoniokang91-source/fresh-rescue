@@ -64,11 +64,6 @@ export default function ReviewSuccessPopup({
             </div>
           )}
         </div>
-
-        {/* 가게 랭킹 */}
-        <p className="text-center text-xs">
-          <strong>{shopName}</strong> 랭킹: <strong>{rankPosition}위</strong>
-        </p>
       </div>
     </div>
   )
