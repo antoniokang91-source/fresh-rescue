@@ -675,8 +675,28 @@ export default function AdminPage() {
   // ── 승인 처리 ────────────────────────────────────────────────────────────────
 
   const handleApprove = async (id: string) => {
-    await supabase.from('members').update({ seller_status: 'approved' }).eq('id', id)
-    setPendingShops(prev => prev.filter(s => s.id !== id))
+    setApprovalLoading(true)
+    try {
+      // members 업데이트
+      const { error: updateError } = await supabase.from('members').update({ seller_status: 'approved' }).eq('id', id)
+      if (updateError) throw updateError
+
+      // 승인 알림톡 발송 (사장님 핸드폰번호로)
+      const seller = pendingShops.find(s => s.id === id)
+      if (seller?.phone) {
+        const nickName = seller.nickname || `사장님_${seller.phone.slice(-4)}`
+        await supabase.functions.invoke('shop-approval-notification', {
+          body: { sellerId: id, phone: seller.phone, sellerName: nickName },
+        })
+      }
+
+      setPendingShops(prev => prev.filter(s => s.id !== id))
+    } catch (err) {
+      console.error('승인 처리 실패:', err)
+      alert('승인 처리에 실패했습니다')
+    } finally {
+      setApprovalLoading(false)
+    }
   }
 
   const handleReject = async (id: string) => {
