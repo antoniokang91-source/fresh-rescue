@@ -111,7 +111,7 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
       // 구조 활동도 계산
       const basePoints = 10 // 기본 리뷰 포인트 (신선도 평가)
       const hasPhoto = photoUrl !== null
-      const hasDetailedText = !!(finalComment && finalComment.length >= 5)
+      const hasDetailedText = !!(finalComment && finalComment.length >= 20) // 20글자 이상
 
       // Trigger 실행 후 랭킹 조회
       const { data: ranking } = await supabase
@@ -237,6 +237,15 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
                   className="w-full p-3 border-2 border-gray-200 rounded-lg outline-none focus:border-blue-600 text-sm resize-none"
                   rows={3}
                 />
+                <div className="flex items-center justify-between mt-2">
+                  <p className="text-xs text-gray-500">
+                    {comment.length >= 20 ? (
+                      <span className="text-green-600 font-semibold">✓ 상세 리뷰 +5점 획득!</span>
+                    ) : (
+                      <span>20글자 이상 입력하면 상세 리뷰 보너스 +5점 획득 ({comment.length}/20)</span>
+                    )}
+                  </p>
+                </div>
               </>
             )}
           </div>
