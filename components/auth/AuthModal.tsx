@@ -246,7 +246,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
 
   // ── 회원가입 Step 1: 폼 → 동의 화면으로 ──────────────────────────────────
   const handleJoinNext = () => {
-    const role = selectedRole ?? joinRole
+    const role = joinRole
     if (rawPhone.length < 10) { setError('올바른 휴대폰 번호를 입력해주세요.'); return }
     if (password.length < 6) { setError('비밀번호는 6자리 이상 입력해주세요.'); return }
     if (role === 'user' && nickname.trim().length < 2) { setError('닉네임은 2자리 이상 입력해주세요.'); return }
@@ -257,11 +257,10 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
   // ── 회원가입 Step 2: 가입 완료 ───────────────────────────────────────────
   const completeSignup = async () => {
     if (!allRequired) { setError('필수 항목에 동의해주세요.'); return }
-    if (location.trim().length === 0) { setError('위치 정보를 입력해주세요.'); return }
     setLoading(true)
     setError('')
     try {
-      const role = selectedRole ?? 'user'
+      const role = joinRole
       const email = `${rawPhone}_${role}@rescue.app`
       const now = new Date().toISOString()
 
@@ -278,7 +277,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
           setTab('login')
           setJoinStep('form')
           setPassword('')
-          setError('이미 가입된 번호입니다. 비밀번호를 입력해 로그인해주세요.')
+          setError('이미 가입된 역할입니다. 다른 역할을 선택하거나 로그인해주세요.')
           setLoading(false)
           return
         }
@@ -315,7 +314,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         setLoading(false)
       } else {
         // 고객: members 테이블에 저장
-        const city = location.split(' ')[0] || ''
+        const city = location.trim().length > 0 ? location.split(' ')[0] : ''
         const { error: rescuerError } = await supabase.from('members').insert({
           id: userId,
           phone: rawPhone,
@@ -324,7 +323,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
           is_registered: true,
           marketing_agree: marketingAgree,
           marketing_agreed_at: marketingAgree ? now : null,
-          location: location,
+          location: location.trim().length > 0 ? location : null,
           city: city,
         })
         if (rescuerError) {
