@@ -452,12 +452,20 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
                   onClick={() => setLoginRole(r.value)}
                   className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                     loginRole === r.value
-                      ? 'border-rescue-orange bg-green-50'
+                      ? r.value === 'seller'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-rescue-orange bg-green-50'
                       : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <span className="text-2xl mb-1">{r.emoji}</span>
-                  <span className={`text-sm font-black ${loginRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
+                  <span className={`text-sm font-black ${
+                    loginRole === r.value
+                      ? r.value === 'seller'
+                        ? 'text-emerald-700'
+                        : 'text-rescue-orange'
+                      : 'text-gray-600'
+                  }`}>
                     {r.label}
                   </span>
                   <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
@@ -550,12 +558,20 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
                   onClick={() => setJoinRole(r.value)}
                   className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                     joinRole === r.value
-                      ? 'border-rescue-orange bg-green-50'
+                      ? r.value === 'seller'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : 'border-rescue-orange bg-green-50'
                       : 'border-gray-200 bg-gray-50'
                   }`}
                 >
                   <span className="text-2xl mb-1">{r.emoji}</span>
-                  <span className={`text-sm font-black ${joinRole === r.value ? 'text-rescue-orange' : 'text-gray-600'}`}>
+                  <span className={`text-sm font-black ${
+                    joinRole === r.value
+                      ? r.value === 'seller'
+                        ? 'text-emerald-700'
+                        : 'text-rescue-orange'
+                      : 'text-gray-600'
+                  }`}>
                     {r.label}
                   </span>
                   <span className="text-[10px] text-gray-400 mt-0.5">{r.sub}</span>
@@ -611,7 +627,11 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
 
             <button
               onClick={handleJoinNext}
-              className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mb-3"
+              className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all mb-3 ${
+                joinRole === 'seller'
+                  ? 'bg-emerald-500 shadow-emerald-100'
+                  : 'bg-rescue-orange shadow-green-100'
+              }`}
             >
               다음 — 약관 동의
             </button>
@@ -674,7 +694,11 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
             <button
               onClick={completeSignup}
               disabled={loading || !allRequired}
-              className="w-full py-4 bg-rescue-orange text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50"
+              className={`w-full py-4 text-white font-black text-base rounded-2xl shadow-lg active:scale-95 transition-all disabled:opacity-50 ${
+                joinRole === 'seller'
+                  ? 'bg-emerald-500 shadow-emerald-100'
+                  : 'bg-rescue-orange shadow-green-100'
+              }`}
             >
               {loading ? '처리 중...' : '동의하고 구조대 합류하기'}
             </button>
