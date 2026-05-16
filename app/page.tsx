@@ -1499,8 +1499,8 @@ export default function MapPage() {
         />
       )}
 
-      {/* ── 구조 미션 모달 ────────────────────────────────────────────────────── */}
-      {showMissionsModal && (
+      {/* ── 구조 미션 모달 (고객만) ────────────────────────────────────────────────────── */}
+      {showMissionsModal && profile?.role === 'user' && (
         <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl p-6 animate-slideUp my-auto sm:my-0">
             <div className="flex items-center justify-between mb-5">
