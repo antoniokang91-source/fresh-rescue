@@ -1529,7 +1529,7 @@ export default function MapPage() {
 
       {/* ── 토스트 알림 ────────────────────────────────────────────────────────── */}
       {toast.visible && (
-        <div className={`fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-xl shadow-lg text-sm font-medium z-50 animate-fadeInUp border ${
+        <div className={`fixed top-6 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-xl shadow-lg text-sm font-medium z-50 animate-fadeInUp border ${
           toast.type === 'success' ? 'bg-white text-green-600 border-green-600' : 'bg-white text-red-600 border-red-600'
         }`}>
           {toast.message}
