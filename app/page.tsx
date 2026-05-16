@@ -522,8 +522,8 @@ export default function MapPage() {
       .eq('message_id', msgId)
       .eq('user_id', user.id)
       .is('read_at', null)
-      .then(() => {})
-      .catch(() => {});
+      .catch(() => {})
+      .then(() => {});
     window.history.replaceState({}, '', '/');
   }, [user]);
 
