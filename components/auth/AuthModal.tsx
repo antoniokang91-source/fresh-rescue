@@ -627,7 +627,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
                   onKeyDown={(e) => e.key === 'Enter' && handleJoinNext()}
                 />
 
-                <label className="block text-xs font-bold text-gray-500 mb-2">📍 위치 정보</label>
+                <label className="block text-xs font-bold text-gray-500 mb-2">📍 위치 정보 <span className="text-[10px] text-gray-400">(선택)</span></label>
                 <input
                   type="text"
                   value={location}
