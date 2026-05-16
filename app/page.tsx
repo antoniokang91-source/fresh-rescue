@@ -703,6 +703,13 @@ export default function MapPage() {
 
       if (error) throw error;
 
+      // 사장님에게 신규예약 알림톡 발송
+      if (reservation?.id) {
+        await supabase.functions.invoke('new-reservation-notification', {
+          body: { reservationId: reservation.id },
+        }).catch(err => console.error('알림톡 발송 실패:', err));
+      }
+
       setSelectedProduct(null);
       alert('예약 완료! 사장님이 확인하면 알림을 받으실 거예요.');
     } catch (err: any) {
