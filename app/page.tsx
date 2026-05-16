@@ -1008,7 +1008,7 @@ export default function MapPage() {
               }}
               placeholder="가게명, 상품명 검색"
               disabled={!!(selectedShop || selectedProduct || showReviewModal || showAvatarSelect)}
-              className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none"
             />
             {searchQuery && (
               <button className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 rounded-lg transition-colors"
@@ -1510,8 +1510,8 @@ export default function MapPage() {
 
       {/* ── 토스트 알림 ────────────────────────────────────────────────────────── */}
       {toast.visible && (
-        <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-xl shadow-lg text-white text-sm font-medium z-50 animate-fadeInUp ${
-          toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+        <div className={`fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-3.5 rounded-xl shadow-lg text-sm font-medium z-50 animate-fadeInUp border ${
+          toast.type === 'success' ? 'bg-white text-green-600 border-green-600' : 'bg-white text-red-600 border-red-600'
         }`}>
           {toast.message}
         </div>
