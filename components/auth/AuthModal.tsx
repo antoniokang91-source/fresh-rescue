@@ -267,7 +267,9 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         if (
           signUpError.message.includes('already registered') ||
           signUpError.message.includes('already been registered') ||
-          signUpError.message.includes('User already registered')
+          signUpError.message.includes('User already registered') ||
+          signUpError.message.includes('already exists') ||
+          signUpError.code === 'user_already_exists'
         ) {
           setTab('login')
           setJoinStep('form')
