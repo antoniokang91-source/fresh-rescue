@@ -10,7 +10,7 @@ import {
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 
-type Tab = 'approval' | 'ads' | 'stats' | 'messages'
+type Tab = 'approval' | 'ads' | 'stats' | 'messages' | 'ranking'
 type AdsSubTab = 'banner' | 'pin' | 'search'
 
 const SUPABASE_URL = 'https://utcqwesokcvlvwahomjj.supabase.co'
@@ -87,6 +87,20 @@ interface MemberRow {
   role: string
   seller_status: string | null
   created_at: string
+}
+
+interface RankingUser {
+  user_id: string
+  nickname: string
+  location: string
+  this_month_points: number
+  total_points: number
+  rank: 1 | 2 | 3
+}
+
+interface RegionRanking {
+  region: string
+  users: RankingUser[]
 }
 
 interface RescueLog {
@@ -291,6 +305,12 @@ export default function AdminPage() {
 
   // 지역별 핫플레이스
   const [regionStats, setRegionStats] = useState<RegionStat[]>([])
+
+  // 월간 랭킹 정산
+  const [monthlyRankings, setMonthlyRankings] = useState<RegionRanking[]>([])
+  const [selectedRegionForRanking, setSelectedRegionForRanking] = useState<string>('')
+  const [rankingLoading, setRankingLoading] = useState(false)
+  const [rewardSending, setRewardSending] = useState(false)
 
   // 신뢰도 관리
   const [lowRatedReviews, setLowRatedReviews] = useState<LowRatedReview[]>([])
@@ -533,6 +553,104 @@ export default function AdminPage() {
       fetchAdminMessages()
       supabase.from('shops').select('id, shop_name').eq('is_active', true)
         .then(({ data }) => setShopList((data || []) as any))
+    }
+  }, [tab, user])
+
+  // ── 월간 랭킹 정산 ───────────────────────────────────────────────────────────
+
+  const fetchMonthlyRankings = async () => {
+    setRankingLoading(true)
+    try {
+      // 지역별 이번 달 포인트 상위 3명 조회
+      const { data, error } = await supabase.rpc('get_monthly_rankings_by_region')
+      if (error) throw error
+
+      const grouped: Record<string, RankingUser[]> = {}
+      ;(data || []).forEach((user: any) => {
+        const region = user.location || '미등록'
+        if (!grouped[region]) grouped[region] = []
+        grouped[region].push({
+          user_id: user.id,
+          nickname: user.nickname || '익명',
+          location: user.location || '미등록',
+          this_month_points: user.this_month_points || 0,
+          total_points: user.total_points || 0,
+          rank: grouped[region].length + 1 as 1 | 2 | 3
+        })
+      })
+
+      setMonthlyRankings(Object.entries(grouped).map(([region, users]) => ({
+        region,
+        users: users.slice(0, 3)
+      })))
+
+      if (Object.keys(grouped).length > 0) {
+        setSelectedRegionForRanking(Object.keys(grouped)[0])
+      }
+    } catch (e) {
+      console.error('랭킹 조회 실패:', e)
+      alert('랭킹 조회 실패: ' + String(e))
+    } finally {
+      setRankingLoading(false)
+    }
+  }
+
+  const sendRewards = async (region: string) => {
+    const regionData = monthlyRankings.find(r => r.region === region)
+    if (!regionData || regionData.users.length === 0) return
+
+    setRewardSending(true)
+    try {
+      // 1위: 포인트 500 추가
+      if (regionData.users[0]) {
+        await supabase
+          .from('members')
+          .update({ total_points: supabase.from('members').select('total_points').eq('id', regionData.users[0].user_id) })
+          .eq('id', regionData.users[0].user_id)
+        // TODO: 1위 배송지 수집 및 상품 배송 로직
+      }
+
+      // 2위: 포인트 500 추가
+      if (regionData.users[1]) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('total_points')
+          .eq('id', regionData.users[1].user_id)
+          .single()
+
+        await supabase
+          .from('members')
+          .update({ total_points: (member?.total_points || 0) + 500 })
+          .eq('id', regionData.users[1].user_id)
+      }
+
+      // 3위: 포인트 300 추가
+      if (regionData.users[2]) {
+        const { data: member } = await supabase
+          .from('members')
+          .select('total_points')
+          .eq('id', regionData.users[2].user_id)
+          .single()
+
+        await supabase
+          .from('members')
+          .update({ total_points: (member?.total_points || 0) + 300 })
+          .eq('id', regionData.users[2].user_id)
+      }
+
+      alert('보상이 지급되었습니다!')
+      fetchMonthlyRankings()
+    } catch (e) {
+      console.error('보상 지급 실패:', e)
+      alert('보상 지급 실패: ' + String(e))
+    } finally {
+      setRewardSending(false)
+    }
+  }
+
+  useEffect(() => {
+    if (tab === 'ranking' && user) {
+      fetchMonthlyRankings()
     }
   }, [tab, user])
 
