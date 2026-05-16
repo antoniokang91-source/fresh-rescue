@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "design:validate": "design.md lint DESIGN.md",
+    "design:export:tailwind": "design.md export --format tailwind DESIGN.md",
+    "design:export:css": "design.md export --format css DESIGN.md"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
@@ -19,6 +22,7 @@
     "tailwind-merge": "^2.5.4"
   },
   "devDependencies": {
+    "@google/design.md": "^0.1.0",
     "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^19",
