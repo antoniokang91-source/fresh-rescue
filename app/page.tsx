@@ -1581,6 +1581,9 @@ export default function MapPage() {
             <div className="bg-purple-50 rounded-lg p-4 mb-5 border border-purple-100">
               <p className="text-xs font-semibold text-gray-900 mb-2">🏆 월간 최고 구조대원</p>
               <p className="text-xs text-gray-700 mb-3">매월 포인트가 가장 많은 구조대원을 선발합니다!</p>
+              <p className="text-xs text-gray-600 mb-3 p-2 bg-white/60 rounded border border-purple-200">
+                💡 현재는 시, 군 단위로 랭킹을 반영하고 있습니다. 구조대원이 많아지면 동 단위로 변경 예정입니다
+              </p>
               <div className="space-y-2 text-xs">
                 <div className="flex items-center gap-2 text-gray-700">
                   <span>1위</span>
