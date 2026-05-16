@@ -152,6 +152,7 @@ export default function MapPage() {
   const [shopRanking, setShopRanking] = useState<any>(null);
   const [reservationLoading, setReservationLoading] = useState(false);
   const [reservedProductId, setReservedProductId] = useState<string | null>(null);
+  const [showMissionsModal, setShowMissionsModal] = useState(false);
 
   // ── 아바타 선택 ────────────────────────────────────────────────────
   const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -528,6 +529,13 @@ export default function MapPage() {
     })();
     window.history.replaceState({}, '', '/');
   }, [user]);
+
+  // ── 로그인 후 구조 미션 팝업 ───────────────────────────────────────────────────
+  useEffect(() => {
+    if (user && !showMissionsModal) {
+      setShowMissionsModal(true);
+    }
+  }, [user?.id]);
 
   // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
   useEffect(() => {
@@ -1183,35 +1191,6 @@ export default function MapPage() {
         );
       })()}
 
-      {/* ── 오늘의 구조 미션 위젯 ──────────────────────────────────────────────── */}
-      <div className="bg-white px-4 py-4 flex-shrink-0 border-t border-gray-100">
-        <div className="bg-gradient-to-r from-rescue-orange/10 to-orange-50 rounded-2xl p-4 border border-rescue-orange/20">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xl">🎯</span>
-            <h3 className="font-bold text-sm text-gray-900">오늘의 구조 미션</h3>
-          </div>
-          <div className="space-y-2.5">
-            {rescueMissions.map((mission, idx) => (
-              <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-100 hover:border-rescue-orange/30 transition-colors">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-7 h-7 flex items-center justify-center text-lg">{mission.icon}</div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-gray-900">{mission.label}</p>
-                    <p className="text-[11px] text-gray-500">{mission.description}</p>
-                  </div>
-                </div>
-                {mission.completed && (
-                  <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                    <span className="text-xs font-bold text-green-700">✓</span>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-500 mt-3 text-center">리뷰 작성으로 구조 미션을 완료하고 포인트를 얻어보세요!</p>
-        </div>
-      </div>
-
       {/* ── Product Detail Modal (TDS) ────────────────────────────────────── */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
@@ -1517,6 +1496,51 @@ export default function MapPage() {
           rankPosition={reviewSuccess.rank}
           onClose={() => setReviewSuccess(null)}
         />
+      )}
+
+      {/* ── 구조 미션 모달 ────────────────────────────────────────────────────── */}
+      {showMissionsModal && (
+        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl p-6 animate-slideUp">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🎯</span>
+                <h3 className="font-bold text-lg text-gray-900">오늘의 구조 미션</h3>
+              </div>
+              <button
+                onClick={() => setShowMissionsModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-xl"
+              >
+                ✕
+              </button>
+            </div>
+            <div className="space-y-3 mb-5">
+              {rescueMissions.map((mission, idx) => (
+                <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="text-lg">{mission.icon}</div>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">{mission.label}</p>
+                      <p className="text-xs text-gray-500">{mission.description}</p>
+                    </div>
+                  </div>
+                  {mission.completed && (
+                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                      <span className="text-xs font-bold text-green-700">✓</span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mb-5 text-center">리뷰 작성으로 구조 미션을 완료하고 포인트를 얻어보세요!</p>
+            <button
+              onClick={() => setShowMissionsModal(false)}
+              className="w-full py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+            >
+              확인
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── 아바타 선택 모달 ────────────────────────────────────────────────────── */}
