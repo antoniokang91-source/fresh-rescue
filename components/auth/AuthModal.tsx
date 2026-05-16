@@ -99,7 +99,6 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
   const router = useRouter()
   const { refreshProfile } = useAuth()
   const [visible, setVisible] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<UserRole | null>(null)  // 역할 선택 화면 제어
   const [tab, setTab] = useState<Tab>('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -109,9 +108,9 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
   const [password, setPassword] = useState('')
   const [nickname, setNickname] = useState('')
 
-  // selectedRole이 정해지면 그걸로 고정
-  const [loginRole, setLoginRole] = useState<UserRole>(selectedRole ?? 'user')
-  const [joinRole, setJoinRole] = useState<UserRole>(selectedRole ?? 'user')
+  // 각 탭에서 독립적으로 역할 관리
+  const [loginRole, setLoginRole] = useState<UserRole>('user')
+  const [joinRole, setJoinRole] = useState<UserRole>('user')
 
   // 회원가입 탭 전용
   const [joinStep, setJoinStep] = useState<JoinStep>('form')
@@ -129,13 +128,6 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
     const t = setTimeout(() => setVisible(true), 10)
     return () => clearTimeout(t)
   }, [])
-
-  // selectedRole 변경 시 양쪽 탭 역할 동기화
-  useEffect(() => {
-    const role = selectedRole ?? 'user'
-    setLoginRole(role)
-    setJoinRole(role)
-  }, [selectedRole])
 
   const handleClose = () => {
     setVisible(false)
@@ -372,26 +364,8 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
           <div className="w-10 h-1 bg-gray-200 rounded-full" />
         </div>
 
-        {/* ── 역할 선택 (첫 화면) ──────────────────────────────────────────────── */}
-        {!selectedRole ? (
-          <div className="px-6 pb-10 pt-6 flex flex-col items-center text-center gap-4">
-            <h2 className="font-black text-2xl text-gray-900">어떻게 이용할까요?</h2>
-            <p className="text-gray-500 text-sm">신선구조대에 오신 것을 환영합니다!</p>
-            <div className="w-full space-y-3 mt-4">
-              {ROLE_OPTIONS.map((role) => (
-                <button
-                  key={role.value}
-                  onClick={() => setSelectedRole(role.value)}
-                  className="w-full p-4 border-2 border-gray-200 rounded-2xl hover:border-blue-600 hover:bg-blue-50 transition-colors text-left active:scale-95"
-                >
-                  <div className="text-2xl mb-1">{role.emoji}</div>
-                  <div className="font-bold text-gray-900">{role.label}</div>
-                  <div className="text-xs text-gray-600 mt-0.5">{role.sub}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : postSignupState !== 'none' ? (
+        {/* ── 가입 완료 화면 ────────────────────────────────────────────── */}
+        {postSignupState !== 'none' ? (
           <div className="px-6 pb-10 pt-2 flex flex-col items-center text-center gap-4">
             <div className="relative mt-2">
               <img src="/logo.png" alt="신선구조대" className="w-24 h-24 animate-bounce" />
@@ -441,14 +415,10 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
         {/* ── 헤더 + 탭 ────────────────────────────────────────────────── */}
         <div className="px-6 pt-1 pb-0">
           <div className="flex items-center gap-3 mb-4">
-            {selectedRole === 'seller' ? <span className="text-3xl">🏪</span> : <img src="/logo.png" alt="신선구조대" className="w-10 h-10" />}
+            <img src="/logo.png" alt="신선구조대" className="w-10 h-10" />
             <div>
-              <h2 className="font-black text-xl text-gray-900">
-                {selectedRole === 'seller' ? '사장님 전용' : '신선구조대'}
-              </h2>
-              <p className="text-xs text-gray-400">
-                {selectedRole === 'seller' ? '가게 등록 & 관리' : '구조대원 입장'}
-              </p>
+              <h2 className="font-black text-xl text-gray-900">신선구조대</h2>
+              <p className="text-xs text-gray-400">구조대원 입장 & 가게 관리</p>
             </div>
           </div>
 
@@ -577,7 +547,7 @@ export default function AuthModal({ onClose, initialRole, initialTab }: AuthModa
               {ROLE_OPTIONS.map((r) => (
                 <button
                   key={r.value}
-                  onClick={() => { setSelectedRole(r.value); setJoinRole(r.value); }}
+                  onClick={() => setJoinRole(r.value)}
                   className={`flex flex-col items-center py-3 rounded-2xl border-2 transition-all ${
                     joinRole === r.value
                       ? 'border-rescue-orange bg-green-50'
