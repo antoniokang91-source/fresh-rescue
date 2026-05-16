@@ -111,7 +111,7 @@ export default function ReviewModal({ reservation, onClose, onSuccess }: ReviewM
       // 구조 활동도 계산
       const basePoints = 10 // 기본 리뷰 포인트 (신선도 평가)
       const hasPhoto = photoUrl !== null
-      const hasDetailedText = finalComment && finalComment.length >= 5
+      const hasDetailedText = !!(finalComment && finalComment.length >= 5)
 
       // Trigger 실행 후 랭킹 조회
       const { data: ranking } = await supabase
