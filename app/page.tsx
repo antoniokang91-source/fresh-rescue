@@ -151,6 +151,7 @@ export default function MapPage() {
   const [shopReviews, setShopReviews] = useState<any[]>([]);
   const [shopRanking, setShopRanking] = useState<any>(null);
   const [reservationLoading, setReservationLoading] = useState(false);
+  const [reservedProductId, setReservedProductId] = useState<string | null>(null);
 
   // ── 아바타 선택 ────────────────────────────────────────────────────
   const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -718,7 +719,7 @@ export default function MapPage() {
         }).catch(err => console.error('알림톡 발송 실패:', err));
       }
 
-      setSelectedProduct(null);
+      setReservedProductId(product.id);
       setToast({ visible: true, type: 'success', message: '예약 완료! 사장님이 확인하면 알림을 받으실 거예요.' });
     } catch (err: any) {
       setToast({ visible: true, type: 'error', message: '예약 실패: ' + err.message });
@@ -1411,9 +1412,13 @@ export default function MapPage() {
                                 if (!user) { setShowAuthModal(true); return; }
                                 handleReserve(p);
                               }}
-                              disabled={reservationLoading || selectedShop.is_operating === false}
-                              className={`w-full text-white text-xs font-semibold py-2 rounded-lg transition-all ${selectedShop.is_operating === false ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-400'}`}>
-                              {selectedShop.is_operating === false ? '휴무중' : reservationLoading ? '예약 중...' : '예약하기'}
+                              disabled={reservationLoading || selectedShop.is_operating === false || reservedProductId === p.id}
+                              className={`w-full text-white text-xs font-semibold py-2 rounded-lg transition-all ${
+                                reservedProductId === p.id ? 'bg-gray-400 cursor-not-allowed' :
+                                selectedShop.is_operating === false ? 'bg-gray-400 cursor-not-allowed' :
+                                'bg-blue-600 hover:bg-blue-700 active:scale-95 disabled:bg-gray-400'
+                              }`}>
+                              {reservedProductId === p.id ? '예약완료' : selectedShop.is_operating === false ? '휴무중' : reservationLoading ? '예약 중...' : '예약하기'}
                             </button>
                           </div>
                         ))}
