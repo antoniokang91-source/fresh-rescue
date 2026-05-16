@@ -282,13 +282,8 @@ export default function MapPage() {
           product: res.product_name || '상품',
           timestamp: new Date(res.pickup_completed_at).getTime(),
         }));
-      } else {
-        // 테스트 데이터 (실제 데이터 없을 때)
-        notifications = [
-          { id: '1', type: 'pickup', nickname: '민준님', shop: '신선마트', product: '딸기', timestamp: Date.now() },
-          { id: '2', type: 'pickup', nickname: '지은님', shop: '강남채소', product: '브로콜리', timestamp: Date.now() - 60000 },
-        ];
       }
+      // 실제 데이터가 없으면 빈 배열 유지
 
       setRealtimeNotifications(notifications);
     } catch (e) { console.error('실시간 알림 로드 실패:', e); }
