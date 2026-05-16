@@ -1590,12 +1590,12 @@ export default function MapPage() {
                 <div className="flex items-center gap-2 text-gray-700">
                   <span>2위</span>
                   <span className="flex-1 border-b border-dotted border-gray-300"></span>
-                  <span className="font-semibold">포인트 500P 🎁</span>
+                  <span className="font-semibold">포인트 20P 🎁</span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-700">
                   <span>3위</span>
                   <span className="flex-1 border-b border-dotted border-gray-300"></span>
-                  <span className="font-semibold">포인트 300P 🎁</span>
+                  <span className="font-semibold">포인트 10P 🎁</span>
                 </div>
               </div>
             </div>

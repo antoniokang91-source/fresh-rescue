@@ -610,7 +610,7 @@ export default function AdminPage() {
         // TODO: 1위 배송지 수집 및 상품 배송 로직
       }
 
-      // 2위: 포인트 500 추가
+      // 2위: 포인트 20 추가
       if (regionData.users[1]) {
         const { data: member } = await supabase
           .from('members')
@@ -620,11 +620,11 @@ export default function AdminPage() {
 
         await supabase
           .from('members')
-          .update({ total_points: (member?.total_points || 0) + 500 })
+          .update({ total_points: (member?.total_points || 0) + 20 })
           .eq('id', regionData.users[1].user_id)
       }
 
-      // 3위: 포인트 300 추가
+      // 3위: 포인트 10 추가
       if (regionData.users[2]) {
         const { data: member } = await supabase
           .from('members')
@@ -634,7 +634,7 @@ export default function AdminPage() {
 
         await supabase
           .from('members')
-          .update({ total_points: (member?.total_points || 0) + 300 })
+          .update({ total_points: (member?.total_points || 0) + 10 })
           .eq('id', regionData.users[2].user_id)
       }
 
