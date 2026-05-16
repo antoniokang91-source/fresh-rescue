@@ -517,13 +517,15 @@ export default function MapPage() {
     const params = new URLSearchParams(window.location.search);
     const msgId = params.get('msg');
     if (!msgId) return;
-    supabase.from('message_receipts')
-      .update({ read_at: new Date().toISOString() })
-      .eq('message_id', msgId)
-      .eq('user_id', user.id)
-      .is('read_at', null)
-      .catch(() => {})
-      .then(() => {});
+    (async () => {
+      try {
+        await supabase.from('message_receipts')
+          .update({ read_at: new Date().toISOString() })
+          .eq('message_id', msgId)
+          .eq('user_id', user.id)
+          .is('read_at', null);
+      } catch (e) {}
+    })();
     window.history.replaceState({}, '', '/');
   }, [user]);
 
