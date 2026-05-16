@@ -694,6 +694,7 @@ export default function MapPage() {
   // ── 구조 예약 ────────────────────────────────────────────────────────
   const handleReserve = async (product: Product) => {
     if (!user) return;
+    setReservationLoading(true);
     try {
       const { data: reservation, error } = await supabase.from('reservations').insert({
         user_id: user.id,
@@ -718,6 +719,8 @@ export default function MapPage() {
       setToast({ visible: true, type: 'success', message: '예약 완료! 사장님이 확인하면 알림을 받으실 거예요.' });
     } catch (err: any) {
       setToast({ visible: true, type: 'error', message: '예약 실패: ' + err.message });
+    } finally {
+      setReservationLoading(false);
     }
   };
 
