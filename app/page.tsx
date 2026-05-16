@@ -170,6 +170,14 @@ export default function MapPage() {
   const [realtimeNotifications, setRealtimeNotifications] = useState<RealtimeNotification[]>([]);
   const [currentNotificationIdx, setCurrentNotificationIdx] = useState(0);
 
+  // ── 전광판 기본 문구 ────────────────────────────────────────────────
+  const defaultTickerMessages = [
+    '🚨 신선구조대원 모집중!',
+    '⏰ 재고임박상품',
+    '🆘 급처상품',
+    '🏷️ 최대 할인 상품 실시간 모니터링중',
+  ];
+
   // ── 가게 알림 구독 ────────────────────────────────────────────────
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [subscribeLoading, setSubscribeLoading] = useState(false);
@@ -946,35 +954,43 @@ export default function MapPage() {
       </div>
 
       {/* ── 전광판 배너 (무한 스크롤) ────────────────────────────────────────────────── */}
-      {realtimeNotifications.length > 0 && (
-        <div className="bg-white/40 border-b border-gray-100/30 flex-shrink-0" style={{ height: '28px', overflow: 'hidden' }}>
-          <style>{`
-            @keyframes ticker {
-              0% { transform: translateX(100%); }
-              100% { transform: translateX(-100%); }
-            }
-            .ticker-text {
-              animation: ticker 40s linear infinite;
-              white-space: nowrap;
-              display: inline-block;
-            }
-          `}</style>
-          <div className="h-full flex items-center px-2 text-xs text-gray-700 font-medium">
-            <div className="ticker-text">
-              {realtimeNotifications.map((notif) => (
-                <span key={notif.id} className="inline-block mr-8">
-                  {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
-                </span>
-              ))}
-              {realtimeNotifications.map((notif, idx) => (
-                <span key={`repeat-${idx}`} className="inline-block mr-8">
-                  {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
-                </span>
-              ))}
-            </div>
+      <div className="bg-white/40 border-b border-gray-100/30 flex-shrink-0" style={{ height: '28px', overflow: 'hidden' }}>
+        <style>{`
+          @keyframes ticker {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+          }
+          .ticker-text {
+            animation: ticker 50s linear infinite;
+            white-space: nowrap;
+            display: inline-block;
+          }
+        `}</style>
+        <div className="h-full flex items-center px-2 text-xs text-gray-700 font-medium">
+          <div className="ticker-text">
+            {defaultTickerMessages.map((msg, idx) => (
+              <span key={`default-${idx}`} className="inline-block mr-8">
+                {msg}
+              </span>
+            ))}
+            {realtimeNotifications.map((notif) => (
+              <span key={notif.id} className="inline-block mr-8">
+                {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
+              </span>
+            ))}
+            {defaultTickerMessages.map((msg, idx) => (
+              <span key={`default-repeat-${idx}`} className="inline-block mr-8">
+                {msg}
+              </span>
+            ))}
+            {realtimeNotifications.map((notif, idx) => (
+              <span key={`repeat-${idx}`} className="inline-block mr-8">
+                {notif.type === 'pickup' ? '✅' : '🆘'} {notif.type === 'pickup' ? `${notif.nickname}님 ${notif.product}` : `${notif.shop} ${notif.product} 구조요청`}
+              </span>
+            ))}
           </div>
         </div>
-      )}
+      </div>
 
       {/* ── 지도 + 플로팅 검색 ────────────────────────────────────────────────── */}
       <div className="flex-1 relative overflow-hidden">
