@@ -166,7 +166,7 @@ export default function ProfilePage() {
     }
   }
 
-  // 신선구조 레벨/뱃지/활동도 로드
+  // 신선구조대 레벨/뱃지/활동도 로드
   const loadRescueStats = async () => {
     if (!user) return
     try {
@@ -367,16 +367,16 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* 신선구조 레벨/뱃지/활동도 */}
+        {/* 신선구조대 레벨/뱃지/활동도 */}
         {rescueStats && (
           <div className="bg-gradient-to-br from-rescue-orange/10 to-orange-50 rounded-2xl p-6 shadow-sm space-y-5 border border-rescue-orange/20">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">🚨 신선구조 활동</h2>
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">🚨 신선구조대 활동</h2>
 
             {/* 레벨 + 진행도 */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">신선구조 레벨</p>
+                  <p className="text-sm text-gray-600 mb-1">신선구조대 레벨</p>
                   <p className="text-2xl font-black text-rescue-orange">
                     Level {rescueStats.rescue_level}
                     <span className="text-sm text-gray-600 ml-2">
