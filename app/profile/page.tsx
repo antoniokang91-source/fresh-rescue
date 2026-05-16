@@ -320,26 +320,28 @@ export default function ProfilePage() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">📍 위치 정보</p>
                 {isEditingLocation ? (
-                  <div className="flex gap-2">
+                  <div className="space-y-2">
                     <input
                       type="text"
                       value={editingLocation}
                       onChange={(e) => setEditingLocation(e.target.value)}
                       placeholder="예) 서울시 강남구"
-                      className="flex-1 border-2 border-rescue-orange rounded-lg px-3 py-2 text-base font-semibold outline-none"
+                      className="w-full border-2 border-rescue-orange rounded-lg px-3 py-2 text-base font-semibold outline-none"
                     />
-                    <button
-                      onClick={handleLocationSave}
-                      className="px-4 py-2 bg-rescue-orange text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors active:scale-95"
-                    >
-                      저장
-                    </button>
-                    <button
-                      onClick={() => setIsEditingLocation(false)}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors active:scale-95"
-                    >
-                      취소
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleLocationSave}
+                        className="flex-1 px-4 py-2 bg-rescue-orange text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors active:scale-95"
+                      >
+                        저장
+                      </button>
+                      <button
+                        onClick={() => setIsEditingLocation(false)}
+                        className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors active:scale-95"
+                      >
+                        취소
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
