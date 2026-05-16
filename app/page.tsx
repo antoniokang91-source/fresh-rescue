@@ -719,9 +719,9 @@ export default function MapPage() {
       }
 
       setSelectedProduct(null);
-      alert('예약 완료! 사장님이 확인하면 알림을 받으실 거예요.');
+      setToast({ visible: true, type: 'success', message: '예약 완료! 사장님이 확인하면 알림을 받으실 거예요.' });
     } catch (err: any) {
-      alert('예약 실패: ' + err.message);
+      setToast({ visible: true, type: 'error', message: '예약 실패: ' + err.message });
     }
   };
 
