@@ -1032,7 +1032,7 @@ export default function MapPage() {
                 }
               }}
               placeholder="가게명, 상품명 검색"
-              disabled={!!(selectedShop || selectedProduct || showReviewModal || showAvatarSelect)}
+              disabled={!!(selectedShop || selectedProduct || showReviewModal || showAvatarSelect || showMissionsModal || showAuthModal)}
               className="w-full bg-transparent rounded-full pl-9 pr-9 py-2 text-xs outline-none text-gray-900 placeholder-gray-400 font-medium disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none"
             />
             {searchQuery && (
