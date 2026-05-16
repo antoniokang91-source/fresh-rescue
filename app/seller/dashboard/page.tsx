@@ -817,7 +817,7 @@ export default function SellerDashboardPage() {
                           </div>
                           <button
                             onClick={() => supabase.from('reservations').update({ status: 'READY' }).eq('id', r.id).then(() => fetchReservations())}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
+                            className="w-full bg-rescue-orange hover:bg-orange-700 text-white py-2.5 rounded-xl text-sm font-bold transition-all active:scale-95"
                           >
                             📦 제품 준비 완료
                           </button>

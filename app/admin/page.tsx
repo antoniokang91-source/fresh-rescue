@@ -1444,7 +1444,7 @@ export default function AdminPage() {
                 {/* 버튼 */}
                 <div className="flex gap-2 pt-2">
                   <button onClick={handleSendMessage} disabled={msgSending}
-                    className="flex-1 px-3 py-2.5 bg-rescue-orange hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50">
+                    className="flex-1 px-3 py-2.5 bg-rescue-orange hover:bg-orange-700 text-white text-sm font-bold rounded-lg transition-colors disabled:opacity-50">
                     {msgSending ? '전송 중...' : '즉시 전송'}
                   </button>
                   <button onClick={handleScheduleMessage}

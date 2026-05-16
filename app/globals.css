@@ -4,19 +4,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Toss 컬러 시스템 ──────────────────────────────────────── */
+/* ── DESIGN.md 기반 컬러 시스템 ──────────────────────────── */
 :root {
+  /* Toss 시스템 */
   --toss-blue:      #0064FF;
   --toss-red:       #F04452;
   --toss-grey:      #F2F4F6;
   --toss-dark:      #191F28;
   --toss-sub:       #8B95A1;
-  --rescue-orange:  #0064FF;
+
+  /* Rescue 브랜드 */
+  --rescue-orange:  #FF6B35;
   --rescue-navy:    #0064FF;
   --rescue-dark:    #191F28;
+
+  /* Status 색상 */
   --siren-red:      #F04452;
   --safe-green:     #00A854;
   --dark-base:      #191F28;
+
+  /* 중립색 */
+  --white:          #FFFFFF;
+  --black:          #000000;
 }
 
 html,

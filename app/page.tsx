@@ -883,7 +883,7 @@ export default function MapPage() {
               )}
               {profile.role === 'user' && (
                 <Link href="/profile"
-                  className="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-200 active:scale-95 transition-all">
+                  className="bg-orange-100 text-rescue-orange px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-orange-200 active:scale-95 transition-all">
                   프로필
                 </Link>
               )}
@@ -894,7 +894,7 @@ export default function MapPage() {
             </>
           ) : (
             <button onClick={handleLogin}
-              className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-blue-700 active:scale-95 transition-all shadow-sm">
+              className="bg-rescue-orange text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-orange-700 active:scale-95 transition-all shadow-sm">
               로그인
             </button>
           )}
@@ -1040,7 +1040,7 @@ export default function MapPage() {
           href="http://pf.kakao.com/_EqxoTX"
           target="_blank"
           rel="noreferrer"
-          className="absolute bottom-4 right-4 z-20 bg-blue-600 hover:bg-blue-700 text-white p-3.5 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center"
+          className="absolute bottom-4 right-4 z-20 bg-rescue-orange hover:bg-orange-700 text-white p-3.5 rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center"
         >
           <MessageCircle className="w-6 h-6" />
         </a>

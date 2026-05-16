@@ -201,7 +201,7 @@ export default function ProfilePage() {
             </div>
             <button
               onClick={() => setShowAvatarEdit(true)}
-              className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors active:scale-95"
+              className="px-4 py-2 bg-rescue-orange text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors active:scale-95"
             >
               변경
             </button>
@@ -337,7 +337,7 @@ export default function ProfilePage() {
                           setSelectedReservationForReview(reservation)
                           setShowReviewModal(true)
                         }}
-                        className="w-full py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition-colors active:scale-95"
+                        className="w-full py-2 bg-rescue-orange text-white text-sm font-semibold rounded-lg hover:bg-orange-700 transition-colors active:scale-95"
                       >
                         ✍️ 리뷰 작성
                       </button>
