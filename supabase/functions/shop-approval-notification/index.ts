@@ -26,7 +26,7 @@ async function sendKakaoTalk(phoneNumber: string, sellerName: string) {
   body.append('signature', signature)
   body.append('to', phoneNumber)
   body.append('kakaoOptions.pfId', '22081923441905092819')
-  body.append('kakaoOptions.templateId', 'TjQDrwTOuBu')
+  body.append('kakaoOptions.templateId', 'APRwqhQKq1')
 
   const response = await fetch('https://api.solapi.com/messages/v4/send', {
     method: 'POST',
