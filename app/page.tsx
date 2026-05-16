@@ -153,6 +153,7 @@ export default function MapPage() {
   const [reservationLoading, setReservationLoading] = useState(false);
   const [reservedProductId, setReservedProductId] = useState<string | null>(null);
   const [showMissionsModal, setShowMissionsModal] = useState(false);
+  const [missionsModalDismissedTime, setMissionsModalDismissedTime] = useState<number | null>(null);
 
   // ── 아바타 선택 ────────────────────────────────────────────────────
   const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -533,9 +534,19 @@ export default function MapPage() {
   // ── 로그인 후 구조 미션 팝업 ───────────────────────────────────────────────────
   useEffect(() => {
     if (user && !showMissionsModal) {
+      // 오늘 자정 이후에 모달을 한 번 닫았는지 확인
+      const now = Date.now();
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const todayMidnight = today.getTime();
+
+      // 마지막 닫은 시간이 오늘 자정 이후라면 모달 표시 안 함
+      if (missionsModalDismissedTime && missionsModalDismissedTime >= todayMidnight) {
+        return;
+      }
       setShowMissionsModal(true);
     }
-  }, [user?.id]);
+  }, [user?.id, missionsModalDismissedTime]);
 
   // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
   useEffect(() => {
@@ -1506,7 +1517,7 @@ export default function MapPage() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🎯</span>
-                <h3 className="font-bold text-lg text-gray-900">신선구조 활동도</h3>
+                <h3 className="font-bold text-lg text-gray-900">신선구조대 운영방침</h3>
               </div>
               <button
                 onClick={() => setShowMissionsModal(false)}
@@ -1518,7 +1529,7 @@ export default function MapPage() {
 
             {/* 포인트 설명 */}
             <div className="bg-orange-50 rounded-lg p-4 mb-5 border border-orange-100">
-              <p className="text-xs font-semibold text-gray-900 mb-2">📌 신선구조 포인트란?</p>
+              <p className="text-xs font-semibold text-gray-900 mb-2">📌 구조 포인트란?</p>
               <p className="text-xs text-gray-700 leading-relaxed">
                 리뷰 작성, 사진 첨부 등 신선구조 활동으로 포인트를 적립합니다. 포인트는 랭킹을 결정하고 월간 최고 구조대원 선발에 사용됩니다.
               </p>
@@ -1589,12 +1600,23 @@ export default function MapPage() {
               </div>
             </div>
 
-            <button
-              onClick={() => setShowMissionsModal(false)}
-              className="w-full py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              확인했어요
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setMissionsModalDismissedTime(Date.now());
+                  setShowMissionsModal(false);
+                }}
+                className="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+              >
+                오늘 하루 보지 않기
+              </button>
+              <button
+                onClick={() => setShowMissionsModal(false)}
+                className="flex-1 py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                확인했어요
+              </button>
+            </div>
           </div>
         </div>
       )}
