@@ -40,6 +40,8 @@ export default function ProfilePage() {
   const [userCity, setUserCity] = useState<string>('')
   const [isEditingLocation, setIsEditingLocation] = useState(false)
   const [editingLocation, setEditingLocation] = useState('')
+  const [locationSearchResults, setLocationSearchResults] = useState<any[]>([])
+  const [locationSearchLoading, setLocationSearchLoading] = useState(false)
 
   // 신선구조 시스템
   const [rescueStats, setRescueStats] = useState<RescueStats | null>(null)
@@ -238,6 +240,32 @@ export default function ProfilePage() {
     router.back()
   }
 
+  const searchLocations = async (query: string) => {
+    if (!query.trim()) {
+      setLocationSearchResults([])
+      return
+    }
+    setLocationSearchLoading(true)
+    try {
+      const response = await fetch(
+        `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(query)}`,
+        { headers: { Authorization: `KakaoAK ${process.env.NEXT_PUBLIC_KAKAO_API_KEY}` } }
+      )
+      const data = await response.json()
+      setLocationSearchResults((data.documents || []).slice(0, 5))
+    } catch (e) {
+      console.error('Location search error:', e)
+      setLocationSearchResults([])
+    } finally {
+      setLocationSearchLoading(false)
+    }
+  }
+
+  const handleLocationSelect = (address: string) => {
+    setEditingLocation(address)
+    setLocationSearchResults([])
+  }
+
   const handleLocationSave = async () => {
     if (!user || !editingLocation.trim()) return
     try {
@@ -249,6 +277,7 @@ export default function ProfilePage() {
       if (error) throw error
       await refreshProfile()
       setIsEditingLocation(false)
+      setLocationSearchResults([])
     } catch (e) {
       console.error('Error saving location:', e)
       alert('위치 정보 저장에 실패했습니다.')
@@ -321,13 +350,33 @@ export default function ProfilePage() {
                 <p className="text-sm text-gray-600 mb-1">📍 위치 정보</p>
                 {isEditingLocation ? (
                   <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={editingLocation}
-                      onChange={(e) => setEditingLocation(e.target.value)}
-                      placeholder="예) 서울시 강남구"
-                      className="w-full border-2 border-rescue-orange rounded-lg px-3 py-2 text-base font-semibold outline-none"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={editingLocation}
+                        onChange={(e) => {
+                          setEditingLocation(e.target.value)
+                          searchLocations(e.target.value)
+                        }}
+                        onFocus={() => editingLocation && searchLocations(editingLocation)}
+                        placeholder="지역명 검색 (예: 강남구, 서울시)"
+                        className="w-full border-2 border-rescue-orange rounded-lg px-3 py-2 text-base font-semibold outline-none"
+                      />
+                      {locationSearchResults.length > 0 && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border-2 border-rescue-orange rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
+                          {locationSearchResults.map((result, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleLocationSelect(result.address_name)}
+                              className="w-full text-left px-3 py-2 hover:bg-orange-50 border-b border-gray-100 last:border-0 text-sm font-medium text-gray-700 transition-colors"
+                            >
+                              {result.address_name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500">구조활동 지역을 선택해 주셔야 지역 랭킹에 반영 됩니다</p>
                     <div className="flex gap-2">
                       <button
                         onClick={handleLocationSave}
@@ -336,7 +385,10 @@ export default function ProfilePage() {
                         저장
                       </button>
                       <button
-                        onClick={() => setIsEditingLocation(false)}
+                        onClick={() => {
+                          setIsEditingLocation(false)
+                          setLocationSearchResults([])
+                        }}
                         className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-300 transition-colors active:scale-95"
                       >
                         취소
