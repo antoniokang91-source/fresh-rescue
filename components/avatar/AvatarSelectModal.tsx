@@ -13,16 +13,17 @@ interface AvatarSelectModalProps {
 }
 
 const DEFAULT_AVATARS = [
-  '/avatars/default1.png',
-  '/avatars/default2.png',
-  '/avatars/default3.png',
-  '/avatars/default4.png',
-  '/avatars/default5.png',
+  { name: '구조대장 토마토', url: '/avatars/default1.png' },
+  { name: '신선우원 양상추', url: '/avatars/default2.png' },
+  { name: '구미반 스테이크', url: '/avatars/default3.png' },
+  { name: '잠수우원 생선', url: '/avatars/default4.png' },
+  { name: '베이커리 식빵', url: '/avatars/default5.png' },
 ]
 
 export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip = false }: AvatarSelectModalProps) {
   const { user, refreshProfile } = useAuth()
   const [selectedUrl, setSelectedUrl] = useState<string | null>(currentUrl ?? null)
+  const [selectedCharacterName, setSelectedCharacterName] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -86,7 +87,7 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
     try {
       const { error: upsertError } = await supabase
         .from('members')
-        .upsert({ id: user.id, avatar_url: selectedUrl }, { onConflict: 'id' })
+        .upsert({ id: user.id, avatar_url: selectedUrl, character_name: selectedCharacterName }, { onConflict: 'id' })
 
       if (upsertError) throw upsertError
 
@@ -104,10 +105,10 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
 
     setLoading(true)
     try {
-      const randomUrl = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
+      const randomAvatar = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
       const { error: upsertError } = await supabase
         .from('members')
-        .upsert({ id: user.id, avatar_url: randomUrl }, { onConflict: 'id' })
+        .upsert({ id: user.id, avatar_url: randomAvatar.url, character_name: randomAvatar.name }, { onConflict: 'id' })
 
       if (upsertError) throw upsertError
 
@@ -135,17 +136,17 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
           <div>
             <p className="text-sm font-bold text-gray-700 mb-3">🎨 기본 캐릭터 선택</p>
             <div className="grid grid-cols-5 gap-3">
-              {DEFAULT_AVATARS.map((url) => (
+              {DEFAULT_AVATARS.map((avatar) => (
                 <button
-                  key={url}
-                  onClick={() => setSelectedUrl(url)}
+                  key={avatar.url}
+                  onClick={() => { setSelectedUrl(avatar.url); setSelectedCharacterName(avatar.name) }}
                   className={`w-16 h-16 rounded-xl transition-all border-2 overflow-hidden flex-shrink-0 ${
-                    selectedUrl === url
+                    selectedUrl === avatar.url
                       ? 'border-blue-600 ring-2 ring-blue-300 scale-105'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <img src={url} alt="avatar" className="w-full h-full object-cover" />
+                  <img src={avatar.url} alt="avatar" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

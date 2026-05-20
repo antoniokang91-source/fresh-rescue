@@ -328,7 +328,7 @@ export default function ProfilePage() {
               )}
               <div>
                 <p className="text-sm text-gray-600">캐릭터 명</p>
-                <p className="text-base font-semibold text-gray-900">{profile.nickname ?? '미설정'}</p>
+                <p className="text-base font-semibold text-gray-900">{profile.character_name ?? '미설정'}</p>
               </div>
             </div>
             <button
