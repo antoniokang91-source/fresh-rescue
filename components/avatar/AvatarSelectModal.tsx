@@ -13,11 +13,11 @@ interface AvatarSelectModalProps {
 }
 
 const DEFAULT_AVATARS = [
-  { name: '구조대장 토마토', url: '/avatars/default1.png' },
-  { name: '신선우원 양상추', url: '/avatars/default2.png' },
-  { name: '구미반 스테이크', url: '/avatars/default3.png' },
-  { name: '잠수우원 생선', url: '/avatars/default4.png' },
-  { name: '베이커리 식빵', url: '/avatars/default5.png' },
+  { name: '베이커리 식빵', url: '/avatars/default1.png' },
+  { name: '잠수요원 생선', url: '/avatars/default2.png' },
+  { name: '신선요원 양상추', url: '/avatars/default3.png' },
+  { name: '구이용 스테이크', url: '/avatars/default4.png' },
+  { name: '구조대장 토마토', url: '/avatars/default5.png' },
 ]
 
 export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip = false }: AvatarSelectModalProps) {
