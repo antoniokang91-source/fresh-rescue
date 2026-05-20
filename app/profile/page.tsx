@@ -259,19 +259,26 @@ export default function ProfilePage() {
   }
 
   const handleLocationSelect = (address: string) => {
+    console.log('Location selected:', address)
     setEditingLocation(address)
     setLocationSearchResults([])
   }
 
   const handleLocationSave = async () => {
-    if (!user || !editingLocation.trim()) return
+    console.log('Save location called, editingLocation:', editingLocation)
+    if (!user || !editingLocation.trim()) {
+      console.log('Save cancelled: no user or empty location')
+      return
+    }
     try {
+      console.log('Saving location:', editingLocation)
       const city = editingLocation.split(' ')[0] || ''
       const { error } = await supabase
         .from('members')
         .update({ location: editingLocation, city: city })
         .eq('id', user.id)
       if (error) throw error
+      console.log('Location saved successfully')
       await refreshProfile()
       setIsEditingLocation(false)
       setLocationSearchResults([])
@@ -320,7 +327,7 @@ export default function ProfilePage() {
                 </div>
               )}
               <div>
-                <p className="text-sm text-gray-600">캐릭터</p>
+                <p className="text-sm text-gray-600">캐릭터 명</p>
                 <p className="text-base font-semibold text-gray-900">{profile.nickname ?? '미설정'}</p>
               </div>
             </div>
