@@ -394,6 +394,13 @@ export default function MapPage() {
     })();
   }, [user]);
 
+  // ── 프로필 변경 시 마커 업데이트 ──────────────────────────────────────────────
+  useEffect(() => {
+    if (map && userLocation && profile?.avatar_url) {
+      createUserMarker(userLocation.lat, userLocation.lng);
+    }
+  }, [profile?.avatar_url, map]);
+
   // ── 자동 위치 감지 ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return;
