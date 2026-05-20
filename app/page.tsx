@@ -741,9 +741,24 @@ export default function MapPage() {
 
       // 사장님에게 신규예약 알림톡 발송
       if (reservation?.id) {
-        await supabase.functions.invoke('new-reservation-notification', {
-          body: { reservationId: reservation.id },
-        }).catch(err => console.error('알림톡 발송 실패:', err));
+        try {
+          const response = await fetch(
+            'https://utcqwesokcvlvwahomjj.supabase.co/functions/v1/new-reservation-notification',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${user.id}`,
+              },
+              body: JSON.stringify({ reservationId: reservation.id }),
+            }
+          );
+          if (!response.ok) {
+            console.error('알림톡 발송 실패:', response.status, await response.text());
+          }
+        } catch (err) {
+          console.error('알림톡 발송 실패:', err);
+        }
       }
 
       setReservedProductId(product.id);
