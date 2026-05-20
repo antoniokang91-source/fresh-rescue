@@ -878,11 +878,25 @@ export default function MapPage() {
 
     if (isDirectUpload && profile?.avatar_url) {
       // 직접 업로드한 캐릭터: CustomOverlay로 동그라미 표시
-      const content = document.createElement('div');
-      content.innerHTML = `<img src="${profile.avatar_url}" alt="avatar" style="width: 50px; height: 50px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2);" />`;
+      const container = document.createElement('div');
+      container.style.width = '50px';
+      container.style.height = '50px';
+      container.style.borderRadius = '50%';
+      container.style.overflow = 'hidden';
+      container.style.border = '3px solid white';
+      container.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+      const img = document.createElement('img');
+      img.src = profile.avatar_url;
+      img.alt = 'avatar';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+
+      container.appendChild(img);
       userMarkerRef.current = new window.kakao.maps.CustomOverlay({
         position: latlng,
-        content,
+        content: container,
         zIndex: 10,
       });
       userMarkerRef.current.setMap(map);
