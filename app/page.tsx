@@ -154,6 +154,7 @@ export default function MapPage() {
   const [reservedProductId, setReservedProductId] = useState<string | null>(null);
   const [showMissionsModal, setShowMissionsModal] = useState(false);
   const [missionsModalDismissedTime, setMissionsModalDismissedTime] = useState<number | null>(null);
+  const [currentMissionsPage, setCurrentMissionsPage] = useState(0);
 
   // ── 아바타 선택 ────────────────────────────────────────────────────
   const [showAvatarSelect, setShowAvatarSelect] = useState(false);
@@ -538,22 +539,24 @@ export default function MapPage() {
     window.history.replaceState({}, '', '/');
   }, [user]);
 
-  // ── 로그인 후 구조 미션 팝업 ───────────────────────────────────────────────────
+  // ── 로그인 후 구조 미션 팝업 (localStorage 저장) ────────────────────────────────
   useEffect(() => {
     if (user && !showMissionsModal) {
-      // 오늘 자정 이후에 모달을 한 번 닫았는지 확인
       const now = Date.now();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todayMidnight = today.getTime();
 
-      // 마지막 닫은 시간이 오늘 자정 이후라면 모달 표시 안 함
-      if (missionsModalDismissedTime && missionsModalDismissedTime >= todayMidnight) {
+      const savedDismissedTime = localStorage.getItem('missionsModalDismissed');
+      const dismissedTime = savedDismissedTime ? parseInt(savedDismissedTime) : null;
+
+      if (dismissedTime && dismissedTime >= todayMidnight) {
         return;
       }
+      setCurrentMissionsPage(0);
       setShowMissionsModal(true);
     }
-  }, [user?.id, missionsModalDismissedTime]);
+  }, [user?.id]);
 
   // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
   useEffect(() => {
@@ -1548,110 +1551,139 @@ export default function MapPage() {
 
       {/* ── 구조 미션 모달 (고객만) ────────────────────────────────────────────────────── */}
       {showMissionsModal && profile?.role === 'user' && (
-        <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center p-0 sm:p-4 z-50 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl w-full max-w-md shadow-2xl p-6 animate-slideUp my-auto sm:my-0">
-            <div className="flex items-center justify-between mb-5">
+        <div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 animate-slideUp w-full max-w-sm max-h-[65vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🎯</span>
-                <h3 className="font-bold text-lg text-gray-900">신선구조대 운영방침</h3>
+                <h3 className="font-bold text-xl text-gray-900">신선구조대 운영방침</h3>
               </div>
               <button
                 onClick={() => setShowMissionsModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-xl"
+                className="text-gray-400 hover:text-gray-600 text-2xl"
               >
                 ✕
               </button>
             </div>
 
-            {/* 포인트 설명 */}
-            <div className="bg-orange-50 rounded-lg p-4 mb-5 border border-orange-100">
-              <p className="text-xs font-semibold text-gray-900 mb-2">📌 구조 포인트란?</p>
-              <p className="text-xs text-gray-700 leading-relaxed">
-                리뷰 작성, 사진 첨부 등 신선구조 활동으로 포인트를 적립합니다. 포인트는 랭킹을 결정하고 월간 최고 구조대원 선발에 사용됩니다.
-              </p>
-            </div>
+            {/* 페이지 1: 포인트 + 미션 */}
+            {currentMissionsPage === 0 && (
+              <div className="space-y-5">
+                <div className="bg-orange-50 rounded-lg p-5 border border-orange-100">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">📌 구조 포인트란?</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    리뷰 작성, 사진 첨부 등 신선구조 활동으로 포인트를 적립합니다. 포인트는 랭킹을 결정하고 월간 최고 구조대원 선발에 사용됩니다.
+                  </p>
+                </div>
 
-            {/* 오늘의 미션 */}
-            <div className="mb-5">
-              <p className="text-xs font-semibold text-gray-900 mb-3">📋 오늘의 구조 미션</p>
-              <div className="space-y-2.5">
-                {rescueMissions.map((mission, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="flex items-center gap-2.5">
-                      <div className="text-base">{mission.icon}</div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-semibold text-gray-900">{mission.label}</p>
-                        <p className="text-[11px] text-gray-500">{mission.description}</p>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-3">📋 오늘의 구조 미션</p>
+                  <div className="space-y-3">
+                    {rescueMissions.map((mission, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <div className="text-lg">{mission.icon}</div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-gray-900">{mission.label}</p>
+                            <p className="text-xs text-gray-500">{mission.description}</p>
+                          </div>
+                        </div>
+                        {mission.completed && (
+                          <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
+                            <span className="text-xs font-bold text-green-700">✓</span>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {mission.completed && (
-                      <div className="flex-shrink-0 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center">
-                        <span className="text-xs font-bold text-green-700">✓</span>
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 레벨/랭킹 정책 */}
-            <div className="bg-blue-50 rounded-lg p-4 mb-5 border border-blue-100">
-              <p className="text-xs font-semibold text-gray-900 mb-3">⭐ 레벨 & 랭킹</p>
-              <div className="space-y-2 text-xs text-gray-700">
-                <div className="flex justify-between">
-                  <span>🥇 Lv.1 구조대원</span>
-                  <span className="font-semibold">1~50점</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>🥈 Lv.2 구조 경력자</span>
-                  <span className="font-semibold">51~150점</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>🥉 Lv.3 구조 전문가</span>
-                  <span className="font-semibold">151점+</span>
                 </div>
               </div>
-            </div>
+            )}
 
-            {/* 월간 보상 */}
-            <div className="bg-purple-50 rounded-lg p-4 mb-5 border border-purple-100">
-              <p className="text-xs font-semibold text-gray-900 mb-2">🏆 월간 최고 구조대원</p>
-              <p className="text-xs text-gray-700 mb-3">매월 포인트가 가장 많은 구조대원을 선발합니다!</p>
-              <p className="text-xs text-gray-600 mb-3 p-2 bg-white/60 rounded border border-purple-200">
-                💡 현재는 시, 군 단위로 랭킹을 반영하고 있습니다. 구조대원이 많아지면 동 단위로 변경 예정입니다
-              </p>
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span>1위</span>
-                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
-                  <span className="font-semibold">상품 증정 🎁</span>
+            {/* 페이지 2: 레벨/랭킹/보상 */}
+            {currentMissionsPage === 1 && (
+              <div className="space-y-5">
+                <div className="bg-blue-50 rounded-lg p-5 border border-blue-100">
+                  <p className="text-sm font-semibold text-gray-900 mb-3">⭐ 레벨 & 랭킹</p>
+                  <div className="space-y-2.5 text-sm text-gray-700">
+                    <div className="flex justify-between">
+                      <span>🥇 Lv.1 구조대원</span>
+                      <span className="font-semibold">1~50점</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>🥈 Lv.2 구조 경력자</span>
+                      <span className="font-semibold">51~150점</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>🥉 Lv.3 구조 전문가</span>
+                      <span className="font-semibold">151점+</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span>2위</span>
-                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
-                  <span className="font-semibold">포인트 20P 🎁</span>
-                </div>
-                <div className="flex items-center gap-2 text-gray-700">
-                  <span>3위</span>
-                  <span className="flex-1 border-b border-dotted border-gray-300"></span>
-                  <span className="font-semibold">포인트 10P 🎁</span>
+
+                <div className="bg-purple-50 rounded-lg p-5 border border-purple-100">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">🏆 월간 최고 구조대원</p>
+                  <p className="text-sm text-gray-700 mb-3">매월 포인트가 가장 많은 구조대원을 선발합니다!</p>
+                  <p className="text-xs text-gray-600 mb-3 p-2 bg-white/60 rounded border border-purple-200">
+                    💡 현재는 시, 군 단위로 랭킹을 반영하고 있습니다. 구조대원이 많아지면 동 단위로 변경 예정입니다
+                  </p>
+                  <div className="space-y-2.5 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <span>1위</span>
+                      <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                      <span className="font-semibold">상품 증정 🎁</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <span>2위</span>
+                      <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                      <span className="font-semibold">포인트 20P 🎁</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-700">
+                      <span>3위</span>
+                      <span className="flex-1 border-b border-dotted border-gray-300"></span>
+                      <span className="font-semibold">포인트 10P 🎁</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+            )}
+
+            {/* 페이지 인디케이터 */}
+            <div className="flex justify-center gap-1.5 my-5">
+              <div className={`h-1.5 rounded-full transition-all ${currentMissionsPage === 0 ? 'w-6 bg-rescue-orange' : 'w-1.5 bg-gray-300'}`}></div>
+              <div className={`h-1.5 rounded-full transition-all ${currentMissionsPage === 1 ? 'w-6 bg-rescue-orange' : 'w-1.5 bg-gray-300'}`}></div>
             </div>
 
+            {/* 버튼 */}
             <div className="flex gap-2">
+              {currentMissionsPage > 0 && (
+                <button
+                  onClick={() => setCurrentMissionsPage(prev => prev - 1)}
+                  className="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                >
+                  ← 이전
+                </button>
+              )}
+              {currentMissionsPage < 1 && (
+                <button
+                  onClick={() => setCurrentMissionsPage(prev => prev + 1)}
+                  className="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors text-sm"
+                >
+                  다음 →
+                </button>
+              )}
               <button
                 onClick={() => {
-                  setMissionsModalDismissedTime(Date.now());
+                  localStorage.setItem('missionsModalDismissed', Date.now().toString());
                   setShowMissionsModal(false);
                 }}
-                className="flex-1 py-3 bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition-colors"
+                className="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200 transition-colors text-sm"
               >
                 오늘 하루 보지 않기
               </button>
               <button
                 onClick={() => setShowMissionsModal(false)}
-                className="flex-1 py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+                className="flex-1 py-3 bg-rescue-orange text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors text-sm"
               >
                 확인했어요
               </button>
