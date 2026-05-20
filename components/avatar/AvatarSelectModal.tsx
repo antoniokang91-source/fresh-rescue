@@ -171,6 +171,15 @@ export default function AvatarSelectModal({ onClose, onSave, currentUrl, canSkip
               className="hidden"
               disabled={loading}
             />
+            {selectedUrl && !selectedUrl.startsWith('/avatars/') && (
+              <input
+                type="text"
+                placeholder="캐릭터 이름을 입력해주세요"
+                value={selectedCharacterName}
+                onChange={(e) => setSelectedCharacterName(e.target.value)}
+                className="w-full mt-3 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600"
+              />
+            )}
           </div>
 
           {/* 미리보기 */}
