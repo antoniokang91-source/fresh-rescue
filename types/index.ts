@@ -62,11 +62,13 @@ export interface Profile {
   seller_status: SellerStatus | null  // 사장님 계정 승인 상태
   nickname?: string | null
   avatar_url?: string | null
+  character_name?: string | null
   marketing_agree: boolean
   marketing_agreed_at: string | null  // ISO timestamp — 개인정보법 법적 증빙용
   rescue_count?: number
   is_registered?: boolean
   location?: string | null
+  city?: string | null
   created_at: string
   updated_at: string
 }
