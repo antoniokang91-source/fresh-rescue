@@ -783,9 +783,9 @@ export default function MapPage() {
       // 사장님에게 신규예약 알림톡 발송
       if (reservation?.id) {
         try {
-          console.log('알림톡 발송 시작:', { reservation_id: reservation.id, status: 'PENDING' });
-          const result = await supabase.functions.invoke('reservation-notification', {
-            body: { reservation_id: reservation.id, status: 'PENDING' }
+          console.log('알림톡 발송 시작:', { reservation_id: reservation.id });
+          const result = await supabase.functions.invoke('new-reservation-notification', {
+            body: { reservationId: reservation.id }
           });
           console.log('알림톡 발송 결과:', result);
         } catch (err) {
