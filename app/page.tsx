@@ -600,10 +600,10 @@ export default function MapPage() {
     }
   }, [user?.id]);
 
-  // ── 실시간 알림 로드 + 자동 갱신 ──────────────────────────────────────────────
+  // ── 실시간 알림 로드 + 자동 갱신 (1분마다) ──────────────────────────────────────────────
   useEffect(() => {
     loadRealtimeNotifications();
-    const interval = setInterval(loadRealtimeNotifications, 5000);
+    const interval = setInterval(loadRealtimeNotifications, 60000);
     return () => clearInterval(interval);
   }, []);
 
