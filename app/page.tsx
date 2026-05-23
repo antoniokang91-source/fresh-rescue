@@ -1232,23 +1232,41 @@ export default function MapPage() {
           const isEmpty = items.length === 0;
           const isWeatherSlot = isEmpty && slotNum === 1 && weather;
           const isAQISlot = isEmpty && slotNum === 2 && airQuality;
+          const [dragStart, setDragStart] = useState<number | null>(null);
+
+          const handleMouseDown = (e: React.MouseEvent) => setDragStart(e.clientX);
+          const handleTouchStart = (e: React.TouchEvent) => setDragStart(e.touches[0].clientX);
+          const handleDragEnd = (e: React.MouseEvent | React.TouchEvent) => {
+            if (dragStart === null || items.length <= 1) return;
+            const endX = 'clientX' in e ? (e as React.MouseEvent).clientX : (e as React.TouchEvent).changedTouches[0].clientX;
+            const diff = dragStart - endX;
+            if (Math.abs(diff) > 30) {
+              if (diff > 0) setBannerIdx(p => [(p[0] + 1) % items.length, p[1]]);
+              else setBannerIdx(p => [(p[0] - 1 + items.length) % items.length, p[1]]);
+            }
+            setDragStart(null);
+          };
 
           return (
-            <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-100 relative shadow-sm" style={{ height: BANNER_H }}>
+            <div className="flex-1 min-w-0 rounded-xl overflow-hidden bg-gray-200 relative shadow-sm cursor-grab active:cursor-grabbing select-none" style={{ height: BANNER_H }}
+              onMouseDown={handleMouseDown} onTouchStart={handleTouchStart} onMouseUp={handleDragEnd} onTouchEnd={handleDragEnd}>
               {items.length > 0 ? (
                 <>
-                  <div className="transition-transform duration-500 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
+                  <div className="transition-transform duration-300 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
                     {items.map(b => (
-                      <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block', position: 'relative' }}>
-                        <Image src={b.image_url} alt={b.title} fill className="object-cover" priority={false} unoptimized={false} />
+                      <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block', position: 'relative' }} onClick={e => e.preventDefault()}>
+                        <Image src={b.image_url} alt={b.title} fill className="object-cover" priority={false} unoptimized={false} placeholder="empty" />
                       </a>
                     ))}
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent px-3 py-2.5 pointer-events-none">
-                    <p className="text-white text-xs font-semibold truncate">{items[idx]?.title}</p>
+                    <div className="flex justify-between items-end">
+                      <p className="text-white text-xs font-semibold truncate flex-1">{items[idx]?.title}</p>
+                      {items.length > 1 && <p className="text-white text-xs ml-2">{idx + 1}/{items.length}</p>}
+                    </div>
                   </div>
                   {items.length > 1 && (
-                    <div className="absolute top-2.5 right-2.5 flex gap-1 pointer-events-none">
+                    <div className="absolute top-2.5 left-2.5 flex gap-1 pointer-events-none">
                       {items.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? 'bg-white' : 'bg-white/50'}`} />)}
                     </div>
                   )}
