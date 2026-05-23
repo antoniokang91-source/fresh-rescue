@@ -557,9 +557,8 @@ export default function MapPage() {
 
   // ── 배너 자동 슬라이드 (1시간 간격) ────────────────────────────────────────────────────────
   useEffect(() => {
-    const slot1 = banners.filter(b => b.sort_order === 1);
-    if (slot1.length <= 1) return;
-    const t1 = setInterval(() => setBannerIdx(p => [(p[0] + 1) % slot1.length, p[1]]), 3600000);
+    if (banners.length <= 1) return;
+    const t1 = setInterval(() => setBannerIdx(p => [(p[0] + 1) % banners.length, p[1]]), 3600000);
     return () => clearInterval(t1);
   }, [banners]);
 
@@ -1225,8 +1224,7 @@ export default function MapPage() {
 
       {/* ── 하단 배너 광고 ────────────────────────────────────────────────────── */}
       {(() => {
-        const slot1 = banners.filter(b => b.sort_order === 1);
-        const slot2 = banners.filter(b => b.sort_order === 2);
+        const slot1 = banners;
         const BANNER_H = 88;
         const BannerSlot = ({ items, idx, placeholder, slotNum }: { items: Banner[]; idx: number; placeholder: string; slotNum: number }) => {
           const isEmpty = items.length === 0;
