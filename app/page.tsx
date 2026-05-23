@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState, useRef } from "react";
 import { MapPin, Phone, Navigation, RefreshCw, X, Search, MessageCircle } from "lucide-react";
 import AuthModal from "@/components/auth/AuthModal";
@@ -1241,8 +1242,8 @@ export default function MapPage() {
                 <>
                   <div className="transition-transform duration-500 ease-in-out" style={{ transform: `translateY(-${idx * BANNER_H}px)` }}>
                     {items.map(b => (
-                      <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block' }}>
-                        <img src={b.image_url} alt={b.title} className="w-full object-cover" style={{ height: BANNER_H }} />
+                      <a key={b.id} href={b.link_url || '#'} target="_blank" rel="noreferrer" style={{ height: BANNER_H, display: 'block', position: 'relative' }}>
+                        <Image src={b.image_url} alt={b.title} fill className="object-cover" priority={false} unoptimized={false} />
                       </a>
                     ))}
                   </div>
