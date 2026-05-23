@@ -829,7 +829,7 @@ export default function MapPage() {
     try {
       const { data: shopProducts } = await supabase
         .from('rescue_products')
-        .select('id, product_name, rescue_price, original_price, category, expire_datetime, shop_id, shop_name')
+        .select('id, product_name, rescue_price, original_price, category, expire_datetime, shop_id')
         .eq('shop_id', shopId)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -845,7 +845,7 @@ export default function MapPage() {
             originalPrice: item.original_price,
             discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
             timeLeft: hoursLeft,
-            shop: item.shop_name || selectedShop?.shop_name || '알 수 없음',
+            shop: selectedShop?.shop_name || '알 수 없음',
             shopId: item.shop_id,
             category: item.category,
             distance: 0,
