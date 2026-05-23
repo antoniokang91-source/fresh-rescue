@@ -205,7 +205,7 @@ export default function MapPage() {
   const fetchProductsAndShops = async () => {
     const [productResult, shopResult] = await Promise.allSettled([
       supabase.from('rescue_products')
-        .select('id, product_name, rescue_price, original_price, category, description, stock_quantity, expire_datetime, shop_id, shop_name')
+        .select('id, product_name, rescue_price, original_price, category, description, stock_quantity, expire_datetime, shop_id')
         .eq('status', 'active')
         .order('created_at', { ascending: false }).limit(100),
       supabase.from('shops')
