@@ -257,14 +257,14 @@ export default function MapPage() {
     } else {
       const result = await fetchProductsAndShops();
       setProducts(result.products);
-      setShops(result.shops);
+      if (result.shops) setShops(result.shops);
     }
   };
 
   const fetchBanners = async () => {
     const today = new Date().toISOString().slice(0, 10);
     const { data } = await supabase.from('banners')
-      .select('id, sort_order, image_url, link_url, title')
+      .select('id, sort_order, image_url, link_url, title, active, is_active')
       .eq('is_active', true)
       .or(`end_date.is.null,end_date.gte.${today}`)
       .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
