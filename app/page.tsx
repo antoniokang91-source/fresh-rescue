@@ -253,7 +253,7 @@ export default function MapPage() {
 
     if (cachedData) {
       setProducts(cachedData.products);
-      setShops(cachedData.shops);
+      if (cachedData.shops) setShops(cachedData.shops);
     } else {
       const result = await fetchProductsAndShops();
       setProducts(result.products);
