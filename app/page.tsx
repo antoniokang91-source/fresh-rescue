@@ -555,15 +555,12 @@ export default function MapPage() {
     };
   }, [user]);
 
-  // ── 배너 자동 슬라이드 ────────────────────────────────────────────────────────
+  // ── 배너 자동 슬라이드 (1시간 간격) ────────────────────────────────────────────────────────
   useEffect(() => {
     const slot1 = banners.filter(b => b.sort_order === 1);
-    const slot2 = banners.filter(b => b.sort_order === 2);
-    if (slot1.length <= 1 && slot2.length <= 1) return;
-    let t1: any = null, t2: any = null, off: any = null;
-    if (slot1.length > 1) t1 = setInterval(() => setBannerIdx(p => [(p[0] + 1) % slot1.length, p[1]]), 3000);
-    if (slot2.length > 1) off = setTimeout(() => { t2 = setInterval(() => setBannerIdx(p => [p[0], (p[1] + 1) % slot2.length]), 3000); }, 500);
-    return () => { if (t1) clearInterval(t1); if (t2) clearInterval(t2); if (off) clearTimeout(off); };
+    if (slot1.length <= 1) return;
+    const t1 = setInterval(() => setBannerIdx(p => [(p[0] + 1) % slot1.length, p[1]]), 3600000);
+    return () => clearInterval(t1);
   }, [banners]);
 
   // ── 메시지 읽음 추적 (URL 파라미터로부터) ──────────────────────────────────────
@@ -1286,9 +1283,8 @@ export default function MapPage() {
           );
         };
         return (
-          <div className="bg-white px-3 py-3 flex gap-2 flex-shrink-0 shadow-sm" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' }}>
-            <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고 1" slotNum={1} />
-            <BannerSlot items={slot2} idx={bannerIdx[1]} placeholder="배너 광고 2" slotNum={2} />
+          <div className="bg-white px-3 py-3 flex-shrink-0 shadow-sm" style={{ boxShadow: '0 -2px 8px rgba(0,0,0,0.04)' }}>
+            <BannerSlot items={slot1} idx={bannerIdx[0]} placeholder="배너 광고" slotNum={1} />
           </div>
         );
       })()}
