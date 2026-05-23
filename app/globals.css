@@ -9,6 +9,15 @@
   font-style: normal;
 }
 
+@font-face {
+  font-family: 'BM HANNA Air';
+  src:
+    url('/fonts/BMHANNAAir.otf') format('opentype'),
+    url('/fonts/BMHANNAAir.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,10 +51,17 @@ body {
   height: 100%;
   overflow: hidden;
   -webkit-tap-highlight-color: transparent;
-  font-family: 'BM HANNA Pro', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: 'BM HANNA Air', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
   letter-spacing: -0.02em;
   line-height: 1.6;
   color: #191F28;
+}
+
+/* 로고 및 브랜드 텍스트는 Pro 사용 */
+.logo,
+.brand-title,
+h1 {
+  font-family: 'BM HANNA Pro', 'BM HANNA Air', 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* dvh fallback */
