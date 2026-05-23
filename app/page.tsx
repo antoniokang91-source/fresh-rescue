@@ -10,6 +10,7 @@ import AvatarSelectModal from "@/components/avatar/AvatarSelectModal";
 import { useAuth } from '@/lib/auth-context'
 import { supabase } from "@/lib/supabase"
 import { requestFCMToken } from '@/lib/firebase';
+import { useQueryCache } from '@/lib/useQueryCache';
 import type { Reservation, Review, ShopRanking } from '@/types';
 
 declare global {
@@ -201,68 +202,111 @@ export default function MapPage() {
   ]);
 
   // ── 데이터 로드 ───────────────────────────────────────────────────────────────
+  const fetchProductsAndShops = async () => {
+    const [productResult, shopResult] = await Promise.allSettled([
+      supabase.from('rescue_products')
+        .select('id, product_name, rescue_price, original_price, category, description, stock_quantity, expire_datetime, shop_id, shop_name')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false }).limit(100),
+      supabase.from('shops')
+        .select('id, shop_name, phone, latitude, longitude, category, description, operating_hours, shop_image_url')
+        .eq('is_active', true),
+    ]);
+
+    const productData = productResult.status === 'fulfilled' ? productResult.value.data : null;
+    const productError = productResult.status === 'fulfilled' ? productResult.value.error : null;
+    const shopData = shopResult.status === 'fulfilled' ? shopResult.value.data : null;
+
+    if (productData && productData.length > 0 && !productError) {
+      const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
+      const formatted: Product[] = productData.map((item: any) => {
+        const shop = shopMap.get(item.shop_id);
+        const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
+        const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
+        return {
+          id: item.id, name: item.product_name, price: item.rescue_price,
+          originalPrice: item.original_price,
+          discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
+          timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
+          shopId: item.shop_id, category: item.category || shop?.category || '기타',
+          description: item.description || '', stock: item.stock_quantity ?? 0,
+          shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
+          shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
+          distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
+        };
+      });
+      return { products: formatted, shops: shopData };
+    }
+    return { products: DUMMY_PRODUCTS, shops: shopData };
+  };
+
+  // 캐싱된 쿼리 (10분 TTL)
+  const { data: cachedData } = useQueryCache(
+    'products-shops',
+    fetchProductsAndShops,
+    10 * 60 * 1000
+  );
+
   const loadData = async () => {
     setProducts(DUMMY_PRODUCTS);
     setIsLoading(false);
 
-    try {
-      const [productResult, shopResult] = await Promise.allSettled([
-        supabase.from('rescue_products').select('*').eq('status', 'active')
-          .order('created_at', { ascending: false }).limit(100),
-        supabase.from('shops').select('*').eq('is_active', true),
-      ]);
-
-      const productData = productResult.status === 'fulfilled' ? productResult.value.data : null;
-      const productError = productResult.status === 'fulfilled' ? productResult.value.error : null;
-      const shopData = shopResult.status === 'fulfilled' ? shopResult.value.data : null;
-
-      if (productData && productData.length > 0 && !productError) {
-        const shopMap = new Map((shopData ?? []).map((s: any) => [s.id, s]));
-        const formatted: Product[] = productData.map((item: any) => {
-          const shop = shopMap.get(item.shop_id);
-          const expireTime = item.expire_datetime ? new Date(item.expire_datetime).getTime() : null;
-          const hoursLeft = expireTime ? Math.max(0, Math.ceil((expireTime - Date.now()) / (1000 * 60 * 60))) : 0;
-          return {
-            id: item.id, name: item.product_name, price: item.rescue_price,
-            originalPrice: item.original_price,
-            discount: Math.round(((item.original_price - item.rescue_price) / item.original_price) * 100),
-            timeLeft: hoursLeft, shop: item.shop_name || shop?.shop_name || '알 수 없음',
-            shopId: item.shop_id, category: item.category || shop?.category || '기타',
-            description: item.description || '', stock: item.stock_quantity ?? 0,
-            shopPhone: shop?.phone, shopImage: shop?.shop_image_url,
-            shopDescription: shop?.description || '', shopOperatingHours: shop?.operating_hours || '',
-            distance: 1.0, lat: shop?.latitude ?? 37.5665, lng: shop?.longitude ?? 126.978,
-          };
-        });
-        setProducts(formatted);
-      }
-      if (shopData && shopData.length > 0) setShops(shopData);
-    } catch (e) { console.error('데이터 로드 오류:', e); }
+    if (cachedData) {
+      setProducts(cachedData.products);
+      setShops(cachedData.shops);
+    } else {
+      const result = await fetchProductsAndShops();
+      setProducts(result.products);
+      setShops(result.shops);
+    }
   };
+
+  const fetchBanners = async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase.from('banners')
+      .select('id, sort_order, image_url, link_url, title')
+      .eq('is_active', true)
+      .or(`end_date.is.null,end_date.gte.${today}`)
+      .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
+    return data || [];
+  };
+
+  const { data: cachedBanners } = useQueryCache(
+    'banners',
+    fetchBanners,
+    30 * 60 * 1000
+  );
 
   const loadBanners = async () => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase.from('banners').select('*').eq('is_active', true)
-        .or(`end_date.is.null,end_date.gte.${today}`)
-        .order('sort_order', { ascending: true }).order('created_at', { ascending: true });
-      clearTimeout(timeout);
-      if (data) setBanners(data);
-    } catch (e) { console.error('배너 로드 실패:', e); }
+    if (cachedBanners) {
+      setBanners(cachedBanners);
+    } else {
+      const data = await fetchBanners();
+      setBanners(data);
+    }
   };
 
+  const fetchPinAds = async () => {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data } = await supabase.from('pin_ads')
+      .select('id, shop_id, shop_name, end_date, is_active')
+      .eq('is_active', true).or(`end_date.is.null,end_date.gte.${today}`);
+    return (data || []) as PinAd[];
+  };
+
+  const { data: cachedPinAds } = useQueryCache(
+    'pin_ads',
+    fetchPinAds,
+    30 * 60 * 1000
+  );
+
   const loadPinAds = async () => {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const today = new Date().toISOString().slice(0, 10);
-      const { data } = await supabase.from('pin_ads').select('*')
-        .eq('is_active', true).or(`end_date.is.null,end_date.gte.${today}`);
-      clearTimeout(timeout);
-      if (data) setPinAds(data as PinAd[]);
-    } catch (e) { console.error('핀광고 로드 실패:', e); }
+    if (cachedPinAds) {
+      setPinAds(cachedPinAds);
+    } else {
+      const data = await fetchPinAds();
+      setPinAds(data);
+    }
   };
 
   const loadRealtimeNotifications = async () => {
@@ -775,13 +819,13 @@ export default function MapPage() {
     try {
       const { data: reviews } = await supabase
         .from('reviews')
-        .select('*')
+        .select('id, rating, created_at, freshness_score, comment, photo_url')
         .eq('shop_id', shopId)
         .order('created_at', { ascending: false });
 
       const { data: ranking } = await supabase
         .from('shop_rankings')
-        .select('*')
+        .select('shop_id, shop_name, total_weighted_score, review_count, avg_rating, updated_at')
         .eq('shop_id', shopId)
         .single();
 
@@ -797,7 +841,7 @@ export default function MapPage() {
     try {
       const { data: shopProducts } = await supabase
         .from('rescue_products')
-        .select('*')
+        .select('id, product_name, rescue_price, original_price, category, expire_datetime, shop_id, shop_name')
         .eq('shop_id', shopId)
         .eq('status', 'active')
         .order('created_at', { ascending: false });
@@ -844,7 +888,7 @@ export default function MapPage() {
     if (q.trim()) {
       // 검색어가 있으면 가게명, 주소, 상품명으로 검색
       const [shopRes, productRes] = await Promise.all([
-        supabase.from('shops').select('*').eq('is_active', true)
+        supabase.from('shops').select('id, shop_name, phone, latitude, longitude, category, description, operating_hours, shop_image_url').eq('is_active', true)
           .or(`shop_name.ilike.%${q}%,address.ilike.%${q}%`),
         supabase.from('rescue_products').select('shop_id').eq('status', 'active')
           .ilike('product_name', `%${q}%`),
@@ -853,7 +897,7 @@ export default function MapPage() {
       productData = productRes.data ?? [];
     } else {
       // 검색어가 없으면 모든 활성 가게를 조회
-      const res = await supabase.from('shops').select('*').eq('is_active', true);
+      const res = await supabase.from('shops').select('id, shop_name, phone, latitude, longitude, category, description, operating_hours, shop_image_url').eq('is_active', true);
       shopData = res.data ?? [];
     }
 
@@ -861,7 +905,7 @@ export default function MapPage() {
     const productShopIds = [...new Set((productData ?? []).map((p: any) => p.shop_id).filter(Boolean))];
     let extraShops: Shop[] = [];
     if (productShopIds.length > 0) {
-      const { data } = await supabase.from('shops').select('*').eq('is_active', true).in('id', productShopIds);
+      const { data } = await supabase.from('shops').select('id, shop_name, phone, latitude, longitude, category, description, operating_hours, shop_image_url').eq('is_active', true).in('id', productShopIds);
       extraShops = (data ?? []) as Shop[];
     }
 
