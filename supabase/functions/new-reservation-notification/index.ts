@@ -66,7 +66,7 @@ async function sendKakaoTalk(
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-client-info',
+  'Access-Control-Allow-Headers': '*',
 }
 
 Deno.serve(async (req) => {
@@ -80,7 +80,8 @@ Deno.serve(async (req) => {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders })
     }
 
-    const { reservationId } = await req.json()
+    const body = await req.json()
+    const reservationId = body.reservationId || body.reservation_id
 
     if (!reservationId) {
       return new Response('Missing reservationId', { status: 400 })
