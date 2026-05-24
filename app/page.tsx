@@ -776,6 +776,7 @@ export default function MapPage() {
         quantity: 1,
         user_nickname: profile?.nickname || '고객',
         product_name: product.name,
+        total_amount: product.price,
       }).select().single();
 
       if (error) throw error;
