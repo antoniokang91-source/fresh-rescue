@@ -5,6 +5,9 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const solapiKey = Deno.env.get('SOLAPI_API_KEY')!
 const solapiSecret = Deno.env.get('SOLAPI_API_SECRET')!
 
+console.log('DEBUG: Loaded SOLAPI_API_KEY:', solapiKey?.substring(0, 10) + '...')
+console.log('DEBUG: Loaded SOLAPI_API_SECRET:', solapiSecret?.substring(0, 10) + '...')
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 async function sendKakaoTalk(
@@ -18,13 +21,14 @@ async function sendKakaoTalk(
   shopPhoneNumber: string
 ) {
   const now = new Date()
-  const timestamp = Math.floor(now.getTime() / 1000).toString()
+  const date = now.toISOString()
   const salt = Math.random().toString(36).substring(2, 10)
 
-  const signMessage = `${solapiKey}${timestamp}${salt}${solapiSecret}`
+  const signData = `${date}${salt}`
   const encoder = new TextEncoder()
-  const data = encoder.encode(signMessage)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
+  const data = encoder.encode(signData)
+  const secretData = encoder.encode(solapiSecret)
+  const hashBuffer = await crypto.subtle.sign('HMAC', await crypto.subtle.importKey('raw', secretData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']), data)
   const hashArray = Array.from(new Uint8Array(hashBuffer))
   const signature = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 
@@ -33,7 +37,7 @@ async function sendKakaoTalk(
       to: phoneNumber,
       from: shopPhoneNumber,
       kakaoOptions: {
-        pfId: 'KA01PF260516135625129XEUjTYPRYlJ',
+        pfId: 'KA01PF260516135625129XEUjTYPRYIJ',
         templateId: 'KA01TP260516152207982xNMZWcN9ipd',
         variables: {
           '#{shop_name}': shopName || '가게',
@@ -46,16 +50,15 @@ async function sendKakaoTalk(
         disableSms: false,
       },
     },
-    apiKey: solapiKey,
-    timestamp: timestamp,
-    salt: salt,
-    signature: signature,
   }
+
+  const authHeader = `HMAC-SHA256 apiKey=${solapiKey}, date=${date}, salt=${salt}, signature=${signature}`
 
   const response = await fetch('https://api.solapi.com/messages/v4/send', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': authHeader,
     },
     body: JSON.stringify(requestBody),
   })
@@ -124,7 +127,7 @@ Deno.serve(async (req) => {
       shop.phone
     )
 
-    if (kakaoResult.resultCode !== '0') {
+    if (kakaoResult.statusCode !== '2000') {
       console.error('KakaoTalk send failed:', kakaoResult)
       return new Response(
         JSON.stringify({ error: 'Failed to send KakaoTalk', details: kakaoResult }),
@@ -134,7 +137,7 @@ Deno.serve(async (req) => {
 
     console.log('New reservation notification sent successfully')
 
-    return new Response(JSON.stringify({ success: true, messageId: kakaoResult.data?.[0]?.messageId }), {
+    return new Response(JSON.stringify({ success: true, messageId: kakaoResult.messageId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (error) {
