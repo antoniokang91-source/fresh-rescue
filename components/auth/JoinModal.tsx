@@ -56,6 +56,14 @@ export default function JoinModal({ onClose }: JoinModalProps) {
       })
       if (upsertError) throw upsertError
 
+      try {
+        await supabase.functions.invoke('welcome-notification', {
+          body: { userId: authData.user?.id, phone: rawPhone }
+        })
+      } catch (err) {
+        console.error('환영 메시지 발송 실패:', err)
+      }
+
       alert("🚨 신선구조대 합류 성공! 작전을 시작합니다.")
       onClose()
       window.location.reload()

@@ -7,7 +7,12 @@ const solapiSecret = Deno.env.get('SOLAPI_API_SECRET')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-async function sendKakaoTalk(phoneNumber: string, sellerName: string) {
+async function sendKakaoTalk(
+  phoneNumber: string,
+  customerName: string,
+  signupDate: string,
+  nickname: string
+) {
   const now = new Date()
   const date = now.toISOString()
   const salt = Math.random().toString(36).substring(2, 10)
@@ -26,9 +31,11 @@ async function sendKakaoTalk(phoneNumber: string, sellerName: string) {
       from: phoneNumber,
       kakaoOptions: {
         pfId: 'KA01PF260516135625129XEUjTYPRYIJ',
-        templateId: 'KA01TP260516151613640rI8iUdhjp8H',
+        templateId: 'KA01TP260516140208587pzIKxQt5NsE',
         variables: {
-          '#{닉네임}': sellerName || '사장님',
+          '#{고객명}': customerName || '고객',
+          '#{가입일시}': signupDate || '-',
+          '#{닉네임}': nickname || '고객',
         },
         disableSms: false,
       },
@@ -65,25 +72,46 @@ Deno.serve(async (req) => {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders })
     }
 
-    const { phone, sellerName } = await req.json()
+    const body = await req.json()
+    const userId = body.userId
+    const phone = body.phone
 
-    if (!phone) {
-      return new Response('Missing phone number', { status: 400 })
+    if (!userId || !phone) {
+      return new Response('Missing userId or phone', { status: 400 })
     }
 
-    console.log(`Sending shop approval KakaoTalk to ${phone}`)
+    const { data: member, error: memberError } = await supabase
+      .from('members')
+      .select('nickname, created_at')
+      .eq('id', userId)
+      .single()
 
-    const kakaoResult = await sendKakaoTalk(phone, sellerName || '사장님')
+    if (memberError || !member) {
+      console.error('Member not found:', memberError)
+      return new Response('Member not found', { status: 404 })
+    }
+
+    const createdAtDate = new Date(member.created_at)
+    const signupDate = createdAtDate.toISOString().slice(0, 16).replace('T', ' ')
+
+    console.log(`Sending welcome KakaoTalk to ${phone}`)
+
+    const kakaoResult = await sendKakaoTalk(
+      phone,
+      member.nickname || '고객',
+      signupDate,
+      member.nickname || '고객'
+    )
 
     if (kakaoResult.statusCode !== '2000') {
       console.error('KakaoTalk send failed:', kakaoResult)
       return new Response(
-        JSON.stringify({ error: 'Failed to send shop approval message', details: kakaoResult }),
+        JSON.stringify({ error: 'Failed to send welcome message', details: kakaoResult }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Shop approval notification sent successfully')
+    console.log('Welcome notification sent successfully')
 
     return new Response(JSON.stringify({ success: true, messageId: kakaoResult.messageId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

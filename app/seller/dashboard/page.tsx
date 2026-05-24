@@ -390,10 +390,14 @@ export default function SellerDashboardPage() {
 
       if (error) throw error
 
-      // Edge Function 호출 → SOLAPI SMS/KakaoTalk 발송
-      await supabase.functions.invoke('reservation-notification', {
-        body: { reservation_id: reservationId, status: 'READY' }
-      })
+      // Edge Function 호출 → SOLAPI 예약 확정 KakaoTalk 발송
+      try {
+        await supabase.functions.invoke('reservation-confirmed-notification', {
+          body: { reservationId }
+        })
+      } catch (err) {
+        console.error('예약 확정 알림톡 발송 실패:', err)
+      }
 
       fetchReservations()
     } catch (err: any) {
@@ -411,10 +415,14 @@ export default function SellerDashboardPage() {
 
       if (error) throw error
 
-      // Edge Function 호출 → SOLAPI SMS 발송
-      await supabase.functions.invoke('reservation-notification', {
-        body: { reservation_id: reservationId, status: 'COMPLETED' }
-      })
+      // Edge Function 호출 → SOLAPI 픽업준비 KakaoTalk 발송
+      try {
+        await supabase.functions.invoke('pickup-ready-notification', {
+          body: { reservationId }
+        })
+      } catch (err) {
+        console.error('픽업준비 알림톡 발송 실패:', err)
+      }
 
       fetchReservations()
     } catch (err: any) {

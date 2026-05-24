@@ -221,6 +221,16 @@ export default function ProfilePage() {
         .eq('id', reservationId)
 
       if (error) throw error
+
+      // Edge Function 호출 → SOLAPI 거래 완료 KakaoTalk 발송
+      try {
+        await supabase.functions.invoke('transaction-completed-notification', {
+          body: { reservationId }
+        })
+      } catch (err) {
+        console.error('거래 완료 알림톡 발송 실패:', err)
+      }
+
       await loadReservations()
     } catch (e) {
       console.error('Error completing pickup:', e)

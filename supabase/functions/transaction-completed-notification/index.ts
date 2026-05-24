@@ -7,7 +7,11 @@ const solapiSecret = Deno.env.get('SOLAPI_API_SECRET')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-async function sendKakaoTalk(phoneNumber: string, sellerName: string) {
+async function sendKakaoTalk(
+  phoneNumber: string,
+  productName: string,
+  shopName: string
+) {
   const now = new Date()
   const date = now.toISOString()
   const salt = Math.random().toString(36).substring(2, 10)
@@ -26,9 +30,10 @@ async function sendKakaoTalk(phoneNumber: string, sellerName: string) {
       from: phoneNumber,
       kakaoOptions: {
         pfId: 'KA01PF260516135625129XEUjTYPRYIJ',
-        templateId: 'KA01TP260516151613640rI8iUdhjp8H',
+        templateId: 'KA01TP260516144158974JaP2DV7tZrn',
         variables: {
-          '#{닉네임}': sellerName || '사장님',
+          '#{상품명}': productName || '상품',
+          '#{가게명}': shopName || '가게',
         },
         disableSms: false,
       },
@@ -65,25 +70,52 @@ Deno.serve(async (req) => {
       return new Response('Method not allowed', { status: 405, headers: corsHeaders })
     }
 
-    const { phone, sellerName } = await req.json()
+    const body = await req.json()
+    const reservationId = body.reservationId
 
-    if (!phone) {
-      return new Response('Missing phone number', { status: 400 })
+    if (!reservationId) {
+      return new Response('Missing reservationId', { status: 400 })
     }
 
-    console.log(`Sending shop approval KakaoTalk to ${phone}`)
+    const { data: reservation, error: resError } = await supabase
+      .from('reservations')
+      .select('product_name, shop_id')
+      .eq('id', reservationId)
+      .single()
 
-    const kakaoResult = await sendKakaoTalk(phone, sellerName || '사장님')
+    if (resError || !reservation) {
+      console.error('Reservation not found:', resError)
+      return new Response('Reservation not found', { status: 404 })
+    }
+
+    const { data: shop, error: shopError } = await supabase
+      .from('shops')
+      .select('shop_name, phone')
+      .eq('id', reservation.shop_id)
+      .single()
+
+    if (shopError || !shop?.phone) {
+      console.error('Shop not found:', shopError)
+      return new Response('Shop not found', { status: 404 })
+    }
+
+    console.log(`Sending transaction completed KakaoTalk to ${shop.phone}`)
+
+    const kakaoResult = await sendKakaoTalk(
+      shop.phone,
+      reservation.product_name || '상품',
+      shop.shop_name || '가게'
+    )
 
     if (kakaoResult.statusCode !== '2000') {
       console.error('KakaoTalk send failed:', kakaoResult)
       return new Response(
-        JSON.stringify({ error: 'Failed to send shop approval message', details: kakaoResult }),
+        JSON.stringify({ error: 'Failed to send transaction completed message', details: kakaoResult }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    console.log('Shop approval notification sent successfully')
+    console.log('Transaction completed notification sent successfully')
 
     return new Response(JSON.stringify({ success: true, messageId: kakaoResult.messageId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
